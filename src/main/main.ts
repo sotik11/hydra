@@ -84,6 +84,11 @@ export const loadState = async () => {
 
   GofileApi.initialize();
 
+  // dist build: pre-seed localization sources for the user's language on first run
+  void import("./services/localization").then(({ LocalizationService }) =>
+    LocalizationService.seedDefaultSources(userPreferences?.language ?? "en")
+  );
+
   Ludusavi.copyConfigFileToUserData();
   Ludusavi.copyBinaryToUserData();
 

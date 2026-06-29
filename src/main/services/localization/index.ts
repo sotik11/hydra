@@ -9,7 +9,7 @@ import type {
   LocalizationSourceCategory,
   LocalizationSourceGame,
 } from "@types";
-import { localizationSourcesSublevel } from "@main/level";
+import { db, levelKeys, localizationSourcesSublevel } from "@main/level";
 import { logger } from "@main/services";
 import {
   GamesVoiceAdapter,
@@ -17,6 +17,17 @@ import {
 } from "./gamesvoice-adapter";
 import { builtinProviders, type LocalizationProvider } from "./provider";
 import { createJsonProvider, parseLocalizationFile } from "./json-adapter";
+import {
+  DEFAULT_SOURCES_FEED_BASE,
+  DEFAULT_SOURCES_MANIFEST_URL,
+  GAMESVOICE_LOCALE,
+  GAMESVOICE_PROVIDER_ID,
+} from "./constants";
+
+interface DefaultSourceSeedMeta {
+  seededUrls: string[];
+  localeApplied: boolean;
+}
 
 // aggregates lookups across enabled providers — builtin studios + user json sources;
 // everything lives in the localization-sources sublevel, builtins seeded on first access
@@ -118,7 +129,10 @@ export class LocalizationService {
     return provider?.listGames ? provider.listGames() : [];
   }
 
-  public static async addJsonSource(url: string): Promise<LocalizationSource> {
+  public static async addJsonSource(
+    url: string,
+    enabled = true
+  ): Promise<LocalizationSource> {
     const existing = await localizationSourcesSublevel.values().all();
     if (
       existing.some((source) => source.type === "json" && source.url === url)
@@ -134,7 +148,7 @@ export class LocalizationService {
       id: crypto.randomUUID(),
       name,
       type: "json",
-      enabled: true,
+      enabled,
       addedAt: now,
       url,
       language,
@@ -147,6 +161,94 @@ export class LocalizationService {
 
     await localizationSourcesSublevel.put(source.id, source);
     return source;
+  }
+
+  // dist build only: on first run, seed the feed's default json sources (all disabled),
+  // then enable the ones whose locale matches the user's Hydra language. A "seeded" set is
+  // tracked so a removed default never comes back, manual re-adds still work, and later
+  // manifest additions get added (disabled) on subsequent runs.
+  public static async seedDefaultSources(userLocale: string): Promise<void> {
+    if (!DEFAULT_SOURCES_MANIFEST_URL) return;
+
+    const meta = await this.getSeedMeta();
+    const firstRun = !meta.localeApplied;
+
+    // make sure the builtin records exist before we maybe toggle GamesVoice
+    await this.getSources();
+
+    let manifest: { file: string; locale: string }[];
+    try {
+      const response = await axios.get<unknown>(DEFAULT_SOURCES_MANIFEST_URL, {
+        timeout: 15000,
+      });
+      manifest = Array.isArray(response.data)
+        ? (response.data as { file: string; locale: string }[])
+        : [];
+    } catch (error) {
+      // leave firstRun intact so the locale seed retries on the next launch
+      logger.error(
+        "[Localization] Failed to fetch default sources manifest:",
+        error
+      );
+      return;
+    }
+
+    const seeded = new Set(meta.seededUrls);
+    const stored = await localizationSourcesSublevel.values().all();
+    const presentUrls = new Set(
+      stored
+        .filter((source) => source.type === "json")
+        .map((source) => source.url)
+    );
+
+    for (const { file, locale } of manifest) {
+      const url = `${DEFAULT_SOURCES_FEED_BASE}/${file}`;
+      if (seeded.has(url)) continue; // already offered — never re-add (respects removal)
+      if (presentUrls.has(url)) {
+        seeded.add(url); // user already added it by hand — just remember it
+        continue;
+      }
+
+      try {
+        await this.addJsonSource(url, firstRun && locale === userLocale);
+        seeded.add(url);
+      } catch (error) {
+        // leave it unseeded so it retries next launch
+        logger.error(
+          "[Localization] Failed to seed default source:",
+          url,
+          error
+        );
+      }
+    }
+
+    // GamesVoice is a builtin — enable it on first run for Russian-speaking users
+    if (firstRun && userLocale === GAMESVOICE_LOCALE) {
+      await this.setSourceEnabled(GAMESVOICE_PROVIDER_ID, true);
+    }
+
+    await this.setSeedMeta({ seededUrls: [...seeded], localeApplied: true });
+  }
+
+  private static async getSeedMeta(): Promise<DefaultSourceSeedMeta> {
+    try {
+      const meta = await db.get<string, DefaultSourceSeedMeta>(
+        levelKeys.localizationSeedMeta,
+        { valueEncoding: "json" }
+      );
+      return {
+        seededUrls: Array.isArray(meta?.seededUrls) ? meta.seededUrls : [],
+        localeApplied: Boolean(meta?.localeApplied),
+      };
+    } catch {
+      return { seededUrls: [], localeApplied: false };
+    }
+  }
+
+  private static async setSeedMeta(meta: DefaultSourceSeedMeta): Promise<void> {
+    await db.put(levelKeys.localizationSeedMeta, meta, {
+      valueEncoding: "json",
+    });
   }
 
   public static async removeSource(id: string): Promise<void> {
