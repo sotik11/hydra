@@ -24,7 +24,7 @@ const { autoUpdater } = updater;
 
 autoUpdater.setFeedURL({
   provider: "github",
-  owner: "hydralauncher",
+  owner: "sotik11",
   repo: "hydra",
 });
 
