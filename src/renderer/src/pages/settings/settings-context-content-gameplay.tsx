@@ -6,6 +6,7 @@ import { settingsContext } from "@renderer/context";
 import { useAppSelector } from "@renderer/hooks";
 import { QuestionIcon } from "@primer/octicons-react";
 
+import { SettingsLocalizationSources } from "./settings-localization-sources";
 import "./settings-behavior.scss";
 
 export function SettingsContextContentGameplay() {
@@ -139,6 +140,8 @@ export function SettingsContextContentGameplay() {
           }
         />
       </div>
+
+      <SettingsLocalizationSources />
     </div>
   );
 }

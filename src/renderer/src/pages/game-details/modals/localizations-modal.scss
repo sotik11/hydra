@@ -1,0 +1,485 @@
+@use "../../../scss/globals.scss";
+
+// fixed width so the modal never reflows to its content — long version strings wrap inside
+.modal.localizations-modal__window {
+  width: 450px;
+  max-width: 450px;
+}
+
+.localizations-modal {
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__status {
+    width: 100%;
+    padding: calc(globals.$spacing-unit * 4) 0;
+    text-align: center;
+    color: globals.$muted-color;
+    font-size: globals.$small-font-size;
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 1.5);
+    padding: calc(globals.$spacing-unit * 2);
+    background-color: var(--color-background-light);
+    border-radius: 8px;
+  }
+
+  &__card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 1);
+    flex-wrap: wrap;
+  }
+
+  &__studio {
+    color: globals.$body-color;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__language {
+    font-weight: 400;
+    font-size: globals.$small-font-size;
+    color: var(--color-text-secondary);
+    padding: 2px 8px;
+    border-radius: 6px;
+    background-color: var(--color-background-light);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    // The language name takes priority — never wrap or get squeezed.
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__badges {
+    display: flex;
+    gap: calc(globals.$spacing-unit * 1);
+    flex-wrap: wrap;
+  }
+
+  &__meta {
+    color: globals.$muted-color;
+    font-size: globals.$small-font-size;
+    word-break: break-word;
+    // In the detail header it's the game title — take the row, badge stays right.
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__mirrors {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 1);
+
+    button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  &__links {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__spacer {
+    height: calc(globals.$spacing-unit * 1.5);
+  }
+
+  &__changelog {
+    max-height: 420px;
+    overflow-y: auto;
+  }
+
+  &__studio-link {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  &__downloader-label {
+    color: var(--color-text-secondary);
+    font-size: globals.$small-font-size;
+  }
+
+  &__download-list {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &__download-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 1);
+    width: 100%;
+    padding: calc(globals.$spacing-unit * 1.5) calc(globals.$spacing-unit * 2);
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    color: globals.$body-color;
+    font-size: globals.$small-font-size;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    &--direct {
+      background: rgba(255, 255, 255, 0.08);
+      cursor: default;
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+
+    &--browser {
+      background: rgba(0, 0, 0, 0.35);
+    }
+  }
+
+  &__download-row-label {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__download-row-indicators {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__download-row-size {
+    font-size: 12px;
+    color: globals.$muted-color;
+    white-space: nowrap;
+  }
+
+  &__how-to-install {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: globals.$small-font-size;
+    color: var(--color-primary, #1a9fff);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+
+  &__divider {
+    width: 100%;
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    margin: 0;
+  }
+
+  &__no-download {
+    font-size: globals.$small-font-size;
+    color: #eab308;
+    background-color: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: 6px;
+    padding: calc(globals.$spacing-unit * 1.5);
+    white-space: pre-line;
+  }
+
+  &__in-development {
+    align-self: flex-start;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #f97316;
+    font-size: globals.$body-font-size;
+  }
+
+  &__filter-top {
+    margin-bottom: calc(globals.$spacing-unit * 2);
+    display: flex;
+    flex-direction: row;
+    gap: calc(globals.$spacing-unit * 1);
+    align-items: center;
+  }
+
+  &__filter-toggle {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+    font-size: globals.$small-font-size;
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  &__studios-drawer {
+    background-color: var(--color-background-light);
+    border-radius: 8px;
+    margin-bottom: calc(globals.$spacing-unit * 2);
+    margin-top: calc(globals.$spacing-unit * 1);
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease;
+
+    &--open {
+      max-height: 280px;
+    }
+  }
+
+  &__studio-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: calc(globals.$spacing-unit * 1);
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    align-items: start;
+    padding: calc(globals.$spacing-unit * 0.5);
+  }
+
+  &__studio-item {
+    padding: calc(globals.$spacing-unit * 0.75) calc(globals.$spacing-unit * 1);
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    min-height: calc(globals.$spacing-unit * 5);
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  &__card-button {
+    display: flex;
+    text-align: left;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: calc(globals.$spacing-unit * 1);
+    color: globals.$body-color;
+    padding: calc(globals.$spacing-unit * 2);
+    padding-right: calc(globals.$spacing-unit * 4);
+    position: relative;
+    width: 100%;
+  }
+
+  &__availability-orb {
+    position: absolute;
+    top: calc(globals.$spacing-unit * 1.5);
+    right: calc(globals.$spacing-unit * 1.5);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--online {
+      background-color: #22c55e;
+      box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+    }
+
+    &--partial {
+      background-color: #eab308;
+      box-shadow: 0 0 6px rgba(234, 179, 8, 0.5);
+    }
+
+    &--offline {
+      background-color: #ef4444;
+      opacity: 0.7;
+      box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+    }
+  }
+
+  &__card-title {
+    color: globals.$muted-color;
+    word-break: break-word;
+    display: flex;
+    align-items: center;
+    // Full width (the card-button lays children out flex-start, not stretched)
+    // so the language badge can sit pinned to the right edge.
+    width: 100%;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__card-info {
+    font-size: globals.$small-font-size;
+    color: globals.$muted-color;
+  }
+
+  &__version-date {
+    font-size: globals.$small-font-size;
+    color: globals.$muted-color;
+    opacity: 0.8;
+  }
+
+  &__detail {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 1.5);
+  }
+
+  &__stores {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__stores-label {
+    color: globals.$muted-color;
+    font-size: globals.$small-font-size;
+  }
+
+  &__stores-version {
+    color: globals.$muted-color;
+    font-size: globals.$small-font-size;
+    word-break: break-word;
+  }
+
+  &__stores-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: calc(globals.$spacing-unit * 1);
+  }
+
+  &__store {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+    padding: calc(globals.$spacing-unit * 0.75)
+      calc(globals.$spacing-unit * 1.5);
+    font-size: globals.$small-font-size;
+    color: var(--color-primary, #1a9fff);
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    &--default {
+      cursor: default;
+
+      &:hover {
+        border-color: rgba(255, 255, 255, 0.12);
+      }
+    }
+  }
+
+  &__store-icon {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+
+  &__instructions {
+    color: globals.$body-color;
+    font-size: globals.$small-font-size;
+    line-height: 1.6;
+
+    ol,
+    ul {
+      margin: 0;
+      padding-left: calc(globals.$spacing-unit * 3);
+      display: flex;
+      flex-direction: column;
+      gap: calc(globals.$spacing-unit * 1);
+    }
+
+    a {
+      color: var(--color-primary, #1a9fff);
+    }
+  }
+
+  &__download {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 1);
+    margin-top: calc(globals.$spacing-unit * 1);
+  }
+
+  &__progress-track {
+    width: 100%;
+    height: 6px;
+    border-radius: 4px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &__progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    background-color: #22c55e;
+    transition: width 0.2s ease;
+  }
+
+  &__download-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 1);
+    font-size: globals.$small-font-size;
+    color: globals.$muted-color;
+  }
+
+  &__download--complete {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    color: #22c55e;
+  }
+
+  &__download--error {
+    color: #ef4444;
+    font-size: globals.$small-font-size;
+  }
+
+  &__cancel-download,
+  &__open-folder {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 0.5);
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-size: globals.$small-font-size;
+    color: var(--color-primary, #1a9fff);
+
+    &:hover {
+      filter: brightness(1.2);
+    }
+  }
+}

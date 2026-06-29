@@ -39,6 +39,10 @@ import type {
   DiskUsage,
   NetworkInterface,
   DownloadSource,
+  GameLocalization,
+  LocalizationDownloadProgress,
+  LocalizationSource,
+  LocalizationSourceGame,
   LocalNotification,
   ProtonVersion,
   CreateSteamShortcutOptions,
@@ -627,6 +631,35 @@ declare global {
     syncDownloadSources: () => Promise<void>;
     getDownloadSourcesCheckBaseline: () => Promise<string | null>;
     getDownloadSourcesSinceValue: () => Promise<string | null>;
+
+    /* Localization */
+    searchLocalizations: (
+      shop: GameShop,
+      objectId: string,
+      title: string
+    ) => Promise<GameLocalization[]>;
+    startLocalizationDownload: (
+      studio: string,
+      url: string,
+      savePath: string,
+      autoExtract: boolean,
+      deleteArchive: boolean
+    ) => Promise<void>;
+    cancelLocalizationDownload: () => Promise<void>;
+    onLocalizationDownloadProgress: (
+      cb: (value: LocalizationDownloadProgress) => void
+    ) => () => Electron.IpcRenderer;
+    getLocalizationSources: () => Promise<LocalizationSource[]>;
+    getLocalizationSourceGames: (
+      id: string
+    ) => Promise<LocalizationSourceGame[]>;
+    addLocalizationSource: (url: string) => Promise<LocalizationSource>;
+    removeLocalizationSource: (id: string) => Promise<void>;
+    setLocalizationSourceEnabled: (
+      id: string,
+      enabled: boolean
+    ) => Promise<void>;
+    syncLocalizationSources: () => Promise<void>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage>;

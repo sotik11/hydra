@@ -40,6 +40,138 @@ export interface DownloadSource {
   createdAt: string;
 }
 
+export type LocalizationMirrorKind =
+  | "direct"
+  | "yandex"
+  | "google"
+  | "mail"
+  | "other";
+
+export interface LocalizationMirror {
+  label: string;
+  url: string;
+  kind: LocalizationMirrorKind;
+}
+
+export interface LocalizationStore {
+  name: string;
+  iconUrl: string;
+  url: string;
+}
+
+export interface GameLocalization {
+  studio: string;
+  studioUrl: string;
+  language: string;
+  title: string;
+  pageUrl: string;
+  changelogHtml: string | null;
+  authorsHtml: string | null;
+  hasText: boolean;
+  hasVoice: boolean;
+  hasTextures: boolean;
+  hasSongs: boolean;
+  hasNeuralVoice: boolean;
+  hasNeuralDub: boolean;
+  hasNeuralText: boolean;
+  version: string | null;
+  updatedAt: string | null;
+  size: string | null;
+  mirrors: LocalizationMirror[];
+  stores: LocalizationStore[];
+  howToInstallHtml: string | null;
+  // probed: does the direct mirror actually resolve to a file
+  directAvailable: boolean;
+  inDevelopment: boolean;
+  requiredGameVersion?: string | null;
+}
+
+// a game's entry in a hosted JSON source — like GameLocalization but only studio+title
+// are required (the rest gets safe defaults); matched by steamAppId, then by normalized title
+export interface LocalizationFileEntry {
+  steamAppId?: string;
+  title: string;
+  studio: string;
+  studioUrl?: string;
+  language?: string;
+  hasText?: boolean;
+  hasVoice?: boolean;
+  hasTextures?: boolean;
+  hasSongs?: boolean;
+  hasNeuralVoice?: boolean;
+  hasNeuralDub?: boolean;
+  hasNeuralText?: boolean;
+  version?: string | null;
+  updatedAt?: string | null;
+  size?: string | null;
+  pageUrl?: string;
+  changelogHtml?: string | null;
+  authorsHtml?: string | null;
+  howToInstallHtml?: string | null;
+  inDevelopment?: boolean;
+  requiredGameVersion?: string | null;
+  mirrors?: LocalizationMirror[];
+  stores?: LocalizationStore[];
+}
+
+export type LocalizationSourceCategory =
+  | "studio"
+  | "neural-studio"
+  | "aggregator";
+
+// the raw shape of a hosted localization JSON source
+export interface LocalizationFile {
+  name: string;
+  language?: string;
+  category?: LocalizationSourceCategory;
+  siteUrl?: string;
+  localizations: LocalizationFileEntry[];
+}
+
+export interface LocalizationSourceGame {
+  shop: GameShop;
+  objectId: string;
+  title: string;
+}
+
+// builtin = wired in code (live API, e.g. GamesVoice); json = a hosted file added by URL
+export type LocalizationProviderType = "builtin" | "json";
+
+// a configured source stored locally and listed in Settings; either kind can be toggled
+// off. the json-only fields below hold the fetched file and its cached entries.
+export interface LocalizationSource {
+  id: string;
+  name: string;
+  type: LocalizationProviderType;
+  enabled: boolean;
+  addedAt: string;
+  language?: string;
+  category?: LocalizationSourceCategory;
+  siteUrl?: string;
+  url?: string;
+  fingerprint?: string;
+  syncedAt?: string;
+  entries?: LocalizationFileEntry[];
+}
+
+export type LocalizationDownloadStatus =
+  | "active"
+  | "extracting"
+  | "complete"
+  | "error"
+  | "cancelled";
+
+export interface LocalizationDownloadProgress {
+  studio: string;
+  status: LocalizationDownloadStatus;
+  progress: number;
+  downloadSpeed: number;
+  bytesDownloaded: number;
+  fileSize: number;
+  fileName: string;
+  filePath: string | null;
+}
+
 export interface ProtonVersion {
   name: string;
   path: string;
