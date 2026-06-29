@@ -86,7 +86,7 @@ export const loadState = async () => {
 
   // dist build: pre-seed localization sources for the user's language on first run
   void import("./services/localization").then(({ LocalizationService }) =>
-    LocalizationService.seedDefaultSources(userPreferences?.language ?? "en")
+    LocalizationService.seedDefaultSources()
   );
 
   Ludusavi.copyConfigFileToUserData();

@@ -1,5 +1,6 @@
 import axios from "axios";
 import crypto from "node:crypto";
+import { app } from "electron";
 import type {
   GameLocalization,
   GameShop,
@@ -167,11 +168,12 @@ export class LocalizationService {
   // then enable the ones whose locale matches the user's Hydra language. A "seeded" set is
   // tracked so a removed default never comes back, manual re-adds still work, and later
   // manifest additions get added (disabled) on subsequent runs.
-  public static async seedDefaultSources(userLocale: string): Promise<void> {
+  public static async seedDefaultSources(): Promise<void> {
     if (!DEFAULT_SOURCES_MANIFEST_URL) return;
 
     const meta = await this.getSeedMeta();
     const firstRun = !meta.localeApplied;
+    const userLocale = await this.resolveUserLocale();
 
     // make sure the builtin records exist before we maybe toggle GamesVoice
     await this.getSources();
@@ -210,7 +212,10 @@ export class LocalizationService {
       }
 
       try {
-        await this.addJsonSource(url, firstRun && locale === userLocale);
+        await this.addJsonSource(
+          url,
+          firstRun && this.localeMatches(userLocale, locale)
+        );
         seeded.add(url);
       } catch (error) {
         // leave it unseeded so it retries next launch
@@ -223,11 +228,33 @@ export class LocalizationService {
     }
 
     // GamesVoice is a builtin — enable it on first run for Russian-speaking users
-    if (firstRun && userLocale === GAMESVOICE_LOCALE) {
+    if (firstRun && this.localeMatches(userLocale, GAMESVOICE_LOCALE)) {
       await this.setSourceEnabled(GAMESVOICE_PROVIDER_ID, true);
     }
 
     await this.setSeedMeta({ seededUrls: [...seeded], localeApplied: true });
+  }
+
+  // the user's language at first run: the saved Hydra language if set, otherwise the OS
+  // locale (available immediately, before the renderer has picked/persisted a language)
+  private static async resolveUserLocale(): Promise<string> {
+    try {
+      const saved = await db.get<string, string>(levelKeys.language, {
+        valueEncoding: "utf8",
+      });
+      if (saved) return saved.replaceAll('"', "");
+    } catch {
+      // not set yet on a fresh install — fall through to the OS locale
+    }
+    return app.getLocale();
+  }
+
+  // "ru" matches "ru" or "ru-RU"; a region-specific manifest locale ("pt-BR") needs exact
+  private static localeMatches(userLocale: string, sourceLocale: string): boolean {
+    const user = userLocale.toLowerCase();
+    const source = sourceLocale.toLowerCase();
+    if (source.includes("-")) return user === source;
+    return user === source || user.split("-")[0] === source;
   }
 
   private static async getSeedMeta(): Promise<DefaultSourceSeedMeta> {
