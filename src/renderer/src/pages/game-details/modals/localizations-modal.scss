@@ -2,8 +2,8 @@
 
 // fixed width so the modal never reflows to its content — long version strings wrap inside
 .modal.localizations-modal__window {
-  width: 450px;
-  max-width: 450px;
+  width: 560px;
+  max-width: 560px;
 }
 
 .localizations-modal {
@@ -300,7 +300,9 @@
 
   &__studio-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    // minmax(0, 1fr) — not plain 1fr — so columns shrink below a long studio
+    // name's width instead of overflowing the grid (and getting clipped).
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: calc(globals.$spacing-unit * 1);
     max-height: 200px;
     overflow-y: auto;
@@ -319,6 +321,20 @@
     min-height: calc(globals.$spacing-unit * 5);
     box-sizing: border-box;
     width: 100%;
+    min-width: 0;
+
+    // a long studio name wraps by whole words instead of overflowing or truncating
+    .checkbox-field {
+      min-width: 0;
+    }
+
+    .checkbox-field__label {
+      min-width: 0;
+      white-space: normal;
+      overflow: visible;
+      overflow-wrap: break-word;
+      line-height: 1.2;
+    }
   }
 
   &__card-button {
