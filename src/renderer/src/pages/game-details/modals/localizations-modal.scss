@@ -307,7 +307,9 @@
     max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
-    align-items: start;
+    // stretch — so chips in a row match the tallest (a wrapped name); single-line
+    // labels then centre vertically via the item's own align-items: center.
+    align-items: stretch;
     padding: calc(globals.$spacing-unit * 0.5);
   }
 
