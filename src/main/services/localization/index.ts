@@ -250,7 +250,10 @@ export class LocalizationService {
   }
 
   // "ru" matches "ru" or "ru-RU"; a region-specific manifest locale ("pt-BR") needs exact
-  private static localeMatches(userLocale: string, sourceLocale: string): boolean {
+  private static localeMatches(
+    userLocale: string,
+    sourceLocale: string
+  ): boolean {
     const user = userLocale.toLowerCase();
     const source = sourceLocale.toLowerCase();
     if (source.includes("-")) return user === source;
