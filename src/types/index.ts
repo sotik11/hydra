@@ -51,6 +51,10 @@ export interface LocalizationMirror {
   label: string;
   url: string;
   kind: LocalizationMirrorKind;
+  // when set, the mirror is multi-part — each entry is a separate download link
+  // (the archive was split into pieces on that hoster); the modal renders one row
+  // with the label + numbered buttons per part. `url` is unused in that case.
+  parts?: string[];
 }
 
 export interface LocalizationStore {

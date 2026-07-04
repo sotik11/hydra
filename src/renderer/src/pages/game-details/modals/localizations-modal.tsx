@@ -517,19 +517,51 @@ export function LocalizationsModal({
               (mirror) =>
                 mirror.kind !== "direct" && mirror.url !== localization.pageUrl
             )
-            .map((mirror) => (
-              <button
-                key={mirror.url}
-                type="button"
-                className="localizations-modal__download-row"
-                onClick={() => window.electron.openExternal(mirror.url)}
-              >
-                <span className="localizations-modal__download-row-label">
-                  <LinkExternalIcon />
-                  {mirror.label}
-                </span>
-              </button>
-            ))}
+            // put single-link cloud mirrors first, multi-part groups last
+            .slice()
+            .sort((a, b) => (a.parts ? 1 : 0) - (b.parts ? 1 : 0))
+            .map((mirror) =>
+              mirror.parts && mirror.parts.length > 0 ? (
+                <div
+                  key={mirror.parts.join("|")}
+                  className="localizations-modal__download-row localizations-modal__download-row--parts"
+                >
+                  <span className="localizations-modal__download-row-label">
+                    <LinkExternalIcon />
+                    {mirror.label}
+                  </span>
+                  <span className="localizations-modal__download-row-parts">
+                    {mirror.parts.map((partUrl, i) => (
+                      <button
+                        key={partUrl}
+                        type="button"
+                        className="localizations-modal__download-row-part"
+                        onClick={() => window.electron.openExternal(partUrl)}
+                      >
+                        {i + 1}
+                      </button>
+                    ))}
+                  </span>
+                  {localization.size && (
+                    <span className="localizations-modal__download-row-size">
+                      {localization.size}
+                    </span>
+                  )}
+                </div>
+              ) : (
+                <button
+                  key={mirror.url}
+                  type="button"
+                  className="localizations-modal__download-row"
+                  onClick={() => window.electron.openExternal(mirror.url)}
+                >
+                  <span className="localizations-modal__download-row-label">
+                    <LinkExternalIcon />
+                    {mirror.label}
+                  </span>
+                </button>
+              )
+            )}
 
           <button
             type="button"
