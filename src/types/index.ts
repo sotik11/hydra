@@ -84,6 +84,8 @@ export interface GameLocalization {
   directAvailable: boolean;
   inDevelopment: boolean;
   requiredGameVersion?: string | null;
+  // shown next to the download list when the archive is password-protected
+  archivePassword?: string | null;
 }
 
 // a game's entry in a hosted JSON source — like GameLocalization but only studio+title
@@ -110,6 +112,7 @@ export interface LocalizationFileEntry {
   howToInstallHtml?: string | null;
   inDevelopment?: boolean;
   requiredGameVersion?: string | null;
+  archivePassword?: string | null;
   mirrors?: LocalizationMirror[];
   stores?: LocalizationStore[];
 }

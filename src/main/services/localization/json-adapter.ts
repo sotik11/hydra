@@ -63,6 +63,7 @@ function toGameLocalization(
     directAvailable: false, // set later by the live link probe
     inDevelopment: entry.inDevelopment ?? false,
     requiredGameVersion: entry.requiredGameVersion ?? null,
+    archivePassword: entry.archivePassword ?? null,
   };
 }
 

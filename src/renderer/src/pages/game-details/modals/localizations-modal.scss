@@ -482,4 +482,62 @@
       filter: brightness(1.2);
     }
   }
+
+  // shown only when the archive is password-protected — sits between the store row
+  // and the downloader label. amber tint pulls the user's eye without shouting.
+  &__archive-password {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 1);
+    padding: calc(globals.$spacing-unit * 1.25)
+      calc(globals.$spacing-unit * 1.5);
+    margin-bottom: calc(globals.$spacing-unit * 1.5);
+    background: rgba(234, 179, 8, 0.1);
+    border: 1px solid rgba(234, 179, 8, 0.3);
+    border-radius: 6px;
+  }
+
+  &__archive-password-label {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 0.75);
+    font-size: globals.$small-font-size;
+    color: #eab308;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  &__archive-password-value {
+    flex: 1;
+    min-width: 0;
+    padding: 4px 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: globals.$small-font-size;
+    color: globals.$body-color;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 4px;
+    text-align: center;
+    user-select: all;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__archive-password-copy {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 4px;
+    color: globals.$body-color;
+    cursor: pointer;
+    flex-shrink: 0;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
 }

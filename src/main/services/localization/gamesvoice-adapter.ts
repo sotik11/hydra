@@ -210,6 +210,7 @@ export class GamesVoiceAdapter {
       howToInstallHtml: product.instruction?.trim() || null,
       directAvailable: false,
       inDevelopment: product.is_develop === 1,
+      archivePassword: null,
     };
   }
 

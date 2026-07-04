@@ -4,7 +4,9 @@ import {
   CheckCircleFillIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  CopyIcon,
   DownloadIcon,
+  KeyIcon,
   LinkExternalIcon,
   XCircleIcon,
 } from "@primer/octicons-react";
@@ -18,6 +20,7 @@ import {
   TextField,
 } from "@renderer/components";
 import { gameDetailsContext } from "@renderer/context";
+import { useToast } from "@renderer/hooks";
 import { formatBytes, formatBytesToMbps, sanitizeHtml } from "@shared";
 import type { GameLocalization, LocalizationDownloadProgress } from "@types";
 
@@ -62,6 +65,12 @@ export function LocalizationsModal({
   const { shop, objectId, gameTitle } = useContext(gameDetailsContext);
 
   const { t } = useTranslation("game_details");
+  const { showSuccessToast } = useToast();
+
+  const copyArchivePassword = (password: string) => {
+    void navigator.clipboard.writeText(password);
+    showSuccessToast(t("localization:localization_archive_password_copied"));
+  };
 
   // "In development" in the localization's own language (content language).
   const inDevLabel = (language: string) =>
@@ -444,6 +453,28 @@ export function LocalizationsModal({
         </div>
 
         <hr className="localizations-modal__divider" />
+
+        {localization.archivePassword && (
+          <div className="localizations-modal__archive-password">
+            <span className="localizations-modal__archive-password-label">
+              <KeyIcon />
+              {t("localization:localization_archive_password")}
+            </span>
+            <code className="localizations-modal__archive-password-value">
+              {localization.archivePassword}
+            </code>
+            <button
+              type="button"
+              className="localizations-modal__archive-password-copy"
+              onClick={() => copyArchivePassword(localization.archivePassword!)}
+              aria-label={t(
+                "localization:localization_archive_password_copy_label"
+              )}
+            >
+              <CopyIcon />
+            </button>
+          </div>
+        )}
 
         <span className="localizations-modal__downloader-label">
           {t("downloader")}
