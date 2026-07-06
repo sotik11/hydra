@@ -9,6 +9,20 @@ export const externalResourcesInstance = axios.create({
   baseURL: import.meta.env.RENDERER_VITE_EXTERNAL_RESOURCES_URL,
 });
 
+// Local patch (see DESIGN.md UB-1, PR hydralauncher/hydra#2452): silently
+// degrade optional metadata fetches so a CDN outage doesn't trigger the
+// renderer error boundary. Remove when upstream PR is merged.
+externalResourcesInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    console.warn(
+      "[external-resources] request failed silently:",
+      error?.message ?? error
+    );
+    return Promise.resolve({ data: [] });
+  }
+);
+
 export function useCatalogue() {
   const dispatch = useAppDispatch();
 

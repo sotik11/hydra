@@ -147,12 +147,18 @@ export function RepacksModal({
   const getRepackAvailabilityStatus = (
     repack: GameRepack
   ): "online" | "partial" | "offline" => {
+    // Local patch (see DESIGN.md UB-3, PR hydralauncher/hydra#2451):
+    // GameRepack.uris is typed string[] but can arrive undefined for records
+    // with incomplete backend data (stale cache, missing shop, etc.),
+    // crashing .filter() below. Remove when upstream PR is merged.
+    const uris = Array.isArray(repack.uris) ? repack.uris : [];
     const unavailableSet = new Set(repack.unavailableUris ?? []);
-    const availableCount = repack.uris.filter(
+    const availableCount = uris.filter(
       (uri) => !unavailableSet.has(uri)
     ).length;
-    const unavailableCount = repack.uris.length - availableCount;
+    const unavailableCount = uris.length - availableCount;
 
+    if (uris.length === 0) return "offline";
     if (unavailableCount === 0) return "online";
     if (availableCount === 0) return "offline";
     return "partial";

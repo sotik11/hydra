@@ -289,7 +289,15 @@ export class WindowManager {
     this.mainWindow.removeMenu();
 
     this.mainWindow.on("ready-to-show", () => {
-      if (!app.isPackaged || isStaging)
+      // Local patch (see DESIGN.md UB-2, PR hydralauncher/hydra#2453): also
+      // open DevTools when HYDRA_DEVTOOLS=1 so we can diagnose renderer
+      // crashes in packaged builds without a custom build. Remove when
+      // upstream PR is merged.
+      if (
+        !app.isPackaged ||
+        isStaging ||
+        process.env.HYDRA_DEVTOOLS === "1"
+      )
         WindowManager.mainWindow?.webContents.openDevTools();
       if (userPreferences?.launchInBigPicture) {
         void WindowManager.openBigPictureWindow();
