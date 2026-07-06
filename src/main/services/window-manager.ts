@@ -293,10 +293,11 @@ export class WindowManager {
       // open DevTools when HYDRA_DEVTOOLS=1 so we can diagnose renderer
       // crashes in packaged builds without a custom build. Remove when
       // upstream PR is merged.
+      const HYDRA_DEVTOOLS_ENABLED_VALUE = "1";
       if (
         !app.isPackaged ||
         isStaging ||
-        process.env.HYDRA_DEVTOOLS === "1"
+        process.env.HYDRA_DEVTOOLS === HYDRA_DEVTOOLS_ENABLED_VALUE
       )
         WindowManager.mainWindow?.webContents.openDevTools();
       if (userPreferences?.launchInBigPicture) {

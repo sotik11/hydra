@@ -10,16 +10,32 @@ export const externalResourcesInstance = axios.create({
 });
 
 // Local patch (see DESIGN.md UB-1, PR hydralauncher/hydra#2452): silently
-// degrade optional metadata fetches so a CDN outage doesn't trigger the
-// renderer error boundary. Remove when upstream PR is merged.
+// degrade external-resources fetches so a CDN outage doesn't trigger the
+// renderer error boundary. Only genuine connectivity failures are
+// swallowed - HTTP 4xx/5xx are re-thrown. Remove when upstream PR merged.
 externalResourcesInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    const isNetworkOrTimeout =
+      axios.isAxiosError(error) &&
+      (error.code === "ERR_NETWORK" ||
+        error.code === "ECONNABORTED" ||
+        error.response == null);
+
+    if (!isNetworkOrTimeout) return Promise.reject(error);
+
     console.warn(
       "[external-resources] request failed silently:",
       error?.message ?? error
     );
-    return Promise.resolve({ data: [] });
+    return Promise.resolve({
+      data: [],
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: error.config ?? ({} as any),
+      request: error.request,
+    });
   }
 );
 
