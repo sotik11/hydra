@@ -1,6 +1,8 @@
 import axios from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { levelDBService } from "@renderer/services/leveldb.service";
+import { logger } from "@renderer/logger";
 import type { DownloadSource } from "@types";
 import { useAppDispatch } from "./redux";
 import { setGenres, setTags } from "@renderer/features";
@@ -24,7 +26,7 @@ externalResourcesInstance.interceptors.response.use(
 
     if (!isNetworkOrTimeout) return Promise.reject(error);
 
-    console.warn(
+    logger.warn(
       "[external-resources] request failed silently:",
       error?.message ?? error
     );
@@ -33,7 +35,7 @@ externalResourcesInstance.interceptors.response.use(
       status: 200,
       statusText: "OK",
       headers: {},
-      config: error.config ?? ({} as any),
+      config: error.config ?? ({} as InternalAxiosRequestConfig),
       request: error.request,
     });
   }
