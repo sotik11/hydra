@@ -39,8 +39,6 @@ export interface LocalizationQuery {
   title: string;
 }
 
-// GamesVoice (gamesvoice.ru) exposes its whole catalogue as one JSON endpoint, so we
-// fetch + cache it and match the game locally — by Steam app id, then by normalized title
 export class GamesVoiceAdapter {
   static readonly studioName = "GamesVoice";
 
@@ -144,7 +142,6 @@ export class GamesVoiceAdapter {
     return null;
   }
 
-  // active games that resolve to a Steam app, so the Settings card can link each one
   public static async listGames(): Promise<LocalizationSourceGame[]> {
     let products: GamesVoiceProduct[];
 
@@ -191,19 +188,16 @@ export class GamesVoiceAdapter {
       title: product.title_eng || product.title_rus,
       pageUrl: `${this.productPageBaseUrl}${product.alias}`,
       changelogHtml: product.updates?.trim() || null,
-      // GamesVoice doesn't expose a separate credits list.
       authorsHtml: null,
       hasText: product.is_text === 1,
       hasVoice: product.is_sound === 1,
       hasTextures: product.is_texture === 1,
       hasSongs: product.is_song === 1,
-      // GamesVoice is human studio work — no neural flags.
       hasNeuralVoice: false,
       hasNeuralDub: false,
       hasNeuralText: false,
       version,
       updatedAt,
-      // GamesVoice doesn't expose a download size.
       size: null,
       mirrors: this.collectMirrors(product),
       stores: this.collectStores(product),
@@ -255,7 +249,6 @@ export class GamesVoiceAdapter {
     return mirrors;
   }
 
-  // `updates` is an HTML changelog, newest first, like "1.1 от 21.11.2025" — pull version + date
   private static parseLatestUpdate(updatesHtml: string | null): {
     version: string | null;
     updatedAt: string | null;

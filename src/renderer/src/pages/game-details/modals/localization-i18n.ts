@@ -34,8 +34,6 @@ import uk from "../../../../../locales/uk/localization.json";
 import uz from "../../../../../locales/uz/localization.json";
 import zh from "../../../../../locales/zh/localization.json";
 
-// registers our own `localization` i18n namespace at runtime so the feature follows
-// Hydra's language — upstream's i18n config stays untouched, our strings live separately
 const bundles: Record<string, Record<string, string>> = {
   ar,
   be,
@@ -78,8 +76,6 @@ function registerBundles() {
   }
 }
 
-// this can load before i18next is initialized — registering then crashes the renderer,
-// so register now if ready, otherwise wait for the init event
 if (i18n.isInitialized) {
   registerBundles();
 } else {

@@ -51,9 +51,6 @@ export interface LocalizationMirror {
   label: string;
   url: string;
   kind: LocalizationMirrorKind;
-  // when set, the mirror is multi-part — each entry is a separate download link
-  // (the archive was split into pieces on that hoster); the modal renders one row
-  // with the label + numbered buttons per part. `url` is unused in that case.
   parts?: string[];
 }
 
@@ -84,16 +81,12 @@ export interface GameLocalization {
   mirrors: LocalizationMirror[];
   stores: LocalizationStore[];
   howToInstallHtml: string | null;
-  // probed: does the direct mirror actually resolve to a file
   directAvailable: boolean;
   inDevelopment: boolean;
   requiredGameVersion?: string | null;
-  // shown next to the download list when the archive is password-protected
   archivePassword?: string | null;
 }
 
-// a game's entry in a hosted JSON source — like GameLocalization but only studio+title
-// are required (the rest gets safe defaults); matched by steamAppId, then by normalized title
 export interface LocalizationFileEntry {
   steamAppId?: string;
   title: string;
@@ -126,7 +119,6 @@ export type LocalizationSourceCategory =
   | "neural-studio"
   | "aggregator";
 
-// the raw shape of a hosted localization JSON source
 export interface LocalizationFile {
   name: string;
   language?: string;
@@ -141,11 +133,8 @@ export interface LocalizationSourceGame {
   title: string;
 }
 
-// builtin = wired in code (live API, e.g. GamesVoice); json = a hosted file added by URL
 export type LocalizationProviderType = "builtin" | "json";
 
-// a configured source stored locally and listed in Settings; either kind can be toggled
-// off. the json-only fields below hold the fetched file and its cached entries.
 export interface LocalizationSource {
   id: string;
   name: string;

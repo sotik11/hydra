@@ -23,8 +23,6 @@ export interface LocalizationDownloadRequest {
   deleteArchive: boolean;
 }
 
-// kept separate from Hydra's game-download manager on purpose, so localizations
-// never show up as library entries. one at a time — a new start cancels the old.
 export class LocalizationDownloadManager {
   private static downloader: JsHttpDownloader | null = null;
   private static request: LocalizationDownloadRequest | null = null;
@@ -83,7 +81,6 @@ export class LocalizationDownloadManager {
       return;
     }
 
-    // A newer download replaced this one (or it was cancelled) while running.
     if (this.request !== request) return;
 
     const status = this.downloader?.getDownloadStatus();
@@ -131,7 +128,6 @@ export class LocalizationDownloadManager {
     this.finish("complete", archivePath);
   }
 
-  // same-origin Referer unlocks hotlink-protected mirrors (GrajPoPolsku /dwn/ 403s without it)
   private static buildRequestHeaders(url: string): Record<string, string> {
     try {
       return { Referer: `${new URL(url).origin}/` };

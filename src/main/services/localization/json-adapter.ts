@@ -60,7 +60,7 @@ function toGameLocalization(
     mirrors: entry.mirrors ?? [],
     stores: entry.stores ?? [],
     howToInstallHtml: entry.howToInstallHtml ?? null,
-    directAvailable: false, // set later by the live link probe
+    directAvailable: false,
     inDevelopment: entry.inDevelopment ?? false,
     requiredGameVersion: entry.requiredGameVersion ?? null,
     archivePassword: entry.archivePassword ?? null,

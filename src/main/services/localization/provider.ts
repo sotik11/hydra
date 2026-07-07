@@ -28,7 +28,6 @@ export interface BuiltinLocalizationProvider extends LocalizationProvider {
   category: LocalizationSourceCategory;
 }
 
-// studios with a live API live here; static ones are added as json sources at runtime
 export const builtinProviders: BuiltinLocalizationProvider[] = [
   {
     id: GAMESVOICE_PROVIDER_ID,

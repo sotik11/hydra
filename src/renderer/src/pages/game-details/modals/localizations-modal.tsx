@@ -39,15 +39,12 @@ export interface LocalizationsModalProps {
 
 type LocalizationAvailability = "online" | "partial" | "offline";
 
-// fallback "works with" stores when a localization doesn't declare its own
 const DEFAULT_STORES = [
   { name: "Steam", iconUrl: steamStoreIcon },
   { name: "Epic Games Store", iconUrl: epicStoreIcon },
   { name: "GOG", iconUrl: gogStoreIcon },
 ];
 
-// "in development" badge in the localization's own language, not the UI locale
-// (a Czech translation says it in Czech); unmapped languages fall back to the UI string
 const IN_DEV_BY_LANG: Record<string, string> = {
   Русский: "В РАЗРАБОТКЕ!",
   English: "IN DEVELOPMENT!",
@@ -72,7 +69,6 @@ export function LocalizationsModal({
     showSuccessToast(t("localization:localization_archive_password_copied"));
   };
 
-  // "In development" in the localization's own language (content language).
   const inDevLabel = (language: string) =>
     IN_DEV_BY_LANG[language] ?? t("localization:localization_in_development");
 
@@ -158,8 +154,6 @@ export function LocalizationsModal({
   const selectedLocalization =
     selectedIndex !== null ? (localizations[selectedIndex] ?? null) : null;
 
-  // don't let an outside click close the modal mid-download — you'd lose sight of the
-  // progress (it keeps running). close via X / Cancel instead.
   const isSelectedDownloading =
     selectedLocalization !== null &&
     download?.studio === selectedLocalization.studio &&
@@ -198,7 +192,6 @@ export function LocalizationsModal({
     return includedContents.map((label) => <Badge key={label}>{label}</Badge>);
   };
 
-  // prepend "v" only if the version doesn't already have one (avoid "vv0.85")
   const formatVersion = (v: string) =>
     /^v/i.test(v.trim()) ? v.trim() : `v${v.trim()}`;
 
@@ -332,12 +325,8 @@ export function LocalizationsModal({
       (mirror) => mirror.kind !== "direct"
     );
     const hasWorkingDownload = localization.directAvailable || hasCloudMirror;
-    // no working direct link = no in-app download (mirrors are browser-only),
-    // so the extract/delete checkboxes get cleared and locked
     const canDirectDownload = localization.directAvailable && !isBusy;
 
-    // keep a short required version (1.50.0+) or "Any" inline in the header; move long
-    // per-store build lists to their own row so they don't stretch the window
     const requiredVersion = localization.requiredGameVersion ?? "";
     const requiredVersionHasDigit = /\d/.test(requiredVersion);
     const requiredVersionInline =
@@ -517,7 +506,6 @@ export function LocalizationsModal({
               (mirror) =>
                 mirror.kind !== "direct" && mirror.url !== localization.pageUrl
             )
-            // put single-link cloud mirrors first, multi-part groups last
             .slice()
             .sort((a, b) => (a.parts ? 1 : 0) - (b.parts ? 1 : 0))
             .map((mirror) =>

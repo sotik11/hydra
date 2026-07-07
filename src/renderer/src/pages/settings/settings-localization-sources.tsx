@@ -31,8 +31,6 @@ interface LocalizationGameCardProps {
   onSelect: (game: LocalizationSourceGame) => void;
 }
 
-// one poster in the games grid — cover fetched lazily on first scroll into view,
-// so a big source (GamesVoice) doesn't pull hundreds of covers up front
 function LocalizationGameCard({ game, onSelect }: LocalizationGameCardProps) {
   const [cover, setCover] = useState<string | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -65,9 +63,7 @@ function LocalizationGameCard({ game, onSelect }: LocalizationGameCardProps) {
       .then((assets) => {
         if (!cancelled) setCover(assets?.libraryImageUrl ?? null);
       })
-      .catch(() => {
-        // A missing cover just falls back to the placeholder.
-      });
+      .catch(() => {});
 
     return () => {
       cancelled = true;
@@ -118,12 +114,9 @@ export function SettingsLocalizationSources() {
 
   const loadSources = async () => {
     const all = await window.electron.getLocalizationSources();
-    // Builtin providers first, then json sources newest-first.
     const sorted = orderBy(all, ["type", "addedAt"], ["asc", "desc"]);
     setSources(sorted);
 
-    // Builtin providers expose their games over IPC (live catalogue); json
-    // sources are derived from cached entries in `gamesForSource`.
     const builtinPairs = await Promise.all(
       sorted
         .filter((source) => source.type === "builtin")
@@ -144,16 +137,11 @@ export function SettingsLocalizationSources() {
     );
   }, []);
 
-  // games a source covers (the "N games" link); json sources derive it from their
-  // cached entries, so no round-trip to the main process
   const gamesForSource = (
     source: LocalizationSource
   ): LocalizationSourceGame[] => {
     if (source.type !== "json") return builtinGames[source.id] ?? [];
 
-    // One card per GAME, not per translation — a game with several localizations
-    // (e.g. cs + sk) shares one steamAppId; listing each would duplicate the React
-    // key and break the grid (phantom cards, dead search on the 2nd query).
     const byId = new Map<string, LocalizationSourceGame>();
     for (const entry of source.entries ?? []) {
       if (!entry.steamAppId || byId.has(entry.steamAppId)) continue;
@@ -194,7 +182,6 @@ export function SettingsLocalizationSources() {
   const handleRemoveAll = async () => {
     setIsRemovingAll(true);
     try {
-      // Only json sources are removable; the builtin providers re-seed.
       const jsonSources = sources.filter((source) => source.type === "json");
       for (const source of jsonSources) {
         await window.electron.removeLocalizationSource(source.id);
@@ -224,8 +211,6 @@ export function SettingsLocalizationSources() {
     .filter((game) => game.title.toLowerCase().includes(gamesSearchQuery))
     .sort((a, b) => a.title.localeCompare(b.title));
 
-  // site to open when the source name is clicked — builtin's own url, or for json
-  // sources the origin of the first entry's page (the portal domain)
   const sourceSiteUrl = (source: LocalizationSource): string | null => {
     if (source.siteUrl) return source.siteUrl;
     if (source.type === "builtin") return source.url ?? null;
@@ -235,13 +220,12 @@ export function SettingsLocalizationSources() {
       try {
         return new URL(url).origin;
       } catch {
-        /* malformed */
+        // fall through to `return null`
       }
     }
     return null;
   };
 
-  // unique languages across a source's entries (a portal may be multilingual)
   const sourceLanguages = (source: LocalizationSource): string[] => {
     const langs = [
       ...new Set(

@@ -30,11 +30,7 @@ interface DefaultSourceSeedMeta {
   localeApplied: boolean;
 }
 
-// aggregates lookups across enabled providers — builtin studios + user json sources;
-// everything lives in the localization-sources sublevel, builtins seeded on first access
 export class LocalizationService {
-  // seeds builtins on first access and reconciles their metadata each call, so older
-  // records pick up new fields — the user's enabled choice is always kept
   public static async getSources(): Promise<LocalizationSource[]> {
     const stored = await localizationSourcesSublevel.values().all();
     const byId = new Map(stored.map((source) => [source.id, source]));
@@ -107,8 +103,6 @@ export class LocalizationService {
     return [...builtinProviders, ...jsonProviders];
   }
 
-  // games a source covers, for the Settings link — json from cached entries,
-  // builtin from its live catalogue (only ones resolvable to a store page)
   public static async getSourceGames(
     id: string
   ): Promise<LocalizationSourceGame[]> {
@@ -164,10 +158,6 @@ export class LocalizationService {
     return source;
   }
 
-  // dist build only: on first run, seed the feed's default json sources (all disabled),
-  // then enable the ones whose locale matches the user's Hydra language. A "seeded" set is
-  // tracked so a removed default never comes back, manual re-adds still work, and later
-  // manifest additions get added (disabled) on subsequent runs.
   public static async seedDefaultSources(): Promise<void> {
     if (!DEFAULT_SOURCES_MANIFEST_URL) return;
 
@@ -175,7 +165,6 @@ export class LocalizationService {
     const firstRun = !meta.localeApplied;
     const userLocale = await this.resolveUserLocale();
 
-    // make sure the builtin records exist before we maybe toggle GamesVoice
     await this.getSources();
 
     let manifest: { file: string; locale: string }[];
@@ -187,7 +176,6 @@ export class LocalizationService {
         ? (response.data as { file: string; locale: string }[])
         : [];
     } catch (error) {
-      // leave firstRun intact so the locale seed retries on the next launch
       logger.error(
         "[Localization] Failed to fetch default sources manifest:",
         error
@@ -205,9 +193,9 @@ export class LocalizationService {
 
     for (const { file, locale } of manifest) {
       const url = `${DEFAULT_SOURCES_FEED_BASE}/${file}`;
-      if (seeded.has(url)) continue; // already offered — never re-add (respects removal)
+      if (seeded.has(url)) continue;
       if (presentUrls.has(url)) {
-        seeded.add(url); // user already added it by hand — just remember it
+        seeded.add(url);
         continue;
       }
 
@@ -218,7 +206,6 @@ export class LocalizationService {
         );
         seeded.add(url);
       } catch (error) {
-        // leave it unseeded so it retries next launch
         logger.error(
           "[Localization] Failed to seed default source:",
           url,
@@ -227,7 +214,6 @@ export class LocalizationService {
       }
     }
 
-    // GamesVoice is a builtin — enable it on first run for Russian-speaking users
     if (firstRun && this.localeMatches(userLocale, GAMESVOICE_LOCALE)) {
       await this.setSourceEnabled(GAMESVOICE_PROVIDER_ID, true);
     }
@@ -235,8 +221,6 @@ export class LocalizationService {
     await this.setSeedMeta({ seededUrls: [...seeded], localeApplied: true });
   }
 
-  // the user's language at first run: the saved Hydra language if set, otherwise the OS
-  // locale (available immediately, before the renderer has picked/persisted a language)
   private static async resolveUserLocale(): Promise<string> {
     try {
       const saved = await db.get<string, string>(levelKeys.language, {
@@ -244,12 +228,11 @@ export class LocalizationService {
       });
       if (saved) return saved.replaceAll('"', "");
     } catch {
-      // not set yet on a fresh install — fall through to the OS locale
+      // fall through to the OS locale
     }
     return app.getLocale();
   }
 
-  // "ru" matches "ru" or "ru-RU"; a region-specific manifest locale ("pt-BR") needs exact
   private static localeMatches(
     userLocale: string,
     sourceLocale: string
@@ -342,7 +325,6 @@ export class LocalizationService {
 
     const fileName = typeof file.name === "string" ? file.name : url;
 
-    // Source language: explicit file field, else the first entry that has one.
     const language =
       typeof file.language === "string" && file.language
         ? file.language
