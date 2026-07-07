@@ -288,6 +288,23 @@ export class WindowManager {
     this.loadMainWindowURL(initialHash);
     this.mainWindow.removeMenu();
 
+    // Local fork extension (see DESIGN.md UB-2): removeMenu() above also
+    // strips the menu-based Ctrl+Shift+I / F12 accelerators, so DevTools
+    // has no keyboard shortcut in packaged builds. Bind them explicitly on
+    // this window's webContents so we can toggle DevTools without a custom
+    // build. Not part of upstream PR #2453.
+    this.mainWindow.webContents.on("before-input-event", (event, input) => {
+      if (input.type !== "keyDown") return;
+      const isCmdOrCtrlShiftI =
+        (input.control || input.meta) &&
+        input.shift &&
+        input.key.toLowerCase() === "i";
+      if (isCmdOrCtrlShiftI || input.key === "F12") {
+        WindowManager.mainWindow?.webContents.toggleDevTools();
+        event.preventDefault();
+      }
+    });
+
     this.mainWindow.on("ready-to-show", () => {
       // Local patch (see DESIGN.md UB-2, PR hydralauncher/hydra#2453): also
       // open DevTools when HYDRA_DEVTOOLS=1 so we can diagnose renderer
