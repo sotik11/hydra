@@ -4,7 +4,9 @@ import type {
   DownloadSource,
 } from "@types";
 import { levelDBService } from "@renderer/services/leveldb.service";
+import { logger } from "@renderer/logger";
 import axios from "axios";
+import type { InternalAxiosRequestConfig } from "axios";
 import {
   useCallback,
   useDeferredValue,
@@ -190,6 +192,46 @@ interface LaunchboxFiltersResponse {
 const externalResourcesInstance = axios.create({
   baseURL: import.meta.env.RENDERER_VITE_EXTERNAL_RESOURCES_URL,
 });
+
+// Local patch (see DESIGN.md UB-1, PR hydralauncher/hydra#2513): silently
+// degrade big-picture external-resources fetches so a CDN outage doesn't
+// trigger the renderer error boundary. Only genuine connectivity failures
+// are swallowed; endpoint-specific fallback shape keeps consumers that
+// read `.data.en` happy. Remove when upstream PR is merged.
+externalResourcesInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const isNetworkOrTimeout =
+      axios.isAxiosError(error) &&
+      (error.code === "ERR_NETWORK" ||
+        error.code === "ECONNABORTED" ||
+        error.response == null);
+
+    if (!isNetworkOrTimeout) return Promise.reject(error);
+
+    logger.warn(
+      "[external-resources] request failed silently:",
+      error?.message ?? error
+    );
+
+    const url = error.config?.url ?? "";
+    let data: unknown = [];
+    if (url.includes("/steam-genres")) {
+      data = { en: [] as string[] };
+    } else if (url.includes("/steam-user-tags")) {
+      data = { en: {} as Record<string, number> };
+    }
+
+    return Promise.resolve({
+      data,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: error.config ?? ({} as InternalAxiosRequestConfig),
+      request: error.request,
+    });
+  }
+);
 
 function parseJsonParam(value: string | null): unknown {
   if (!value) return undefined;
