@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { InternalAxiosRequestConfig } from "axios";
+import type { AxiosError } from "axios";
 import { useCallback, useEffect, useState } from "react";
 import { levelDBService } from "@renderer/services/leveldb.service";
 import { logger } from "@renderer/logger";
@@ -11,48 +11,32 @@ export const externalResourcesInstance = axios.create({
   baseURL: import.meta.env.RENDERER_VITE_EXTERNAL_RESOURCES_URL,
 });
 
-// Local patch (see DESIGN.md UB-1, PR hydralauncher/hydra#2452): silently
-// degrade external-resources fetches so a CDN outage doesn't trigger the
-// renderer error boundary. Only genuine connectivity failures are
-// swallowed - HTTP 4xx/5xx are re-thrown. Remove when upstream PR merged.
-externalResourcesInstance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    const isNetworkOrTimeout =
-      axios.isAxiosError(error) &&
-      (error.code === "ERR_NETWORK" ||
-        error.code === "ECONNABORTED" ||
-        error.response == null);
+// Local patch (see DESIGN.md UB-1, PR hydralauncher/hydra#2452): handle
+// external-resources failures at the callsites so a CDN outage neither
+// replaces already-loaded metadata nor leaves the failure untraced.
+// Remove when upstream PR merged.
+const DEGRADABLE_STATUS_CODES = [502, 503, 504];
 
-    if (!isNetworkOrTimeout) return Promise.reject(error);
+const isDegradableError = (error: unknown): error is AxiosError => {
+  if (!axios.isAxiosError(error)) return false;
 
-    const url = error?.config?.url ?? "";
-    let data: unknown;
-    if (url.includes("/steam-genres") || url.includes("/steam-user-tags")) {
-      data = {};
-    } else if (
-      url.includes("/steam-developers") ||
-      url.includes("/steam-publishers")
-    ) {
-      data = [];
-    } else {
-      return Promise.reject(error);
-    }
-
-    logger.warn(
-      "[external-resources] request failed silently:",
-      error?.message ?? error
-    );
-    return Promise.resolve({
-      data,
-      status: 200,
-      statusText: "OK",
-      headers: {},
-      config: error.config ?? ({} as InternalAxiosRequestConfig),
-      request: error.request,
-    });
+  if (error.response) {
+    return DEGRADABLE_STATUS_CODES.includes(error.response.status);
   }
-);
+
+  return error.code === "ERR_NETWORK" || error.code === "ECONNABORTED";
+};
+
+const keepPreviousDataOnFailure = (resource: string) => (error: unknown) => {
+  if (axios.isCancel(error)) return;
+
+  if (!isDegradableError(error)) throw error;
+
+  logger.warn(
+    `[external-resources] ${resource} is unavailable, keeping the previously loaded data:`,
+    error.message
+  );
+};
 
 export function useCatalogue() {
   const dispatch = useAppDispatch();
@@ -62,27 +46,39 @@ export function useCatalogue() {
   const [downloadSources, setDownloadSources] = useState<DownloadSource[]>([]);
 
   const getSteamUserTags = useCallback(() => {
-    externalResourcesInstance.get("/steam-user-tags.json").then((response) => {
-      dispatch(setTags(response.data));
-    });
+    externalResourcesInstance
+      .get("/steam-user-tags.json")
+      .then((response) => {
+        dispatch(setTags(response.data));
+      })
+      .catch(keepPreviousDataOnFailure("steam-user-tags"));
   }, [dispatch]);
 
   const getSteamGenres = useCallback(() => {
-    externalResourcesInstance.get("/steam-genres.json").then((response) => {
-      dispatch(setGenres(response.data));
-    });
+    externalResourcesInstance
+      .get("/steam-genres.json")
+      .then((response) => {
+        dispatch(setGenres(response.data));
+      })
+      .catch(keepPreviousDataOnFailure("steam-genres"));
   }, [dispatch]);
 
   const getSteamPublishers = useCallback(() => {
-    externalResourcesInstance.get("/steam-publishers.json").then((response) => {
-      setSteamPublishers(response.data);
-    });
+    externalResourcesInstance
+      .get("/steam-publishers.json")
+      .then((response) => {
+        setSteamPublishers(response.data);
+      })
+      .catch(keepPreviousDataOnFailure("steam-publishers"));
   }, []);
 
   const getSteamDevelopers = useCallback(() => {
-    externalResourcesInstance.get("/steam-developers.json").then((response) => {
-      setSteamDevelopers(response.data);
-    });
+    externalResourcesInstance
+      .get("/steam-developers.json")
+      .then((response) => {
+        setSteamDevelopers(response.data);
+      })
+      .catch(keepPreviousDataOnFailure("steam-developers"));
   }, []);
 
   const getDownloadSources = useCallback(() => {
