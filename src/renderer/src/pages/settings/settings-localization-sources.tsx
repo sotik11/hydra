@@ -63,7 +63,12 @@ function LocalizationGameCard({ game, onSelect }: LocalizationGameCardProps) {
       .then((assets) => {
         if (!cancelled) setCover(assets?.libraryImageUrl ?? null);
       })
-      .catch(() => {});
+      .catch((error) =>
+        logger.warn(
+          `[localization] failed to load cover for ${game.shop}:${game.objectId}:`,
+          error
+        )
+      );
 
     return () => {
       cancelled = true;

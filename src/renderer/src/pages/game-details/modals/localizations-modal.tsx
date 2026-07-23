@@ -21,6 +21,7 @@ import {
 } from "@renderer/components";
 import { gameDetailsContext } from "@renderer/context";
 import { useToast } from "@renderer/hooks";
+import { logger } from "@renderer/logger";
 import { formatBytes, formatBytesToMbps, sanitizeHtml } from "@shared";
 import type { GameLocalization, LocalizationDownloadProgress } from "@types";
 
@@ -110,7 +111,11 @@ export function LocalizationsModal({
       .then((results) => {
         if (!cancelled) setLocalizations(results);
       })
-      .catch(() => {
+      .catch((error) => {
+        logger.warn(
+          `[localization] search failed for ${shop}:${objectId} (${gameTitle}):`,
+          error
+        );
         if (!cancelled) setLocalizations([]);
       })
       .finally(() => {

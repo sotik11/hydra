@@ -25,7 +25,11 @@ export async function isDirectLinkAvailable(url: string): Promise<boolean> {
       statusOk && !contentType.includes("xml") && !contentType.includes("html")
     );
   } catch (error) {
-    logger.error("[Localization] Direct link probe inconclusive:", error);
+    logger.warn(
+      "[Localization] Direct link probe inconclusive, assuming available:",
+      url,
+      error
+    );
     return true;
   }
 }

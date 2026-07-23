@@ -86,11 +86,20 @@ export class LocalizationService {
       enabledIds.has(provider.id)
     );
 
-    const resultsPerProvider = await Promise.all(
+    const resultsPerProvider = await Promise.allSettled(
       providers.map((provider) => provider.search(query))
     );
 
-    return resultsPerProvider.flat();
+    return resultsPerProvider.flatMap((result, index) => {
+      if (result.status === "fulfilled") return result.value;
+
+      logger.warn(
+        "[Localization] Source failed, skipping its results:",
+        providers[index].name,
+        result.reason
+      );
+      return [];
+    });
   }
 
   private static resolveProviders(
