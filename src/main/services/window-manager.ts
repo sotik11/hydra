@@ -3,7 +3,7 @@ import { isStaging } from "@main/constants";
 import { db, gamesSublevel, levelKeys } from "@main/level";
 import icon from "@resources/icon.png?asset";
 import trayIcon from "@resources/tray-icon.png?asset";
-import { AuthPage, generateAchievementCustomNotificationTest } from "@shared";
+import { AuthPage } from "@shared";
 import type {
   AchievementCustomNotificationPosition,
   AchievementNotificationInfo,
@@ -23,27 +23,65 @@ import {
   shell,
 } from "electron";
 import { t } from "i18next";
-import { orderBy, slice } from "lodash-es";
+import { orderBy } from "lodash-es";
 import path from "node:path";
 import UserAgent from "user-agents";
 import { HydraApi } from "./hydra-api";
 import { logger } from "./logger";
+import {
+  addSteamGridDbCacheControl,
+  isSteamGridDbArtworkRequest,
+} from "./steam-grid-db-cache";
 
 const isLinuxWayland =
   process.platform === "linux" &&
   (process.env.XDG_SESSION_TYPE === "wayland" ||
     Boolean(process.env.WAYLAND_DISPLAY));
 
+interface CreateMainWindowOptions {
+  forceBigPicture?: boolean;
+}
+
+const HYDRA_DEVTOOLS_ENABLED_VALUE = "1";
+
+const shouldOpenDevTools = () =>
+  !app.isPackaged ||
+  isStaging ||
+  process.env.HYDRA_DEVTOOLS === HYDRA_DEVTOOLS_ENABLED_VALUE;
+
 export class WindowManager {
-  public static mainWindow: Electron.BrowserWindow | null = null;
-  public static notificationWindow: Electron.BrowserWindow | null = null;
-  public static gameLauncherWindow: Electron.BrowserWindow | null = null;
+  private static mainWindowInstance: Electron.BrowserWindow | null = null;
+  private static gameLauncherWindowInstance: Electron.BrowserWindow | null =
+    null;
   private static bigPicture: Electron.BrowserWindow | null = null;
   private static friendsWindow: Electron.BrowserWindow | null = null;
   private static authWindow: Electron.BrowserWindow | null = null;
   private static deferredMainMaximize = false;
 
+  private static isArtworkRendererRequest(
+    webContentsId: number | undefined
+  ): boolean {
+    return [this.mainWindow, this.bigPicture].some(
+      (window) =>
+        window != null &&
+        !window.isDestroyed() &&
+        window.webContents.id === webContentsId
+    );
+  }
+
   private static readonly editorWindows: Map<string, BrowserWindow> = new Map();
+
+  public static get mainWindow(): Electron.BrowserWindow | null {
+    return this.mainWindowInstance;
+  }
+
+  public static get gameLauncherWindow(): Electron.BrowserWindow | null {
+    return this.gameLauncherWindowInstance;
+  }
+
+  public static clearMainWindow(): void {
+    this.mainWindowInstance = null;
+  }
 
   private static initialConfigInitializationMainWindow: Electron.BrowserWindowConstructorOptions =
     {
@@ -80,7 +118,7 @@ export class WindowManager {
     return version.replaceAll(".", "-");
   }
 
-  private static async loadWindowURL(window: BrowserWindow, hash: string = "") {
+  public static async loadWindowURL(window: BrowserWindow, hash: string = "") {
     // HMR for renderer base on electron-vite cli.
     // Load the remote URL for development or the local html file for production.
     if (is.dev && process.env["ELECTRON_RENDERER_URL"]) {
@@ -172,7 +210,7 @@ export class WindowManager {
     };
   }
 
-  public static async createMainWindow() {
+  public static async createMainWindow(options?: CreateMainWindowOptions) {
     if (this.mainWindow) return;
 
     const userPreferences = await db
@@ -186,37 +224,41 @@ export class WindowManager {
 
     this.updateInitialConfig(configWithoutMaximized);
 
-    this.mainWindow = new BrowserWindow(
+    const mainWindow = new BrowserWindow(
       this.initialConfigInitializationMainWindow
     );
+    this.mainWindowInstance = mainWindow;
 
     this.deferredMainMaximize = false;
 
     const emitMaximizeState = () => {
-      if (this.mainWindow && !this.mainWindow.isDestroyed()) {
-        this.mainWindow.webContents.send(
+      if (!mainWindow.isDestroyed()) {
+        mainWindow.webContents.send(
           "on-window-maximize-change",
-          this.mainWindow.isMaximized()
+          mainWindow.isMaximized()
         );
       }
     };
-    this.mainWindow.on("maximize", emitMaximizeState);
-    this.mainWindow.on("unmaximize", emitMaximizeState);
+    mainWindow.on("maximize", emitMaximizeState);
+    mainWindow.on("unmaximize", emitMaximizeState);
 
-    if (userPreferences?.launchInBigPicture) {
-      this.mainWindow.setOpacity(0);
-      this.mainWindow.setSkipTaskbar(true);
+    const shouldLaunchInBigPicture =
+      options?.forceBigPicture || Boolean(userPreferences?.launchInBigPicture);
+
+    if (shouldLaunchInBigPicture) {
+      mainWindow.setOpacity(0);
+      mainWindow.setSkipTaskbar(true);
       if (isMaximized) {
         this.deferredMainMaximize = true;
       }
     } else if (isMaximized) {
-      this.mainWindow.maximize();
+      mainWindow.maximize();
     }
 
-    this.mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
+    mainWindow.webContents.session.webRequest.onBeforeSendHeaders(
       (details, callback) => {
         if (
-          details.webContentsId !== this.mainWindow?.webContents.id ||
+          !this.isArtworkRendererRequest(details.webContentsId) ||
           details.url.includes("chatwoot")
         ) {
           return callback(details);
@@ -243,15 +285,23 @@ export class WindowManager {
       }
     );
 
-    this.mainWindow.webContents.session.webRequest.onHeadersReceived(
+    mainWindow.webContents.session.webRequest.onHeadersReceived(
       (details, callback) => {
+        const isArtworkRendererRequest = this.isArtworkRendererRequest(
+          details.webContentsId
+        );
+        const responseHeaders =
+          isArtworkRendererRequest && isSteamGridDbArtworkRequest(details)
+            ? addSteamGridDbCacheControl(details.responseHeaders)
+            : details.responseHeaders;
+
         if (
-          details.webContentsId !== this.mainWindow?.webContents.id ||
+          !isArtworkRendererRequest ||
           details.url.includes("featurebase") ||
           details.url.includes("chatwoot") ||
           details.url.includes("workwonders")
         ) {
-          return callback(details);
+          return callback({ ...details, responseHeaders });
         }
 
         const headers = {
@@ -262,12 +312,11 @@ export class WindowManager {
             "Content-Type, Authorization, X-Requested-With, If-None-Match",
           ],
         };
-
         if (details.method === "OPTIONS") {
           return callback({
             cancel: false,
             responseHeaders: {
-              ...details.responseHeaders,
+              ...responseHeaders,
               ...headers,
             },
             statusLine: "HTTP/1.1 200 OK",
@@ -276,7 +325,7 @@ export class WindowManager {
 
         return callback({
           responseHeaders: {
-            ...details.responseHeaders,
+            ...responseHeaders,
             ...headers,
           },
         });
@@ -286,14 +335,14 @@ export class WindowManager {
     const initialHash = userPreferences?.launchToLibraryPage ? "library" : "";
 
     this.loadMainWindowURL(initialHash);
-    this.mainWindow.removeMenu();
+    mainWindow.removeMenu();
 
     // Local fork extension (see DESIGN.md UB-2): removeMenu() above also
     // strips the menu-based Ctrl+Shift+I / F12 accelerators, so DevTools
     // has no keyboard shortcut in packaged builds. Bind them explicitly on
     // this window's webContents so we can toggle DevTools without a custom
     // build. Not part of upstream PR #2453.
-    this.mainWindow.webContents.on("before-input-event", (event, input) => {
+    mainWindow.webContents.on("before-input-event", (event, input) => {
       if (input.type !== "keyDown") return;
       const isCmdOrCtrlShiftI =
         (input.control || input.meta) &&
@@ -305,28 +354,18 @@ export class WindowManager {
       }
     });
 
-    this.mainWindow.on("ready-to-show", () => {
-      // Local patch (see DESIGN.md UB-2, PR hydralauncher/hydra#2453): also
-      // open DevTools when HYDRA_DEVTOOLS=1 so we can diagnose renderer
-      // crashes in packaged builds without a custom build. Remove when
-      // upstream PR is merged.
-      const HYDRA_DEVTOOLS_ENABLED_VALUE = "1";
-      if (
-        !app.isPackaged ||
-        isStaging ||
-        process.env.HYDRA_DEVTOOLS === HYDRA_DEVTOOLS_ENABLED_VALUE
-      )
+    mainWindow.on("ready-to-show", () => {
+      if (shouldOpenDevTools())
         WindowManager.mainWindow?.webContents.openDevTools();
-      if (userPreferences?.launchInBigPicture) {
+      if (shouldLaunchInBigPicture) {
         void WindowManager.openBigPictureWindow();
       } else {
         WindowManager.mainWindow?.show();
       }
     });
 
-    this.mainWindow.on("close", async () => {
-      const mainWindow = this.mainWindow;
-      this.mainWindow = null;
+    mainWindow.on("close", async () => {
+      this.mainWindowInstance = null;
 
       const userPreferences = await db.get<string, UserPreferences>(
         levelKeys.userPreferences,
@@ -335,30 +374,28 @@ export class WindowManager {
         }
       );
 
-      if (mainWindow) {
-        mainWindow.setProgressBar(-1);
+      mainWindow.setProgressBar(-1);
 
-        const lastBounds = mainWindow.getBounds();
-        const isMaximized = mainWindow.isMaximized() ?? false;
-        const screenConfig = isMaximized
-          ? {
-              x: undefined,
-              y: undefined,
-              height: this.initialConfigInitializationMainWindow.height ?? 860,
-              width: this.initialConfigInitializationMainWindow.width ?? 1200,
-              isMaximized: true,
-            }
-          : { ...lastBounds, isMaximized };
+      const lastBounds = mainWindow.getBounds();
+      const isMaximized = mainWindow.isMaximized() ?? false;
+      const screenConfig = isMaximized
+        ? {
+            x: undefined,
+            y: undefined,
+            height: this.initialConfigInitializationMainWindow.height ?? 860,
+            width: this.initialConfigInitializationMainWindow.width ?? 1200,
+            isMaximized: true,
+          }
+        : { ...lastBounds, isMaximized };
 
-        await this.saveScreenConfig(screenConfig);
-      }
+      await this.saveScreenConfig(screenConfig);
 
       if (userPreferences?.preferQuitInsteadOfHiding) {
         app.quit();
       }
     });
 
-    this.mainWindow.webContents.setWindowOpenHandler((handler) => {
+    mainWindow.webContents.setWindowOpenHandler((handler) => {
       shell.openExternal(handler.url);
       return { action: "deny" };
     });
@@ -376,13 +413,12 @@ export class WindowManager {
       })
       .catch(() => null);
 
-    const targetDisplay = this.mainWindow?.isDestroyed()
-      ? null
-      : this.mainWindow
-        ? screen.getDisplayMatching(this.mainWindow.getBounds())
+    const mainWindow = this.mainWindow;
+    const targetDisplay =
+      mainWindow && !mainWindow.isDestroyed()
+        ? screen.getDisplayMatching(mainWindow.getBounds())
         : screen.getPrimaryDisplay();
-    const targetBounds =
-      targetDisplay?.bounds ?? screen.getPrimaryDisplay().bounds;
+    const targetBounds = targetDisplay.bounds;
 
     this.bigPicture = new BrowserWindow({
       x: targetBounds.x,
@@ -401,7 +437,7 @@ export class WindowManager {
 
     this.bigPicture.removeMenu();
 
-    if (!app.isPackaged || isStaging) {
+    if (shouldOpenDevTools()) {
       this.bigPicture.webContents.openDevTools();
     }
 
@@ -471,7 +507,7 @@ export class WindowManager {
 
     this.friendsWindow.once("ready-to-show", () => {
       this.friendsWindow?.show();
-      if (!app.isPackaged || isStaging) {
+      if (shouldOpenDevTools()) {
         this.friendsWindow?.webContents.openDevTools();
       }
     });
@@ -691,68 +727,6 @@ export class WindowManager {
     }
   }
 
-  private static readonly NOTIFICATION_WINDOW_WIDTH = 360;
-  private static readonly NOTIFICATION_WINDOW_HEIGHT = 140;
-
-  private static async getNotificationWindowPosition(
-    position: AchievementCustomNotificationPosition | undefined
-  ) {
-    const display = screen.getPrimaryDisplay();
-    const {
-      x: displayX,
-      y: displayY,
-      width: displayWidth,
-      height: displayHeight,
-    } = display.bounds;
-
-    if (position === "bottom-left") {
-      return {
-        x: displayX,
-        y: displayY + displayHeight - this.NOTIFICATION_WINDOW_HEIGHT,
-      };
-    }
-
-    if (position === "bottom-center") {
-      return {
-        x: displayX + (displayWidth - this.NOTIFICATION_WINDOW_WIDTH) / 2,
-        y: displayY + displayHeight - this.NOTIFICATION_WINDOW_HEIGHT,
-      };
-    }
-
-    if (position === "bottom-right") {
-      return {
-        x: displayX + displayWidth - this.NOTIFICATION_WINDOW_WIDTH,
-        y: displayY + displayHeight - this.NOTIFICATION_WINDOW_HEIGHT,
-      };
-    }
-
-    if (position === "top-left") {
-      return {
-        x: displayX,
-        y: displayY,
-      };
-    }
-
-    if (position === "top-center") {
-      return {
-        x: displayX + (displayWidth - this.NOTIFICATION_WINDOW_WIDTH) / 2,
-        y: displayY,
-      };
-    }
-
-    if (position === "top-right") {
-      return {
-        x: displayX + displayWidth - this.NOTIFICATION_WINDOW_WIDTH,
-        y: displayY,
-      };
-    }
-
-    return {
-      x: displayX,
-      y: displayY,
-    };
-  }
-
   public static sendAchievementToFocusedWindow(
     position: AchievementCustomNotificationPosition,
     achievements: AchievementNotificationInfo[]
@@ -771,100 +745,6 @@ export class WindowManager {
     }
 
     return false;
-  }
-
-  public static async createNotificationWindow() {
-    if (this.notificationWindow) return;
-
-    if (process.platform === "darwin" || process.platform === "linux") {
-      return;
-    }
-
-    const userPreferences = await db.get<string, UserPreferences | undefined>(
-      levelKeys.userPreferences,
-      {
-        valueEncoding: "json",
-      }
-    );
-
-    if (
-      userPreferences?.achievementNotificationsEnabled === false ||
-      userPreferences?.achievementCustomNotificationsEnabled === false
-    ) {
-      return;
-    }
-
-    const { x, y } = await this.getNotificationWindowPosition(
-      userPreferences?.achievementCustomNotificationPosition
-    );
-
-    this.notificationWindow = new BrowserWindow({
-      transparent: true,
-      maximizable: false,
-      autoHideMenuBar: true,
-      minimizable: false,
-      backgroundColor: "#00000000",
-      focusable: false,
-      skipTaskbar: true,
-      frame: false,
-      width: this.NOTIFICATION_WINDOW_WIDTH,
-      height: this.NOTIFICATION_WINDOW_HEIGHT,
-      x,
-      y,
-      webPreferences: {
-        preload: path.join(__dirname, "../preload/index.mjs"),
-        sandbox: false,
-      },
-    });
-    this.notificationWindow.setIgnoreMouseEvents(true);
-
-    this.notificationWindow.setAlwaysOnTop(true, "screen-saver", 1);
-    this.loadWindowURL(this.notificationWindow, "achievement-notification");
-
-    if (!app.isPackaged || isStaging) {
-      this.notificationWindow.webContents.openDevTools();
-    }
-  }
-
-  public static async showAchievementTestNotification() {
-    const userPreferences = await db.get<string, UserPreferences>(
-      levelKeys.userPreferences,
-      {
-        valueEncoding: "json",
-      }
-    );
-
-    const language = userPreferences.language ?? "en";
-    const position =
-      userPreferences.achievementCustomNotificationPosition ?? "top-left";
-    const testAchievements = [
-      generateAchievementCustomNotificationTest(t, language),
-      generateAchievementCustomNotificationTest(t, language, {
-        isRare: true,
-        isHidden: true,
-      }),
-      generateAchievementCustomNotificationTest(t, language, {
-        isPlatinum: true,
-      }),
-    ];
-
-    if (process.platform === "linux") {
-      this.sendAchievementToFocusedWindow(position, testAchievements);
-      return;
-    }
-
-    this.notificationWindow?.webContents.send(
-      "on-achievement-unlocked",
-      position,
-      testAchievements
-    );
-  }
-
-  public static async closeNotificationWindow() {
-    if (this.notificationWindow) {
-      this.notificationWindow.close();
-      this.notificationWindow = null;
-    }
   }
 
   public static openEditorWindow(themeId: string) {
@@ -908,7 +788,7 @@ export class WindowManager {
       editorWindow.once("ready-to-show", () => {
         editorWindow.show();
         this.mainWindow?.webContents.openDevTools();
-        if (!app.isPackaged || isStaging) {
+        if (shouldOpenDevTools()) {
           editorWindow.webContents.openDevTools();
         }
       });
@@ -945,7 +825,7 @@ export class WindowManager {
   public static async createGameLauncherWindow(shop: string, objectId: string) {
     if (this.gameLauncherWindow) {
       this.gameLauncherWindow.close();
-      this.gameLauncherWindow = null;
+      this.gameLauncherWindowInstance = null;
     }
 
     const display = screen.getPrimaryDisplay();
@@ -956,7 +836,7 @@ export class WindowManager {
       (displayHeight - this.GAME_LAUNCHER_WINDOW_HEIGHT) / 2
     );
 
-    this.gameLauncherWindow = new BrowserWindow({
+    const gameLauncherWindow = new BrowserWindow({
       width: this.GAME_LAUNCHER_WINDOW_WIDTH,
       height: this.GAME_LAUNCHER_WINDOW_HEIGHT,
       x,
@@ -975,20 +855,21 @@ export class WindowManager {
       },
       show: false,
     });
+    this.gameLauncherWindowInstance = gameLauncherWindow;
 
-    this.gameLauncherWindow.removeMenu();
+    gameLauncherWindow.removeMenu();
 
     this.loadWindowURL(
-      this.gameLauncherWindow,
+      gameLauncherWindow,
       `game-launcher?shop=${shop}&objectId=${objectId}`
     );
 
-    this.gameLauncherWindow.on("closed", () => {
-      this.gameLauncherWindow = null;
+    gameLauncherWindow.on("closed", () => {
+      this.gameLauncherWindowInstance = null;
     });
 
-    if (!app.isPackaged || isStaging) {
-      this.gameLauncherWindow.webContents.openDevTools();
+    if (shouldOpenDevTools()) {
+      gameLauncherWindow.webContents.openDevTools();
     }
   }
 
@@ -1001,7 +882,7 @@ export class WindowManager {
   public static closeGameLauncherWindow() {
     if (this.gameLauncherWindow) {
       this.gameLauncherWindow.close();
-      this.gameLauncherWindow = null;
+      this.gameLauncherWindowInstance = null;
     }
   }
 
@@ -1058,7 +939,7 @@ export class WindowManager {
 
           const sortedGames = orderBy(filteredGames, "lastTimePlayed", "desc");
 
-          return slice(sortedGames, 0, 6);
+          return sortedGames.slice(0, 6);
         });
 
       const recentlyPlayedGames: Array<MenuItemConstructorOptions | MenuItem> =
