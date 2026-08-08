@@ -1,0 +1,9 @@
+import "./search-localizations";
+import "./start-localization-download";
+import "./cancel-localization-download";
+import "./get-localization-sources";
+import "./get-localization-source-games";
+import "./add-localization-source";
+import "./remove-localization-source";
+import "./set-localization-source-enabled";
+import "./sync-localization-sources";
