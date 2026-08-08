@@ -1,6 +1,8 @@
 export const GAMESVOICE_PROVIDER_ID = "builtin:gamesvoice";
 
-export const GAMESVOICE_ENABLED_BY_DEFAULT = false;
+// dist build ships GamesVoice on (this fork's main audience is RU-speaking);
+// a saved on/off choice always wins over this default.
+export const GAMESVOICE_ENABLED_BY_DEFAULT = true;
 export const GAMESVOICE_LOCALE = "ru";
 
 export const DEFAULT_SOURCES_FEED_BASE =

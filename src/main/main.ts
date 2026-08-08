@@ -71,6 +71,11 @@ export const loadState = async () => {
 
   await import("./events");
 
+  // dist build: pre-seed localization sources (locale resolved from OS) on first run
+  void import("./services/localization").then(({ LocalizationService }) =>
+    LocalizationService.seedDefaultSources()
+  );
+
   if (userPreferences?.realDebridApiToken) {
     RealDebridClient.authorize(userPreferences.realDebridApiToken);
   }

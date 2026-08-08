@@ -20,7 +20,7 @@ import {
   GameDetailsContextProvider,
 } from "@renderer/context";
 import { useDownload } from "@renderer/hooks";
-import { GameOptionsModal, RepacksModal } from "./modals";
+import { GameOptionsModal, LocalizationsModal, RepacksModal } from "./modals";
 import { Downloader, getDownloadersForUri } from "@shared";
 import { CloudSyncFilesModal } from "./cloud-sync-files-modal/cloud-sync-files-modal";
 import { CloudSaveV2Provider } from "./cloud-save-v2";
@@ -89,12 +89,14 @@ export default function GameDetails() {
           gameTitle,
           shop,
           showRepacksModal,
+          showLocalizationsModal,
           showGameOptionsModal,
           gameOptionsInitialCategory,
           hasNSFWContentBlocked,
           setHasNSFWContentBlocked,
           updateGame,
           setShowRepacksModal,
+          setShowLocalizationsModal,
           setShowGameOptionsModal,
           setGameOptionsInitialCategory, // ADD THIS
         }) => {
@@ -166,6 +168,11 @@ export default function GameDetails() {
                     visible={showRepacksModal}
                     startDownload={handleStartDownload}
                     onClose={() => setShowRepacksModal(false)}
+                  />
+
+                  <LocalizationsModal
+                    visible={showLocalizationsModal}
+                    onClose={() => setShowLocalizationsModal(false)}
                   />
 
                   <ConfirmationModal

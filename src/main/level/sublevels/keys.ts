@@ -19,6 +19,8 @@ export const levelKeys = {
   screenState: "screenState",
   rpcPassword: "rpcPassword",
   downloadSources: "downloadSources",
+  localizationSources: "localizationSources", // Fan-localization providers (builtin + json)
+  localizationSeedMeta: "localizationSeedMeta", // dist build: seeded default URLs + first-run locale flag
   downloadSourcesCheckBaseline: "downloadSourcesCheckBaseline", // When we last started the app
   downloadSourcesSinceValue: "downloadSourcesSinceValue", // The 'since' value API used (for modal comparison)
   localNotifications: "localNotifications",

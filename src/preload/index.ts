@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import type {
   GameShop,
   DownloadProgress,
+  LocalizationDownloadProgress,
   UserPreferences,
   AppUpdaterEvent,
   StartGameDownloadPayload,
@@ -842,6 +843,48 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("getDownloadSourcesCheckBaseline"),
   getDownloadSourcesSinceValue: () =>
     ipcRenderer.invoke("getDownloadSourcesSinceValue"),
+
+  /* Localization */
+  searchLocalizations: (shop: GameShop, objectId: string, title: string) =>
+    ipcRenderer.invoke("searchLocalizations", shop, objectId, title),
+  startLocalizationDownload: (
+    studio: string,
+    url: string,
+    savePath: string,
+    autoExtract: boolean,
+    deleteArchive: boolean
+  ) =>
+    ipcRenderer.invoke(
+      "startLocalizationDownload",
+      studio,
+      url,
+      savePath,
+      autoExtract,
+      deleteArchive
+    ),
+  cancelLocalizationDownload: () =>
+    ipcRenderer.invoke("cancelLocalizationDownload"),
+  onLocalizationDownloadProgress: (
+    cb: (value: LocalizationDownloadProgress) => void
+  ) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      value: LocalizationDownloadProgress
+    ) => cb(value);
+    ipcRenderer.on("on-localization-download-progress", listener);
+    return () =>
+      ipcRenderer.removeListener("on-localization-download-progress", listener);
+  },
+  getLocalizationSources: () => ipcRenderer.invoke("getLocalizationSources"),
+  getLocalizationSourceGames: (id: string) =>
+    ipcRenderer.invoke("getLocalizationSourceGames", id),
+  addLocalizationSource: (url: string) =>
+    ipcRenderer.invoke("addLocalizationSource", url),
+  removeLocalizationSource: (id: string) =>
+    ipcRenderer.invoke("removeLocalizationSource", id),
+  setLocalizationSourceEnabled: (id: string, enabled: boolean) =>
+    ipcRenderer.invoke("setLocalizationSourceEnabled", id, enabled),
+  syncLocalizationSources: () => ipcRenderer.invoke("syncLocalizationSources"),
 
   /* Library */
   toggleAutomaticCloudSync: (

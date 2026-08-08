@@ -47,6 +47,134 @@ export interface DownloadSource {
   createdAt: string;
 }
 
+export type LocalizationMirrorKind =
+  | "direct"
+  | "yandex"
+  | "google"
+  | "mail"
+  | "other";
+
+export interface LocalizationMirror {
+  label: string;
+  url: string;
+  kind: LocalizationMirrorKind;
+  parts?: string[];
+}
+
+export interface LocalizationStore {
+  name: string;
+  iconUrl: string;
+  url: string;
+}
+
+export interface GameLocalization {
+  studio: string;
+  studioUrl: string;
+  language: string;
+  title: string;
+  pageUrl: string;
+  changelogHtml: string | null;
+  authorsHtml: string | null;
+  hasText: boolean;
+  hasVoice: boolean;
+  hasTextures: boolean;
+  hasSongs: boolean;
+  hasNeuralVoice: boolean;
+  hasNeuralDub: boolean;
+  hasNeuralText: boolean;
+  version: string | null;
+  updatedAt: string | null;
+  size: string | null;
+  mirrors: LocalizationMirror[];
+  stores: LocalizationStore[];
+  howToInstallHtml: string | null;
+  directAvailable: boolean;
+  inDevelopment: boolean;
+  requiredGameVersion?: string | null;
+  archivePassword?: string | null;
+}
+
+export interface LocalizationFileEntry {
+  steamAppId?: string;
+  title: string;
+  studio: string;
+  studioUrl?: string;
+  language?: string;
+  hasText?: boolean;
+  hasVoice?: boolean;
+  hasTextures?: boolean;
+  hasSongs?: boolean;
+  hasNeuralVoice?: boolean;
+  hasNeuralDub?: boolean;
+  hasNeuralText?: boolean;
+  version?: string | null;
+  updatedAt?: string | null;
+  size?: string | null;
+  pageUrl?: string;
+  changelogHtml?: string | null;
+  authorsHtml?: string | null;
+  howToInstallHtml?: string | null;
+  inDevelopment?: boolean;
+  requiredGameVersion?: string | null;
+  archivePassword?: string | null;
+  mirrors?: LocalizationMirror[];
+  stores?: LocalizationStore[];
+}
+
+export type LocalizationSourceCategory =
+  | "studio"
+  | "neural-studio"
+  | "aggregator";
+
+export interface LocalizationFile {
+  name: string;
+  language?: string;
+  category?: LocalizationSourceCategory;
+  siteUrl?: string;
+  localizations: LocalizationFileEntry[];
+}
+
+export interface LocalizationSourceGame {
+  shop: GameShop;
+  objectId: string;
+  title: string;
+}
+
+export type LocalizationProviderType = "builtin" | "json";
+
+export interface LocalizationSource {
+  id: string;
+  name: string;
+  type: LocalizationProviderType;
+  enabled: boolean;
+  addedAt: string;
+  language?: string;
+  category?: LocalizationSourceCategory;
+  siteUrl?: string;
+  url?: string;
+  fingerprint?: string;
+  syncedAt?: string;
+  entries?: LocalizationFileEntry[];
+}
+
+export type LocalizationDownloadStatus =
+  | "active"
+  | "extracting"
+  | "complete"
+  | "error"
+  | "cancelled";
+
+export interface LocalizationDownloadProgress {
+  studio: string;
+  status: LocalizationDownloadStatus;
+  progress: number;
+  downloadSpeed: number;
+  bytesDownloaded: number;
+  fileSize: number;
+  fileName: string;
+  filePath: string | null;
+}
+
 export interface ProtonVersion {
   name: string;
   path: string;

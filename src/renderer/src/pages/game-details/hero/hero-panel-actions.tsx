@@ -1,6 +1,7 @@
 import {
   DownloadIcon,
   GearIcon,
+  GlobeIcon,
   HeartFillIcon,
   HeartIcon,
   PinIcon,
@@ -25,6 +26,7 @@ import { DiscSelectionModal } from "../modals/disc-selection-modal";
 
 import "./hero-panel-actions.scss";
 import { useEffect } from "react";
+import "../modals/localization-i18n";
 
 export function HeroPanelActions() {
   const [toggleLibraryGameDisabled, setToggleLibraryGameDisabled] =
@@ -44,6 +46,7 @@ export function HeroPanelActions() {
     setShowGameOptionsModal,
     setGameOptionsInitialCategory,
     setShowRepacksModal,
+    setShowLocalizationsModal,
     updateGame,
     selectGameExecutable,
     isTransferring,
@@ -316,6 +319,18 @@ export function HeroPanelActions() {
     </Button>
   );
 
+  const localizationButton = (
+    <Button
+      onClick={() => setShowLocalizationsModal(true)}
+      theme="outline"
+      disabled={deleting}
+      className="hero-panel-actions__action"
+    >
+      <GlobeIcon />
+      {t("localization:localization")}
+    </Button>
+  );
+
   const gameActionButton = () => {
     if (isTransferring) {
       const percent = Math.round(transferProgress * 100);
@@ -389,6 +404,7 @@ export function HeroPanelActions() {
   if (game) {
     return (
       <div className="hero-panel-actions__container">
+        {localizationButton}
         {gameActionButton()}
         <div className="hero-panel-actions__separator" />
         <Button

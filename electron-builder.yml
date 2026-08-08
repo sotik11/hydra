@@ -1,5 +1,5 @@
-appId: gg.hydralauncher.hydra
-productName: Hydra
+appId: sotik.hydralauncher.hydra
+productName: Hydra Localized
 directories:
   buildResources: build
 extraResources:
@@ -72,7 +72,7 @@ appImage:
 npmRebuild: false
 publish:
   provider: github
-  owner: hydralauncher
+  owner: sotik11
   repo: hydra
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
