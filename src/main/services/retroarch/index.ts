@@ -7,3 +7,4 @@ export * from "./retroarch-core-installer";
 export * from "./rom-hash";
 export * from "./scan-retroarch-folder";
 export * from "./retroarch-shop-details";
+export * from "./retroarch-local-entries";

@@ -141,6 +141,9 @@ const matchRoms = async (
 
   for (const [platform, roms] of byPlatform) {
     if (signal.cancelled) break;
+    // Platforms the backend does not index (genesis) never reach it — they
+    // fall through to local entries instead, and must not taint `failed`.
+    if (!retroarch.BACKEND_MATCH_PLATFORMS.has(platform)) continue;
     const platformResult = await retroarch.fetchShopDetailsForHashes(
       platform,
       roms.map((rom) => ({
@@ -579,6 +582,46 @@ async function runRetroArchImport(
   if (signal.cancelled) return asCancelled();
 
   await persistMatchedTitles(aggregated, language);
+
+  // Persist roms the backend could not match as local, launchable entries.
+  // This is what makes Sega Genesis playable at all (the backend rejects that
+  // platform) and, as a side effect, revives bootlegs / hacks / fan-translations
+  // of supported platforms that are absent from the LaunchBox catalogue.
+  const localEntries = await retroarch.persistUnmatchedRetroArchRoms(
+    hashed,
+    new Set(lookup.keys()),
+    matchFailed
+  );
+
+  // Fold local entries into the folder rollups so the library counters
+  // (title count / storage) reflect them too.
+  for (const [folderPath, bucket] of localEntries.folderRollup) {
+    const existing = folderRollup.get(folderPath) ?? {
+      fileCount: 0,
+      sizeBytes: 0,
+    };
+    existing.fileCount += bucket.fileCount;
+    existing.sizeBytes += bucket.sizeBytes;
+    folderRollup.set(folderPath, existing);
+  }
+
+  let mergedFileCount = 0;
+  let mergedSizeBytes = 0;
+  for (const bucket of folderRollup.values()) {
+    mergedFileCount += bucket.fileCount;
+    mergedSizeBytes += bucket.sizeBytes;
+  }
+
+  // A rom is only truly unmatched now if it got neither a metadata match nor a
+  // local entry (failed to hash, or a backend platform during an outage).
+  const remainingUnmatchedFiles: RetroArchUnmatchedFile[] = hashed
+    .filter(
+      (rom) =>
+        !(rom.crc32 && lookup.has(rom.crc32)) &&
+        !localEntries.persistedPaths.has(rom.primaryPath)
+    )
+    .map((rom) => ({ name: rom.name, reason: "unmatched" }));
+
   if (matchFailed) {
     logger.warn(
       "Keeping previous RetroArch folder totals after a failed match",
@@ -594,11 +637,11 @@ async function runRetroArchImport(
   await syncProfileBatch(Array.from(aggregated.matchedEntries.keys()));
 
   return {
-    fileCount: totalFileCount,
-    sizeBytes: totalSizeBytes,
-    matched: aggregated.matchedEntries.size,
-    unmatched: aggregated.unmatchedFiles.length,
-    unmatchedFiles: aggregated.unmatchedFiles,
+    fileCount: mergedFileCount,
+    sizeBytes: mergedSizeBytes,
+    matched: aggregated.matchedEntries.size + localEntries.created,
+    unmatched: remainingUnmatchedFiles.length,
+    unmatchedFiles: remainingUnmatchedFiles,
     cancelled: false,
   };
 }
