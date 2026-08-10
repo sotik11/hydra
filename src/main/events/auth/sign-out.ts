@@ -5,6 +5,7 @@ import {
   SSEClient,
   WindowManager,
   emulators,
+  retroarch,
 } from "@main/services";
 import { clearGamesPlaytimeState } from "@main/services/game-running-state";
 import {
@@ -14,6 +15,20 @@ import {
   gamesSublevel,
   levelKeys,
 } from "@main/level";
+
+/**
+ * Clears account-owned games on sign-out but keeps local RetroArch rom entries
+ * (`local-` ids): those describe files on this machine, not the account, and
+ * are never synced to the profile — so a plain clear would delete them for good
+ * (unlike catalogue-matched games, which come back on the next login sync).
+ */
+const clearAccountGames = async () => {
+  const entries = await gamesSublevel.iterator().all();
+  const deletions = entries
+    .filter(([, game]) => !retroarch.isLocalRetroArchEntryId(game.objectId))
+    .map(([key]) => ({ type: "del" as const, key }));
+  if (deletions.length > 0) await gamesSublevel.batch(deletions);
+};
 
 const signOut = async (_event: Electron.IpcMainInvokeEvent) => {
   SSEClient.close();
@@ -34,7 +49,7 @@ const signOut = async (_event: Electron.IpcMainInvokeEvent) => {
       clearGamesPlaytimeState();
 
       return Promise.all([
-        gamesSublevel.clear(),
+        clearAccountGames(),
         downloadsSublevel.clear(),
         downloadLayoutStateSublevel.clear(),
         emulators.resetEmulatorScanData(),
