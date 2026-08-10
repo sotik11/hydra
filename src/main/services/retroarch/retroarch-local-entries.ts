@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs";
 
 import {
+  db,
   gamesShopAssetsSublevel,
   gamesShopCacheSublevel,
   gamesSublevel,
@@ -12,6 +13,7 @@ import type {
   RetroArchPlatform,
   ShopAssets,
   ShopDetails,
+  UserPreferences,
 } from "@types";
 
 import { logger } from "../logger";
@@ -25,6 +27,11 @@ import {
   lookupMetadata,
   type RomMetadata,
 } from "./retroarch-metadata";
+import {
+  isRetroAchievementsPlatform,
+  resolveRaGameId,
+  type RaCredentials,
+} from "./retroarch-retroachievements";
 
 // Platforms whose CRC32 the Hydra backend (shop-details) actually indexes.
 // Anything outside this set (currently: genesis) is never sent to the backend
@@ -172,7 +179,8 @@ const buildLocalShopDetails = (
   title: string,
   platformName: string,
   language: string,
-  meta?: RomMetadata | null
+  meta?: RomMetadata | null,
+  retroAchievementsGameId = 0
 ): ShopDetails => {
   const description =
     meta && meta.overview
@@ -184,7 +192,7 @@ const buildLocalShopDetails = (
     name: title,
     platform: platformName,
     skus: undefined,
-    retroAchievementsGameId: 0,
+    retroAchievementsGameId,
     steam_appid: 0,
     detailed_description: description,
     about_the_game: description,
@@ -215,12 +223,24 @@ interface MetaTask {
   platform: RetroArchPlatform;
   platformName: string;
   title: string;
+  primaryPath: string;
 }
 
 // Background pass: build the LaunchBox metadata index (once) and rewrite each
 // local entry's shop-details cache with the real overview / developer /
 // publisher / release date / genres. Fire-and-forget after a scan; the details
 // page picks it up next time it is opened. Failures keep the stub description.
+const readRaCredentials = async (): Promise<RaCredentials | null> => {
+  const prefs = await db
+    .get<string, UserPreferences | null>(levelKeys.userPreferences, {
+      valueEncoding: "json",
+    })
+    .catch(() => null);
+  const username = prefs?.retroAchievementsUsername;
+  const webApiKey = prefs?.retroAchievementsWebApiKey;
+  return username && webApiKey ? { username, webApiKey } : null;
+};
+
 const enrichLocalEntriesMetadata = async (
   tasks: MetaTask[],
   language: string
@@ -228,13 +248,27 @@ const enrichLocalEntriesMetadata = async (
   try {
     const platforms = Array.from(new Set(tasks.map((task) => task.platform)));
     await ensureMetadataIndexes(platforms);
+    // Reuse the RA connection already saved in settings (no new credentials).
+    const credentials = await readRaCredentials();
 
     let enriched = 0;
+    let raResolved = 0;
     for (const task of tasks) {
       const meta = await lookupMetadata(task.platform, task.title).catch(
         () => null
       );
-      if (!meta || !meta.overview) continue;
+      const raGameId =
+        credentials && isRetroAchievementsPlatform(task.platform)
+          ? await resolveRaGameId(
+              task.platform,
+              task.primaryPath,
+              credentials
+            ).catch(() => null)
+          : null;
+
+      if (!meta?.overview && !raGameId) continue;
+      if (raGameId) raResolved += 1;
+
       await gamesShopCacheSublevel
         .put(
           levelKeys.gameShopCacheItem("launchbox", task.objectId, language),
@@ -243,7 +277,8 @@ const enrichLocalEntriesMetadata = async (
             task.title,
             task.platformName,
             language,
-            meta
+            meta,
+            raGameId ?? 0
           )
         )
         .catch((err) =>
@@ -257,6 +292,7 @@ const enrichLocalEntriesMetadata = async (
     logger.info("RetroArch metadata enrichment done", {
       total: tasks.length,
       enriched,
+      raResolved,
     });
   } catch (error) {
     logger.warn("RetroArch metadata enrichment failed", error);
@@ -404,7 +440,13 @@ export const persistUnmatchedRetroArchRoms = async (
         assets,
       });
     }
-    metaTasks.push({ objectId, platform: rom.platform, platformName, title });
+    metaTasks.push({
+      objectId,
+      platform: rom.platform,
+      platformName,
+      title,
+      primaryPath: rom.primaryPath,
+    });
 
     created += 1;
     persistedPaths.add(rom.primaryPath);

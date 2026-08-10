@@ -15,6 +15,7 @@ import {
   RetroAchievementsClient,
   type RetroAchievementsGameInfoAndUserProgress,
 } from "./retro-achievements-client";
+import { buildCatalogueFromRa } from "../retroarch/retroarch-retroachievements";
 import { AchievementMemoryStore } from "../achievements/achievement-memory-store";
 
 const toMillis = (date?: string) => {
@@ -213,6 +214,14 @@ export const syncRetroAchievements = async ({
   }
 
   const remoteAchievements = Object.values(data.Achievements ?? {});
+
+  // Fork: backend-unindexed local entries (e.g. Genesis) have no backend
+  // catalogue — build it from RA's own achievement definitions so the panel
+  // renders like any backend-provided platform.
+  if (catalogue.length === 0 && remoteAchievements.length > 0) {
+    catalogue = buildCatalogueFromRa(remoteAchievements);
+    catalogueStatus = "success";
+  }
 
   const cachedAchievements = AchievementMemoryStore.get(shop, objectId);
   const unlockedByName = new Map<string, UnlockedAchievement>();
