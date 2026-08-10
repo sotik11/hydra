@@ -197,7 +197,11 @@ const buildLocalShopDetails = (
     })),
     movies: undefined,
     supported_languages: "",
-    screenshots: [],
+    screenshots: (meta?.screenshots ?? []).map((url, index) => ({
+      id: index,
+      path_thumbnail: url,
+      path_full: url,
+    })),
     pc_requirements: { minimum: "", recommended: "" },
     mac_requirements: { minimum: "", recommended: "" },
     linux_requirements: { minimum: "", recommended: "" },

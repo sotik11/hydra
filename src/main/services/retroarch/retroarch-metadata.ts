@@ -16,16 +16,25 @@ export interface RomMetadata {
   publisher: string;
   releaseDate: string;
   genres: string[];
+  screenshots: string[];
 }
+
+const MAX_SCREENSHOTS = 6;
+const LAUNCHBOX_IMAGE_BASE = "https://images.launchbox-app.com/";
 
 interface MetadataEntry extends RomMetadata {
   name: string;
 }
 
 interface PlatformIndexFile {
+  version: number;
   builtAt: number;
   games: Record<string, MetadataEntry>;
 }
+
+// Bump when the index schema changes (e.g. new fields) so stale caches without
+// the new data are rebuilt instead of served. v2 added screenshots.
+const INDEX_VERSION = 2;
 
 const METADATA_URL = "https://gamesdb.launchbox-app.com/Metadata.zip";
 const XML_MEMBER = "Metadata.xml";
@@ -119,8 +128,13 @@ const parseXmlToIndexes = async (
 ): Promise<Map<RetroArchPlatform, Record<string, MetadataEntry>>> => {
   const indexes = new Map<RetroArchPlatform, Record<string, MetadataEntry>>();
 
+  // DatabaseID -> the entry, so <GameImage> blocks (a separate section, keyed by
+  // the same DatabaseID) can attach screenshots to the game they belong to.
+  const entriesByDbId = new Map<string, MetadataEntry>();
+
   const addEntry = (
     platform: RetroArchPlatform,
+    dbId: string,
     entry: MetadataEntry
   ): void => {
     let games = indexes.get(platform);
@@ -134,6 +148,13 @@ const parseXmlToIndexes = async (
     if (!prev || entry.overview.length > prev.overview.length) {
       games[key] = entry;
     }
+    if (dbId) entriesByDbId.set(dbId, entry);
+  };
+
+  const addScreenshot = (dbId: string, fileName: string): void => {
+    const entry = entriesByDbId.get(dbId);
+    if (!entry || entry.screenshots.length >= MAX_SCREENSHOTS) return;
+    entry.screenshots.push(LAUNCHBOX_IMAGE_BASE + encodeURI(fileName));
   };
 
   await new Promise<void>((resolve, reject) => {
@@ -146,31 +167,58 @@ const parseXmlToIndexes = async (
     stream.on("data", (chunk) => {
       buffer += chunk;
       for (;;) {
-        const start = buffer.indexOf("<Game>");
+        // Single scan for the common "<Game" prefix (matches <Game>,
+        // <GameImage>, <GameAlternateName>, ...) — scanning for each tag
+        // separately every iteration is O(n^2) over millions of image nodes.
+        const start = buffer.indexOf("<Game");
         if (start === -1) {
           if (buffer.length > 1 << 20) buffer = buffer.slice(-16);
           break;
         }
-        const end = buffer.indexOf("</Game>", start);
-        if (end === -1) break;
-        const block = buffer.slice(start, end + "</Game>".length);
-        buffer = buffer.slice(end + "</Game>".length);
 
-        const platform = LAUNCHBOX_TO_PLATFORM.get(field(block, "Platform"));
-        if (!platform) continue;
-        const name = field(block, "Name");
-        if (!name) continue;
-        addEntry(platform, {
-          name,
-          overview: field(block, "Overview"),
-          developer: field(block, "Developer"),
-          publisher: field(block, "Publisher"),
-          releaseDate: field(block, "ReleaseDate"),
-          genres: field(block, "Genres")
-            .split(";")
-            .map((g) => g.trim())
-            .filter(Boolean),
-        });
+        if (buffer.startsWith("<Game>", start)) {
+          const end = buffer.indexOf("</Game>", start);
+          if (end === -1) break;
+          const block = buffer.slice(start, end + "</Game>".length);
+          buffer = buffer.slice(end + "</Game>".length);
+
+          const platform = LAUNCHBOX_TO_PLATFORM.get(field(block, "Platform"));
+          if (!platform) continue;
+          const name = field(block, "Name");
+          if (!name) continue;
+          addEntry(platform, field(block, "DatabaseID"), {
+            name,
+            overview: field(block, "Overview"),
+            developer: field(block, "Developer"),
+            publisher: field(block, "Publisher"),
+            releaseDate: field(block, "ReleaseDate"),
+            genres: field(block, "Genres")
+              .split(";")
+              .map((g) => g.trim())
+              .filter(Boolean),
+            screenshots: [],
+          });
+          continue;
+        }
+
+        if (buffer.startsWith("<GameImage>", start)) {
+          const end = buffer.indexOf("</GameImage>", start);
+          if (end === -1) break;
+          const block = buffer.slice(start, end + "</GameImage>".length);
+          buffer = buffer.slice(end + "</GameImage>".length);
+
+          if (field(block, "Type").startsWith("Screenshot")) {
+            const dbId = field(block, "DatabaseID");
+            const fileName = field(block, "FileName");
+            if (dbId && fileName) addScreenshot(dbId, fileName);
+          }
+          continue;
+        }
+
+        // Some other "<Game..." element (e.g. GameAlternateName), or an
+        // incomplete tag at the chunk edge — wait if we can't tell yet.
+        if (buffer.length - start < 24) break;
+        buffer = buffer.slice(start + 5);
       }
     });
     stream.on("end", () => resolve());
@@ -186,6 +234,7 @@ const isFresh = async (platform: RetroArchPlatform): Promise<boolean> => {
     const raw = await fs.readFile(platformFilePath(platform), "utf-8");
     const parsed = JSON.parse(raw) as PlatformIndexFile;
     return (
+      parsed.version === INDEX_VERSION &&
       typeof parsed.builtAt === "number" &&
       Date.now() - parsed.builtAt < METADATA_TTL_MS &&
       Boolean(parsed.games)
@@ -222,7 +271,11 @@ const buildIndexes = async (): Promise<void> => {
     const builtAt = Date.now();
     const summary: Record<string, number> = {};
     for (const [platform, games] of indexes) {
-      const payload: PlatformIndexFile = { builtAt, games };
+      const payload: PlatformIndexFile = {
+        version: INDEX_VERSION,
+        builtAt,
+        games,
+      };
       await fs.writeFile(platformFilePath(platform), JSON.stringify(payload));
       loadedIndexes.delete(platform); // force reload from fresh file
       summary[platform] = Object.keys(games).length;
