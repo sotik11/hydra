@@ -20,6 +20,11 @@ import {
   ensureLocalBoxart,
   isBoxartSupportedPlatform,
 } from "./retroarch-thumbnails";
+import {
+  ensureMetadataIndexes,
+  lookupMetadata,
+  type RomMetadata,
+} from "./retroarch-metadata";
 
 // Platforms whose CRC32 the Hydra backend (shop-details) actually indexes.
 // Anything outside this set (currently: genesis) is never sent to the backend
@@ -134,9 +139,13 @@ const buildLocalShopDetails = (
   objectId: string,
   title: string,
   platformName: string,
-  language: string
+  language: string,
+  meta?: RomMetadata | null
 ): ShopDetails => {
-  const description = localDescription(platformName, language);
+  const description =
+    meta && meta.overview
+      ? meta.overview
+      : localDescription(platformName, language);
   return {
     objectId,
     descriptionLanguage: language,
@@ -148,18 +157,74 @@ const buildLocalShopDetails = (
     detailed_description: description,
     about_the_game: description,
     short_description: description,
-    developers: [],
-    publishers: [],
-    genres: [],
+    developers: meta?.developer ? [meta.developer] : [],
+    publishers: meta?.publisher ? [meta.publisher] : [],
+    genres: (meta?.genres ?? []).map((name, index) => ({
+      id: String(index),
+      name,
+    })),
     movies: undefined,
     supported_languages: "",
     screenshots: [],
     pc_requirements: { minimum: "", recommended: "" },
     mac_requirements: { minimum: "", recommended: "" },
     linux_requirements: { minimum: "", recommended: "" },
-    release_date: { coming_soon: false, date: "" },
+    release_date: { coming_soon: false, date: meta?.releaseDate ?? "" },
     content_descriptors: { ids: [] },
   };
+};
+
+interface MetaTask {
+  objectId: string;
+  platform: RetroArchPlatform;
+  platformName: string;
+  title: string;
+}
+
+// Background pass: build the LaunchBox metadata index (once) and rewrite each
+// local entry's shop-details cache with the real overview / developer /
+// publisher / release date / genres. Fire-and-forget after a scan; the details
+// page picks it up next time it is opened. Failures keep the stub description.
+const enrichLocalEntriesMetadata = async (
+  tasks: MetaTask[],
+  language: string
+): Promise<void> => {
+  try {
+    const platforms = Array.from(new Set(tasks.map((task) => task.platform)));
+    await ensureMetadataIndexes(platforms);
+
+    let enriched = 0;
+    for (const task of tasks) {
+      const meta = await lookupMetadata(task.platform, task.title).catch(
+        () => null
+      );
+      if (!meta || !meta.overview) continue;
+      await gamesShopCacheSublevel
+        .put(
+          levelKeys.gameShopCacheItem("launchbox", task.objectId, language),
+          buildLocalShopDetails(
+            task.objectId,
+            task.title,
+            task.platformName,
+            language,
+            meta
+          )
+        )
+        .catch((err) =>
+          logger.warn("Failed to write enriched shop details", {
+            objectId: task.objectId,
+            err,
+          })
+        );
+      enriched += 1;
+    }
+    logger.info("RetroArch metadata enrichment done", {
+      total: tasks.length,
+      enriched,
+    });
+  } catch (error) {
+    logger.warn("RetroArch metadata enrichment failed", error);
+  }
 };
 
 interface CoverTask {
@@ -210,6 +275,7 @@ export const persistUnmatchedRetroArchRoms = async (
   >();
   const persistedPaths = new Set<string>();
   const coverTasks: CoverTask[] = [];
+  const metaTasks: MetaTask[] = [];
   let created = 0;
 
   for (const rom of roms) {
@@ -302,6 +368,7 @@ export const persistUnmatchedRetroArchRoms = async (
         assets,
       });
     }
+    metaTasks.push({ objectId, platform: rom.platform, platformName, title });
 
     created += 1;
     persistedPaths.add(rom.primaryPath);
@@ -369,6 +436,13 @@ export const persistUnmatchedRetroArchRoms = async (
       resolved,
       missing: coverTasks.length - resolved,
     });
+  }
+
+  // Fire-and-forget: pull real LaunchBox metadata (description/developer/
+  // publisher/date/genres) in the background and rewrite the shop-details
+  // cache. The scan returns immediately with stub descriptions.
+  if (metaTasks.length > 0) {
+    void enrichLocalEntriesMetadata(metaTasks, language);
   }
 
   return { created, folderRollup, persistedPaths };
