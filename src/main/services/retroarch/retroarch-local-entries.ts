@@ -1,10 +1,14 @@
 import { existsSync } from "node:fs";
 
-import { gamesSublevel, levelKeys } from "@main/level";
-import type { ClassicsDisc, Game, RetroArchPlatform } from "@types";
+import { gamesShopAssetsSublevel, gamesSublevel, levelKeys } from "@main/level";
+import type { ClassicsDisc, Game, RetroArchPlatform, ShopAssets } from "@types";
 
 import { logger } from "../logger";
 import { PLATFORM_TO_LAUNCHBOX_NAME } from "./retroarch-cores";
+import {
+  ensureLocalBoxart,
+  isBoxartSupportedPlatform,
+} from "./retroarch-thumbnails";
 
 // Platforms whose CRC32 the Hydra backend (shop-details) actually indexes.
 // Anything outside this set (currently: genesis) is never sent to the backend
@@ -41,6 +45,71 @@ const titleFromFileName = (fileName: string): string => {
     .trim();
   return cleaned || baseNameWithoutExt(fileName);
 };
+
+// Compact SEGA wordmark shown for coverless Genesis entries instead of the
+// generic controller icon. An <img>-embeddable SVG data URI — no bundled asset,
+// nothing to touch in the renderer.
+const SEGA_PLACEHOLDER_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">' +
+  '<rect width="600" height="400" fill="#0b0e14"/>' +
+  '<text x="300" y="215" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="150" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-6">SEGA</text>' +
+  '<text x="300" y="288" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" letter-spacing="12" fill="#7d8590">GENESIS</text>' +
+  "</svg>";
+
+const SEGA_PLACEHOLDER_ICON = `data:image/svg+xml,${encodeURIComponent(
+  SEGA_PLACEHOLDER_SVG
+)}`;
+
+// Per-platform placeholder for coverless local entries. Platforms without an
+// entry keep Hydra's default (generic) placeholder.
+const PLATFORM_PLACEHOLDER_ICON: Partial<Record<RetroArchPlatform, string>> = {
+  genesis: SEGA_PLACEHOLDER_ICON,
+};
+
+const COVER_CONCURRENCY = 8;
+
+const runWithConcurrency = async <T>(
+  items: T[],
+  limit: number,
+  worker: (item: T) => Promise<void>
+): Promise<void> => {
+  let cursor = 0;
+  const runners = Array.from(
+    { length: Math.min(limit, items.length) },
+    async () => {
+      while (cursor < items.length) {
+        const index = cursor++;
+        await worker(items[index]);
+      }
+    }
+  );
+  await Promise.all(runners);
+};
+
+const buildLocalAssets = (
+  objectId: string,
+  title: string,
+  iconUrl: string | null
+): ShopAssets => ({
+  objectId,
+  shop: "launchbox",
+  title,
+  iconUrl,
+  libraryHeroImageUrl: null,
+  libraryImageUrl: null,
+  logoImageUrl: null,
+  logoPosition: null,
+  coverImageUrl: null,
+  downloadSources: [],
+});
+
+interface CoverTask {
+  gameKey: string;
+  platform: RetroArchPlatform;
+  crc32: string;
+  title: string;
+  assets: ShopAssets;
+}
 
 export interface LocalRomSource {
   folderPath: string;
@@ -80,6 +149,7 @@ export const persistUnmatchedRetroArchRoms = async (
     { fileCount: number; sizeBytes: number }
   >();
   const persistedPaths = new Set<string>();
+  const coverTasks: CoverTask[] = [];
   let created = 0;
 
   for (const rom of roms) {
@@ -103,9 +173,11 @@ export const persistUnmatchedRetroArchRoms = async (
     const objectId = localEntryObjectId(rom.platform, rom.crc32);
     const gameKey = levelKeys.game("launchbox", objectId);
     const platformName = PLATFORM_TO_LAUNCHBOX_NAME[rom.platform];
+    const title = titleFromFileName(rom.name);
+    const placeholderIcon = PLATFORM_PLACEHOLDER_ICON[rom.platform] ?? null;
     const disc: ClassicsDisc = {
       path: rom.primaryPath,
-      label: titleFromFileName(rom.name),
+      label: title,
       fileName: rom.name,
       sku: null,
     };
@@ -117,12 +189,13 @@ export const persistUnmatchedRetroArchRoms = async (
       existing.discs = [disc];
       existing.selectedDiscPath = rom.primaryPath;
       existing.romSizeBytes = rom.sizeBytes;
+      existing.iconUrl ??= placeholderIcon;
       if (!existing.platform) existing.platform = platformName;
       await gamesSublevel.put(gameKey, existing);
     } else {
       const game: Game = {
-        title: titleFromFileName(rom.name),
-        iconUrl: null,
+        title,
+        iconUrl: placeholderIcon,
         libraryHeroImageUrl: null,
         logoImageUrl: null,
         objectId,
@@ -140,6 +213,25 @@ export const persistUnmatchedRetroArchRoms = async (
       await gamesSublevel.put(gameKey, game);
     }
 
+    // Write placeholder assets now so the icon shows immediately; the cover pass
+    // below upgrades coverImageUrl to real box art when one resolves.
+    const assets = buildLocalAssets(objectId, title, placeholderIcon);
+    await gamesShopAssetsSublevel
+      .put(gameKey, { ...assets, updatedAt: Date.now() })
+      .catch((err) =>
+        logger.warn("Failed to store local placeholder asset", { gameKey, err })
+      );
+
+    if (isBoxartSupportedPlatform(rom.platform)) {
+      coverTasks.push({
+        gameKey,
+        platform: rom.platform,
+        crc32: rom.crc32,
+        title,
+        assets,
+      });
+    }
+
     created += 1;
     persistedPaths.add(rom.primaryPath);
     const bucket = folderRollup.get(rom.folderPath) ?? {
@@ -154,6 +246,43 @@ export const persistUnmatchedRetroArchRoms = async (
   if (created > 0) {
     logger.info("Persisted local RetroArch entries (no backend match)", {
       created,
+    });
+  }
+
+  // Cover pass: download box art once per rom into the local cache. Cached
+  // covers are reused with no network; entries whose cover is missing (never
+  // downloaded, download failed, or the covers folder was unavailable) are
+  // retried here on every scan and degrade to the placeholder icon meanwhile.
+  if (coverTasks.length > 0) {
+    logger.info("Resolving local RetroArch covers", {
+      eligible: coverTasks.length,
+    });
+    let resolved = 0;
+    await runWithConcurrency(coverTasks, COVER_CONCURRENCY, async (task) => {
+      const coverUrl = await ensureLocalBoxart(
+        task.platform,
+        task.crc32,
+        task.title
+      ).catch(() => null);
+      if (!coverUrl) return;
+      await gamesShopAssetsSublevel
+        .put(task.gameKey, {
+          ...task.assets,
+          coverImageUrl: coverUrl,
+          updatedAt: Date.now(),
+        })
+        .catch((err) =>
+          logger.warn("Failed to store local cover asset", {
+            gameKey: task.gameKey,
+            err,
+          })
+        );
+      resolved += 1;
+    });
+    logger.info("Local RetroArch cover pass done", {
+      eligible: coverTasks.length,
+      resolved,
+      missing: coverTasks.length - resolved,
     });
   }
 
