@@ -1,7 +1,18 @@
 import { existsSync } from "node:fs";
 
-import { gamesShopAssetsSublevel, gamesSublevel, levelKeys } from "@main/level";
-import type { ClassicsDisc, Game, RetroArchPlatform, ShopAssets } from "@types";
+import {
+  gamesShopAssetsSublevel,
+  gamesShopCacheSublevel,
+  gamesSublevel,
+  levelKeys,
+} from "@main/level";
+import type {
+  ClassicsDisc,
+  Game,
+  RetroArchPlatform,
+  ShopAssets,
+  ShopDetails,
+} from "@types";
 
 import { logger } from "../logger";
 import { PLATFORM_TO_LAUNCHBOX_NAME } from "./retroarch-cores";
@@ -103,6 +114,54 @@ const buildLocalAssets = (
   downloadSources: [],
 });
 
+const localDescription = (platformName: string, language: string): string => {
+  const lang = language.slice(0, 2).toLowerCase();
+  if (lang === "ru") {
+    return `Локальный ROM (${platformName}), запускается через RetroArch. Магазинные метаданные недоступны.`;
+  }
+  if (lang === "uk") {
+    return `Локальний ROM (${platformName}), запускається через RetroArch. Магазинні метадані недоступні.`;
+  }
+  return `Local ROM (${platformName}) launched through RetroArch. Store metadata is unavailable.`;
+};
+
+// A minimal ShopDetails cached for a local entry so the game-details page has a
+// real payload (name, description, platform) instead of the backend returning
+// null — which is what left the page without a description and glitched the
+// hero. retroAchievementsGameId is 0: a number (so the details cache-gate
+// accepts it) that downstream treats as "no RA mapping" (`if (!gameId)`).
+const buildLocalShopDetails = (
+  objectId: string,
+  title: string,
+  platformName: string,
+  language: string
+): ShopDetails => {
+  const description = localDescription(platformName, language);
+  return {
+    objectId,
+    descriptionLanguage: language,
+    name: title,
+    platform: platformName,
+    skus: undefined,
+    retroAchievementsGameId: 0,
+    steam_appid: 0,
+    detailed_description: description,
+    about_the_game: description,
+    short_description: description,
+    developers: [],
+    publishers: [],
+    genres: [],
+    movies: undefined,
+    supported_languages: "",
+    screenshots: [],
+    pc_requirements: { minimum: "", recommended: "" },
+    mac_requirements: { minimum: "", recommended: "" },
+    linux_requirements: { minimum: "", recommended: "" },
+    release_date: { coming_soon: false, date: "" },
+    content_descriptors: { ids: [] },
+  };
+};
+
 interface CoverTask {
   gameKey: string;
   platform: RetroArchPlatform;
@@ -142,7 +201,8 @@ export interface LocalEntriesResult {
 export const persistUnmatchedRetroArchRoms = async (
   roms: LocalRomSource[],
   matchedCrcs: ReadonlySet<string>,
-  backendMatchFailed: boolean
+  backendMatchFailed: boolean,
+  language: string
 ): Promise<LocalEntriesResult> => {
   const folderRollup = new Map<
     string,
@@ -220,6 +280,17 @@ export const persistUnmatchedRetroArchRoms = async (
       .put(gameKey, { ...assets, updatedAt: Date.now() })
       .catch((err) =>
         logger.warn("Failed to store local placeholder asset", { gameKey, err })
+      );
+
+    // Cache minimal shop details so the game-details page has a real payload
+    // (name/description/platform) instead of the backend returning null.
+    await gamesShopCacheSublevel
+      .put(
+        levelKeys.gameShopCacheItem("launchbox", objectId, language),
+        buildLocalShopDetails(objectId, title, platformName, language)
+      )
+      .catch((err) =>
+        logger.warn("Failed to cache local shop details", { gameKey, err })
       );
 
     if (isBoxartSupportedPlatform(rom.platform)) {

@@ -590,7 +590,8 @@ async function runRetroArchImport(
   const localEntries = await retroarch.persistUnmatchedRetroArchRoms(
     hashed,
     new Set(lookup.keys()),
-    matchFailed
+    matchFailed,
+    language
   );
 
   // Fold local entries into the folder rollups so the library counters
