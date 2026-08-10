@@ -6,6 +6,12 @@ export const defaultDownloadsPath = SystemPath.getPath("downloads");
 
 export const isStaging = import.meta.env.MAIN_VITE_API_URL.includes("staging");
 
+// Fork dev switch: open DevTools in a packaged build when
+// MAIN_VITE_ENABLE_DEVTOOLS=true (mirrors upstream PR #2453). Off by default,
+// so release builds are unaffected.
+export const enableDevTools =
+  import.meta.env.MAIN_VITE_ENABLE_DEVTOOLS === "true";
+
 export const windowsStartMenuPath = path.join(
   SystemPath.getPath("appData"),
   "Microsoft",

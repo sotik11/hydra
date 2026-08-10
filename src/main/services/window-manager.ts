@@ -1,5 +1,5 @@
 import { is } from "@electron-toolkit/utils";
-import { isStaging } from "@main/constants";
+import { enableDevTools, isStaging } from "@main/constants";
 import { db, gamesSublevel, levelKeys } from "@main/level";
 import icon from "@resources/icon.png?asset";
 import trayIconDark from "@resources/tray-icon-dark.png?asset";
@@ -386,7 +386,7 @@ export class WindowManager {
     mainWindow.removeMenu();
 
     mainWindow.on("ready-to-show", () => {
-      if (!app.isPackaged || isStaging)
+      if (!app.isPackaged || isStaging || enableDevTools)
         WindowManager.mainWindow?.webContents.openDevTools();
       if (shouldLaunchInBigPicture) {
         void WindowManager.openBigPictureWindow();
@@ -472,7 +472,7 @@ export class WindowManager {
 
     this.bigPicture.removeMenu();
 
-    if (!app.isPackaged || isStaging) {
+    if (!app.isPackaged || isStaging || enableDevTools) {
       this.bigPicture.webContents.openDevTools();
     }
 
@@ -542,7 +542,7 @@ export class WindowManager {
 
     this.friendsWindow.once("ready-to-show", () => {
       this.friendsWindow?.show();
-      if (!app.isPackaged || isStaging) {
+      if (!app.isPackaged || isStaging || enableDevTools) {
         this.friendsWindow?.webContents.openDevTools();
       }
     });
@@ -823,7 +823,7 @@ export class WindowManager {
       editorWindow.once("ready-to-show", () => {
         editorWindow.show();
         this.mainWindow?.webContents.openDevTools();
-        if (!app.isPackaged || isStaging) {
+        if (!app.isPackaged || isStaging || enableDevTools) {
           editorWindow.webContents.openDevTools();
         }
       });
@@ -903,7 +903,7 @@ export class WindowManager {
       this.gameLauncherWindowInstance = null;
     });
 
-    if (!app.isPackaged || isStaging) {
+    if (!app.isPackaged || isStaging || enableDevTools) {
       gameLauncherWindow.webContents.openDevTools();
     }
   }
