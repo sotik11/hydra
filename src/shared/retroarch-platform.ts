@@ -12,6 +12,12 @@ export const platformToRetroArchPlatform = (
   if (/super\s*nintendo|\bsnes\b/.test(p)) return "snes";
   if (/nintendo\s*entertainment\s*system|\bnes\b|\bfamicom\b/.test(p))
     return "nes";
+  if (
+    /sega\s*mega\s*drive|sega\s*genesis|mega\s*drive|megadrive|\bgenesis\b/.test(
+      p
+    )
+  )
+    return "genesis";
   return null;
 };
 
@@ -22,4 +28,5 @@ export const RETROARCH_PLATFORM_LABELS: Record<RetroArchPlatform, string> = {
   gb: "GB",
   gbc: "GBC",
   gba: "GBA",
+  genesis: "MD",
 };

@@ -1,13 +1,21 @@
 import type { RomFolder } from "./emulator.types";
 
-export type RetroArchPlatform = "nes" | "snes" | "n64" | "gb" | "gbc" | "gba";
+export type RetroArchPlatform =
+  | "nes"
+  | "snes"
+  | "n64"
+  | "gb"
+  | "gbc"
+  | "gba"
+  | "genesis";
 
 export type RetroArchCoreName =
   | "fceumm"
   | "snes9x"
   | "mupen64plus_next"
   | "gambatte"
-  | "mgba";
+  | "mgba"
+  | "genesis_plus_gx";
 
 export interface RetroArchCore {
   name: RetroArchCoreName;

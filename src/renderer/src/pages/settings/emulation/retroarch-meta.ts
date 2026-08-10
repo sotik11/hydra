@@ -19,6 +19,7 @@ export const RETROARCH_CORE_LIST: RetroArchCoreMeta[] = [
   { name: "mupen64plus_next", label: "Mupen64Plus-Next", platforms: "N64" },
   { name: "gambatte", label: "Gambatte", platforms: "GB / GBC" },
   { name: "mgba", label: "mGBA", platforms: "GBA" },
+  { name: "genesis_plus_gx", label: "Genesis Plus GX", platforms: "Genesis" },
 ];
 
 export const RETROARCH_LABEL = "RetroArch";

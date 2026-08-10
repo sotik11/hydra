@@ -41,6 +41,12 @@ export const RETROARCH_CORES: Record<
     buildbotName: "mgba",
     platforms: ["gba"],
   },
+  genesis_plus_gx: {
+    name: "genesis_plus_gx",
+    displayName: "Genesis Plus GX",
+    buildbotName: "genesis_plus_gx",
+    platforms: ["genesis"],
+  },
 };
 
 export const RETROARCH_CORE_NAMES: readonly RetroArchCoreName[] = Object.keys(
@@ -54,6 +60,7 @@ export const RETROARCH_PLATFORMS: readonly RetroArchPlatform[] = [
   "gb",
   "gbc",
   "gba",
+  "genesis",
 ];
 
 export const PLATFORM_TO_CORE: Record<RetroArchPlatform, RetroArchCoreName> = {
@@ -63,6 +70,7 @@ export const PLATFORM_TO_CORE: Record<RetroArchPlatform, RetroArchCoreName> = {
   gb: "gambatte",
   gbc: "gambatte",
   gba: "mgba",
+  genesis: "genesis_plus_gx",
 };
 
 export const PLATFORM_ROM_EXTENSIONS: Record<RetroArchPlatform, string[]> = {
@@ -72,6 +80,7 @@ export const PLATFORM_ROM_EXTENSIONS: Record<RetroArchPlatform, string[]> = {
   gb: [".gb"],
   gbc: [".gbc"],
   gba: [".gba"],
+  genesis: [".bin", ".smd", ".md", ".gen"],
 };
 
 export const PLATFORM_TO_LAUNCHBOX_NAME: Record<RetroArchPlatform, string> = {
@@ -81,6 +90,7 @@ export const PLATFORM_TO_LAUNCHBOX_NAME: Record<RetroArchPlatform, string> = {
   gb: "Nintendo Game Boy",
   gbc: "Nintendo Game Boy Color",
   gba: "Nintendo Game Boy Advance",
+  genesis: "Sega Genesis",
 };
 
 export const ALL_RETROARCH_ROM_EXTENSIONS: readonly string[] = Array.from(
