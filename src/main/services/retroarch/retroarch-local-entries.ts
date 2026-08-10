@@ -62,24 +62,56 @@ const titleFromFileName = (fileName: string): string => {
   return cleaned || baseNameWithoutExt(fileName);
 };
 
-// Compact SEGA wordmark shown for coverless Genesis entries instead of the
-// generic controller icon. An <img>-embeddable SVG data URI — no bundled asset,
-// nothing to touch in the renderer.
-const SEGA_PLACEHOLDER_SVG =
-  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">' +
-  '<rect width="600" height="400" fill="#0b0e14"/>' +
-  '<text x="300" y="215" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="150" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-6">SEGA</text>' +
-  '<text x="300" y="288" text-anchor="middle" font-family="Arial, sans-serif" font-size="34" letter-spacing="12" fill="#7d8590">GENESIS</text>' +
-  "</svg>";
+const xmlEscape = (value: string): string =>
+  value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-const SEGA_PLACEHOLDER_ICON = `data:image/svg+xml,${encodeURIComponent(
-  SEGA_PLACEHOLDER_SVG
-)}`;
+// Greedy word-wrap for the placeholder title (SVG <text> has no auto-wrap).
+const wrapPlaceholderTitle = (title: string): string[] => {
+  const words = title.split(/\s+/).filter(Boolean);
+  const lines: string[] = [];
+  let current = "";
+  for (const word of words) {
+    if (current && `${current} ${word}`.length > 13) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = current ? `${current} ${word}` : word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.slice(0, 5);
+};
 
-// Per-platform placeholder for coverless local entries. Platforms without an
-// entry keep Hydra's default (generic) placeholder.
-const PLATFORM_PLACEHOLDER_ICON: Partial<Record<RetroArchPlatform, string>> = {
-  genesis: SEGA_PLACEHOLDER_ICON,
+// Platforms that get a branded coverless placeholder (others fall back to
+// Hydra's default). The generated SVG shows the game title in large white text
+// so coverless entries stay identifiable in the grid views — not only the
+// large view, which already prints the title beside the card. An
+// <img>-embeddable data URI, so nothing in the renderer needs touching.
+const PLACEHOLDER_BRANDED = new Set<RetroArchPlatform>(["genesis"]);
+
+const buildPlaceholderIcon = (
+  platform: RetroArchPlatform,
+  title: string
+): string | null => {
+  if (!PLACEHOLDER_BRANDED.has(platform)) return null;
+  const lines = wrapPlaceholderTitle(title);
+  const fontSize = lines.length <= 2 ? 62 : lines.length === 3 ? 52 : 42;
+  const lineHeight = Math.round(fontSize * 1.15);
+  const startY = Math.round(430 - ((lines.length - 1) * lineHeight) / 2);
+  const titleSvg = lines
+    .map(
+      (line, index) =>
+        `<text x="256" y="${startY + index * lineHeight}" text-anchor="middle" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="800" fill="#ffffff">${xmlEscape(line)}</text>`
+    )
+    .join("");
+  const svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 720">' +
+    '<rect width="512" height="720" fill="#0b0e14"/>' +
+    '<text x="256" y="150" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-3">SEGA</text>' +
+    '<text x="256" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" letter-spacing="8" fill="#7d8590">GENESIS</text>' +
+    titleSvg +
+    "</svg>";
+  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
 };
 
 const COVER_CONCURRENCY = 8;
@@ -300,7 +332,7 @@ export const persistUnmatchedRetroArchRoms = async (
     const gameKey = levelKeys.game("launchbox", objectId);
     const platformName = PLATFORM_TO_LAUNCHBOX_NAME[rom.platform];
     const title = titleFromFileName(rom.name);
-    const placeholderIcon = PLATFORM_PLACEHOLDER_ICON[rom.platform] ?? null;
+    const placeholderIcon = buildPlaceholderIcon(rom.platform, title);
     const disc: ClassicsDisc = {
       path: rom.primaryPath,
       label: title,
