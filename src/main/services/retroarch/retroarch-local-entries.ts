@@ -336,9 +336,13 @@ export const persistUnmatchedRetroArchRoms = async (
         task.title
       ).catch(() => null);
       if (!coverUrl) return;
+      // Use the box art as the cover AND the icon, so it also shows in places
+      // that render iconUrl (the left sidebar list, the detected-roms list),
+      // not just the grid.
       await gamesShopAssetsSublevel
         .put(task.gameKey, {
           ...task.assets,
+          iconUrl: coverUrl,
           coverImageUrl: coverUrl,
           updatedAt: Date.now(),
         })
@@ -348,6 +352,16 @@ export const persistUnmatchedRetroArchRoms = async (
             err,
           })
         );
+      const game = await gamesSublevel.get(task.gameKey).catch(() => null);
+      if (game) {
+        game.iconUrl = coverUrl;
+        await gamesSublevel.put(task.gameKey, game).catch((err) =>
+          logger.warn("Failed to update local game icon", {
+            gameKey: task.gameKey,
+            err,
+          })
+        );
+      }
       resolved += 1;
     });
     logger.info("Local RetroArch cover pass done", {
