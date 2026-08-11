@@ -66,11 +66,11 @@ export default function Wishlist() {
   return (
     <div className="wishlist">
       <div className="wishlist__header">
-        <div className="wishlist__header-info">
-          <h1 className="wishlist__title">{t("page_title")}</h1>
+        <div className="wishlist__summary">
           <span className="wishlist__count">
             {t("count_games", { count: games.length })}
           </span>
+          <span className="wishlist__hint">{t("filters_hint")}</span>
         </div>
 
         <div className="wishlist__header-actions">

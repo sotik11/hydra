@@ -28,7 +28,7 @@ export function WishlistCard({
   view = "grid",
   onRemoved,
 }: WishlistCardProps) {
-  const { t } = useTranslation("wishlist");
+  const { t, i18n } = useTranslation("wishlist");
   const ref = useRef<HTMLLIElement>(null);
   const { library, updateLibrary } = useLibrary();
 
@@ -38,6 +38,7 @@ export function WishlistCard({
   const [visible, setVisible] = useState(false);
   const [title, setTitle] = useState<string>(objectId);
   const [cover, setCover] = useState<string | null>(null);
+  const [genres, setGenres] = useState<string[]>([]);
   const [sources, setSources] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -77,6 +78,14 @@ export function WishlistCard({
       })
       .catch(() => {});
 
+    window.electron
+      .getGameShopDetails(objectId, shop, i18n.language)
+      .then((details) => {
+        if (cancelled || !details?.genres) return;
+        setGenres(details.genres.map((genre) => genre.name));
+      })
+      .catch(() => {});
+
     (async () => {
       try {
         const sourcesRaw = (await levelDBService.values(
@@ -109,7 +118,7 @@ export function WishlistCard({
     return () => {
       cancelled = true;
     };
-  }, [visible, objectId, refreshKey]);
+  }, [visible, objectId, i18n.language, refreshKey]);
 
   const handleRemove = async (event: React.MouseEvent) => {
     event.preventDefault();
@@ -193,12 +202,16 @@ export function WishlistCard({
           </div>
         </div>
 
-        <span className="wishlist-card__title">{title}</span>
-
-        <div className="wishlist-card__sources">
-          {sources.map((source) => (
-            <Badge key={source}>{source}</Badge>
-          ))}
+        <div className="wishlist-card__info">
+          <span className="wishlist-card__title">{title}</span>
+          {genres.length > 0 && (
+            <span className="wishlist-card__genres">{genres.join(", ")}</span>
+          )}
+          <div className="wishlist-card__sources">
+            {sources.map((source) => (
+              <Badge key={source}>{source}</Badge>
+            ))}
+          </div>
         </div>
       </Link>
     </li>

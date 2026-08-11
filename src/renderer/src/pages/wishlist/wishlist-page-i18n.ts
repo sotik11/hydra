@@ -15,6 +15,7 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Import your Steam wishlist in Settings → Integrations, or add games from the Catalogue with ⭐.",
     count_games: "{{count}} games",
+    filters_hint: "Use the sidebar to refine the list",
     sort_priority: "Wishlist priority",
     sort_added: "Recently added",
     sort_title: "Title (A-Z)",
@@ -30,6 +31,7 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Импортируй вишлист Steam в Настройках → Интеграции или добавь игры из Каталога через ⭐.",
     count_games: "{{count}} игр",
+    filters_hint: "Используйте боковую панель для уточнения списка",
     sort_priority: "По приоритету",
     sort_added: "Недавно добавленные",
     sort_title: "По названию (A-Z)",
@@ -45,6 +47,7 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Імпортуй список Steam у Налаштуваннях → Інтеграції або додай ігри з Каталогу через ⭐.",
     count_games: "{{count}} ігор",
+    filters_hint: "Використовуйте бічну панель для уточнення списку",
     sort_priority: "За пріоритетом",
     sort_added: "Нещодавно додані",
     sort_title: "За назвою (A-Z)",
@@ -59,6 +62,8 @@ const wishlist: Record<string, Record<string, string>> = {
 function registerBundles() {
   for (const [lng, res] of Object.entries(sidebar)) {
     i18n.addResourceBundle(lng, "sidebar", res, true, true);
+    // Header shows the page title by route (pathTitle map) from the header ns.
+    i18n.addResourceBundle(lng, "header", res, true, true);
   }
   for (const [lng, res] of Object.entries(wishlist)) {
     i18n.addResourceBundle(lng, "wishlist", res, true, true);

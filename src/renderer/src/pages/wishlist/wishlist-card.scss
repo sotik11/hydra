@@ -14,7 +14,7 @@
 
   &__cover {
     position: relative;
-    aspect-ratio: 600 / 900;
+    aspect-ratio: 16 / 9;
     border-radius: 8px;
     overflow: hidden;
     background: rgba(255, 255, 255, 0.04);
@@ -38,6 +38,29 @@
     right: 8px;
     display: flex;
     gap: 4px;
+  }
+
+  &__badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+
+    img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+    }
+
+    &--library {
+      border-radius: 6px;
+    }
   }
 
   &__actions {
@@ -77,32 +100,24 @@
     }
   }
 
-  &__badge {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(4px);
-    color: #fff;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
-
-    img {
-      width: 14px;
-      height: 14px;
-      object-fit: contain;
-    }
-
-    &--library {
-      border-radius: 6px;
-    }
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
   }
 
   &__title {
     font-size: globals.$small-font-size;
     font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__genres {
+    font-size: globals.$small-font-size;
+    color: var(--text-secondary);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -114,7 +129,7 @@
     gap: 4px;
   }
 
-  // List view: cover left, title + sources on a row.
+  // List view: cover on the left (fixed), info on the right — like catalogue rows.
   &--list &__link {
     flex-direction: row;
     align-items: center;
@@ -126,20 +141,16 @@
   }
 
   &--list &__cover {
-    width: 56px;
+    width: 184px;
     flex-shrink: 0;
+  }
+
+  &--list &__info {
+    flex: 1;
   }
 
   &--list &__title {
-    flex: 1;
-    min-width: 0;
     font-size: 1rem;
     white-space: normal;
-  }
-
-  &--list &__sources {
-    flex-shrink: 0;
-    justify-content: flex-end;
-    max-width: 45%;
   }
 }

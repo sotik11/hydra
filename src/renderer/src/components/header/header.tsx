@@ -40,6 +40,7 @@ const pathTitle: Record<string, string> = {
   "/": "home",
   "/catalogue": "catalogue",
   "/library": "library",
+  "/wishlist": "wishlist",
   "/downloads": "downloads",
   "/settings": "settings",
 };
