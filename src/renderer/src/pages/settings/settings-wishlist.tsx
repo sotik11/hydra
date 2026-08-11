@@ -22,11 +22,15 @@ import "./wishlist-i18n";
 const STATUS_ICON_SIZE = 14;
 const CHEVRON_ICON_SIZE = 16;
 
+const STEAM_API_KEY_URL = "https://steamcommunity.com/dev/apikey";
+
 const emptyState: SteamWishlistState = {
   connected: false,
   profile: null,
   items: [],
   syncedAt: null,
+  hasApiKey: false,
+  libraryCount: null,
 };
 
 export function SettingsWishlist() {
@@ -39,6 +43,7 @@ export function SettingsWishlist() {
 
   const [state, setState] = useState<SteamWishlistState>(emptyState);
   const [profileInput, setProfileInput] = useState("");
+  const [apiKeyInput, setApiKeyInput] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -67,12 +72,17 @@ export function SettingsWishlist() {
     };
   }, []);
 
-  const persistProfile = async (status: SteamWishlistState) => {
+  const persistState = async (
+    status: SteamWishlistState,
+    apiKey: string | null
+  ) => {
     await updateUserPreferences({
       steamWishlistSteamId: status.profile?.steamId64 ?? null,
       steamWishlistPersonaName: status.profile?.personaName ?? null,
       steamWishlistAvatarUrl: status.profile?.avatarUrl ?? null,
       steamWishlistSyncedAt: status.syncedAt,
+      steamWishlistApiKey: apiKey,
+      steamWishlistLibraryCount: status.libraryCount,
     }).catch(() => {});
   };
 
@@ -82,13 +92,16 @@ export function SettingsWishlist() {
     event.preventDefault();
     setIsSubmitting(true);
 
+    const key = apiKeyInput.trim() || null;
+
     try {
       const status = await window.electron.connectSteamWishlist(
-        profileInput.trim()
+        profileInput.trim(),
+        key
       );
       setState(status);
       setAvatarError(false);
-      await persistProfile(status);
+      await persistState(status, key);
       showSuccessToast(t("wishlist_connected"));
     } catch {
       showErrorToast(t("wishlist_connect_error"));
@@ -104,7 +117,7 @@ export function SettingsWishlist() {
       const status = await window.electron.refreshSteamWishlist();
       setState(status);
       setAvatarError(false);
-      await persistProfile(status);
+      await persistState(status, userPreferences?.steamWishlistApiKey ?? null);
       showSuccessToast(t("wishlist_updated"));
     } catch {
       showErrorToast(t("wishlist_connect_error"));
@@ -120,11 +133,14 @@ export function SettingsWishlist() {
       await window.electron.disconnectSteamWishlist();
       setState(emptyState);
       setProfileInput("");
+      setApiKeyInput("");
       await updateUserPreferences({
         steamWishlistSteamId: null,
         steamWishlistPersonaName: null,
         steamWishlistAvatarUrl: null,
         steamWishlistSyncedAt: null,
+        steamWishlistApiKey: null,
+        steamWishlistLibraryCount: null,
       }).catch(() => {});
       showSuccessToast(t("wishlist_disconnected"));
     } catch {
@@ -175,8 +191,14 @@ export function SettingsWishlist() {
               </button>
               <span className="settings-retroachievements__status">
                 <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
-                {t("wishlist_status_connected", { count: state.items.length })}
+                {t("wishlist_status_wishlist", { count: state.items.length })}
               </span>
+              {state.libraryCount != null && (
+                <span className="settings-retroachievements__status">
+                  <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
+                  {t("wishlist_status_library", { count: state.libraryCount })}
+                </span>
+              )}
             </div>
           </div>
 
@@ -201,41 +223,55 @@ export function SettingsWishlist() {
       );
     }
 
+    // Connect stage — mirror the RA form: left-aligned text, full-width fields,
+    // Connect button bottom-right, no avatar.
     return (
-      <div className="settings-retroachievements__connected settings-wishlist__connect-profile">
-        <div className="settings-retroachievements__profile">
-          <div className="settings-wishlist__avatar">
-            <img src={steamLogo} alt="Steam" />
-          </div>
-
-          <div className="settings-wishlist__connect">
-            <div className="settings-retroachievements__description-container">
-              <p className="settings-retroachievements__description">
-                {t("wishlist_description")}
-              </p>
-              <p className="settings-retroachievements__emulator-note">
-                {t("wishlist_privacy_note")}
-              </p>
-            </div>
-
-            <form className="settings-wishlist__form" onSubmit={handleConnect}>
-              <TextField
-                label={t("wishlist_profile_label")}
-                value={profileInput}
-                onChange={(event) => setProfileInput(event.target.value)}
-                placeholder={t("wishlist_profile_placeholder")}
-              />
-              <Button
-                type="submit"
-                className="settings-wishlist__submit"
-                disabled={!profileInput.trim() || isSubmitting}
-              >
-                {t("wishlist_connect")}
-              </Button>
-            </form>
-          </div>
+      <form
+        className="settings-retroachievements__form"
+        onSubmit={handleConnect}
+      >
+        <div className="settings-retroachievements__description-container">
+          <p className="settings-retroachievements__description">
+            {t("wishlist_description")}
+          </p>
+          <p className="settings-retroachievements__emulator-note">
+            {t("wishlist_privacy_note")}
+          </p>
         </div>
-      </div>
+
+        <TextField
+          label={t("wishlist_profile_label")}
+          value={profileInput}
+          onChange={(event) => setProfileInput(event.target.value)}
+          placeholder={t("wishlist_profile_placeholder")}
+        />
+
+        <TextField
+          label={t("wishlist_api_key_label")}
+          value={apiKeyInput}
+          type="password"
+          onChange={(event) => setApiKeyInput(event.target.value)}
+          placeholder={t("wishlist_api_key_placeholder")}
+          hint={
+            <button
+              type="button"
+              className="settings-wishlist__profile-link"
+              onClick={() => window.electron.openExternal(STEAM_API_KEY_URL)}
+            >
+              <LinkExternalIcon size={12} />
+              {t("wishlist_api_key_hint")}
+            </button>
+          }
+        />
+
+        <Button
+          type="submit"
+          className="settings-retroachievements__submit-button"
+          disabled={!profileInput.trim() || isSubmitting}
+        >
+          {t("wishlist_connect")}
+        </Button>
+      </form>
     );
   };
 

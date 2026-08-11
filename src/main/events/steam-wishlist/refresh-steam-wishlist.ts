@@ -3,11 +3,15 @@ import { db, levelKeys, steamWishlistSublevel } from "@main/level";
 import {
   resolveSteamProfile,
   fetchSteamWishlist,
+  fetchOwnedGames,
+  importOwnedGamesToLibrary,
 } from "@main/services/steam-wishlist";
+import { logger } from "@main/services";
 import type { SteamWishlistState, UserPreferences } from "@types";
 
 // Re-pull the wishlist (and refresh persona/avatar) for the already-connected
-// account. The renderer persists the updated profile fields.
+// account. With a stored API key, also re-import the owned-games library
+// (skipping games already present). The renderer persists the updated fields.
 const refreshSteamWishlist = async (): Promise<SteamWishlistState> => {
   const userPreferences = await db
     .get<string, UserPreferences | null>(levelKeys.userPreferences, {
@@ -21,12 +25,32 @@ const refreshSteamWishlist = async (): Promise<SteamWishlistState> => {
     throw new Error("steam-wishlist/not-connected");
   }
 
-  const profile = await resolveSteamProfile(steamId);
+  const key = userPreferences?.steamWishlistApiKey || null;
+
+  const profile = await resolveSteamProfile(steamId, key);
   const items = await fetchSteamWishlist(profile.steamId64);
 
   await steamWishlistSublevel.put(profile.steamId64, items);
 
-  return { connected: true, profile, items, syncedAt: Date.now() };
+  let libraryCount = userPreferences?.steamWishlistLibraryCount ?? null;
+  if (key) {
+    try {
+      const owned = await fetchOwnedGames(profile.steamId64, key);
+      await importOwnedGamesToLibrary(owned);
+      libraryCount = owned.length;
+    } catch (err) {
+      logger.error("[steam-wishlist] refresh owned games failed", err);
+    }
+  }
+
+  return {
+    connected: true,
+    profile,
+    items,
+    syncedAt: Date.now(),
+    hasApiKey: Boolean(key),
+    libraryCount,
+  };
 };
 
 registerEvent("refreshSteamWishlist", refreshSteamWishlist);

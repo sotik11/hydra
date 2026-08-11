@@ -149,6 +149,8 @@ export interface UserPreferences {
   steamWishlistPersonaName?: string | null;
   steamWishlistAvatarUrl?: string | null;
   steamWishlistSyncedAt?: number | null;
+  steamWishlistApiKey?: string | null;
+  steamWishlistLibraryCount?: number | null;
   localizationsEnabled?: boolean;
   preferQuitInsteadOfHiding?: boolean;
   runAtStartup?: boolean;

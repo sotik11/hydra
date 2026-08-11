@@ -1,6 +1,6 @@
 import axios from "axios";
 
-import type { SteamProfile, SteamWishlistItem } from "@types";
+import type { SteamOwnedGame, SteamProfile, SteamWishlistItem } from "@types";
 
 // SteamID64 of the first-ever account; account-id offsets are added on top.
 const STEAM64_BASE = 76561197960265728n;
@@ -69,44 +69,101 @@ function profileFromXml(xml: string, steamId64: string): SteamProfile {
   };
 }
 
+interface PlayerSummary {
+  steamid: string;
+  personaname?: string;
+  avatarfull?: string;
+}
+
+async function fetchSteamProfileViaApi(
+  steamId64: string,
+  apiKey: string
+): Promise<SteamProfile> {
+  const { data } = await axios.get<{
+    response?: { players?: PlayerSummary[] };
+  }>(
+    `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v2/?key=${apiKey}&steamids=${steamId64}`,
+    { timeout: 15000 }
+  );
+  const player = data.response?.players?.[0];
+  if (!player) {
+    throw new Error("steam-wishlist/profile-api-empty");
+  }
+  return {
+    steamId64,
+    personaName: player.personaname ?? steamId64,
+    avatarUrl: player.avatarfull ?? "",
+  };
+}
+
 /**
  * Resolve any supported profile input to a SteamProfile (id64 + persona +
- * avatar) via the public community XML endpoint. No API key required; the
- * profile must be public. When the id64 is already known offline (id64 URL,
- * legacy/SteamID3/hex), the profile page only adds persona + avatar, so a
- * rate-limit (429) there degrades gracefully instead of failing the connect.
+ * avatar). With an API key the profile comes from GetPlayerSummaries (reliable,
+ * no community rate-limit). Without one it falls back to the public community
+ * XML — which Steam aggressively rate-limits (429), so when the id64 is already
+ * known offline the cosmetics degrade gracefully instead of failing.
  */
 export async function resolveSteamProfile(
-  input: string
+  input: string,
+  apiKey?: string | null
 ): Promise<SteamProfile> {
   const value = input.trim().replace(/\/+$/, "");
-  const directId = toSteamId64(value);
+  let steamId64 = toSteamId64(value);
 
-  if (directId) {
-    try {
-      const xml = await fetchProfileXml(
-        `https://steamcommunity.com/profiles/${directId}?xml=1`
-      );
-      return profileFromXml(xml, directId);
-    } catch {
-      // Profile page unavailable (e.g. 429) — keep the id64, drop the cosmetics.
-      return { steamId64: directId, personaName: directId, avatarUrl: "" };
+  if (!steamId64) {
+    // Vanity handle — the XML is the only key-less way to resolve the id64.
+    const vanityUrl = /steamcommunity\.com\/id\//.test(value)
+      ? `${value}?xml=1`
+      : `https://steamcommunity.com/id/${encodeURIComponent(value)}?xml=1`;
+    const xml = await fetchProfileXml(vanityUrl);
+    steamId64 = pickXmlTag(xml, "steamID64");
+    if (!steamId64) {
+      throw new Error("steam-wishlist/invalid-profile");
     }
   }
 
-  // Vanity handle — the XML is the only way to resolve the id64, so it must
-  // succeed here.
-  const vanityUrl = /steamcommunity\.com\/id\//.test(value)
-    ? `${value}?xml=1`
-    : `https://steamcommunity.com/id/${encodeURIComponent(value)}?xml=1`;
-  const xml = await fetchProfileXml(vanityUrl);
-  const steamId64 = pickXmlTag(xml, "steamID64");
-
-  if (!steamId64) {
-    throw new Error("steam-wishlist/invalid-profile");
+  if (apiKey) {
+    try {
+      return await fetchSteamProfileViaApi(steamId64, apiKey);
+    } catch {
+      // fall through to the community XML / degrade
+    }
   }
 
-  return profileFromXml(xml, steamId64);
+  try {
+    const xml = await fetchProfileXml(
+      `https://steamcommunity.com/profiles/${steamId64}?xml=1`
+    );
+    return profileFromXml(xml, steamId64);
+  } catch {
+    return { steamId64, personaName: steamId64, avatarUrl: "" };
+  }
+}
+
+interface OwnedGameRaw {
+  appid: number;
+  name?: string;
+}
+
+/**
+ * Pull the owned games via IPlayerService/GetOwnedGames. Requires an API key
+ * and public game details.
+ */
+export async function fetchOwnedGames(
+  steamId64: string,
+  apiKey: string
+): Promise<SteamOwnedGame[]> {
+  const { data } = await axios.get<{
+    response?: { games?: OwnedGameRaw[] };
+  }>(
+    `https://api.steampowered.com/IPlayerService/GetOwnedGames/v1/?key=${apiKey}&steamid=${steamId64}&include_appinfo=1&include_played_free_games=1&format=json`,
+    { timeout: 20000 }
+  );
+  const games = data.response?.games ?? [];
+  return games.map((game) => ({
+    appId: String(game.appid),
+    title: game.name ?? String(game.appid),
+  }));
 }
 
 interface GetWishlistResponse {

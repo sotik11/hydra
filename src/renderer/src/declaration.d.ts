@@ -929,7 +929,10 @@ declare global {
     syncLocalizationSources: () => Promise<void>;
 
     /* Steam wishlist */
-    connectSteamWishlist: (profileInput: string) => Promise<SteamWishlistState>;
+    connectSteamWishlist: (
+      profileInput: string,
+      apiKey?: string | null
+    ) => Promise<SteamWishlistState>;
     getSteamWishlist: () => Promise<SteamWishlistState>;
     refreshSteamWishlist: () => Promise<SteamWishlistState>;
     disconnectSteamWishlist: () => Promise<void>;

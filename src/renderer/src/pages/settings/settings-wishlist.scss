@@ -20,28 +20,6 @@
     }
   }
 
-  &__connect-profile {
-    align-items: flex-start;
-  }
-
-  &__connect {
-    display: flex;
-    flex-direction: column;
-    gap: calc(globals.$spacing-unit * 2);
-    flex: 1;
-    min-width: 0;
-  }
-
-  &__form {
-    display: flex;
-    flex-direction: column;
-    gap: calc(globals.$spacing-unit * 2);
-  }
-
-  &__submit {
-    align-self: flex-end;
-  }
-
   &__profile-link {
     display: inline-flex;
     align-items: center;

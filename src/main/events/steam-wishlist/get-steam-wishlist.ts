@@ -2,8 +2,9 @@ import { registerEvent } from "../register-event";
 import { db, levelKeys, steamWishlistSublevel } from "@main/level";
 import type { SteamWishlistState, UserPreferences } from "@types";
 
-// Rebuild the wishlist state from what's stored: profile fields live in user
-// preferences, the (potentially large) item list lives in its own sublevel.
+// Rebuild the wishlist state from what's stored: profile fields, API-key
+// presence and library count live in user preferences, the (potentially large)
+// item list lives in its own sublevel.
 const getSteamWishlist = async (): Promise<SteamWishlistState> => {
   const userPreferences = await db
     .get<string, UserPreferences | null>(levelKeys.userPreferences, {
@@ -14,7 +15,14 @@ const getSteamWishlist = async (): Promise<SteamWishlistState> => {
   const steamId = userPreferences?.steamWishlistSteamId;
 
   if (!steamId) {
-    return { connected: false, profile: null, items: [], syncedAt: null };
+    return {
+      connected: false,
+      profile: null,
+      items: [],
+      syncedAt: null,
+      hasApiKey: false,
+      libraryCount: null,
+    };
   }
 
   const items =
@@ -29,6 +37,8 @@ const getSteamWishlist = async (): Promise<SteamWishlistState> => {
     },
     items,
     syncedAt: userPreferences?.steamWishlistSyncedAt ?? null,
+    hasApiKey: Boolean(userPreferences?.steamWishlistApiKey),
+    libraryCount: userPreferences?.steamWishlistLibraryCount ?? null,
   };
 };
 
