@@ -149,7 +149,7 @@ export function SettingsWishlist() {
       return (
         <div className="settings-retroachievements__connected">
           <div className="settings-retroachievements__profile">
-            <div className="settings-retroachievements__avatar">
+            <div className="settings-wishlist__avatar">
               {state.profile.avatarUrl && !avatarError ? (
                 <img
                   src={state.profile.avatarUrl}
@@ -161,40 +161,22 @@ export function SettingsWishlist() {
               )}
             </div>
 
-            <div className="settings-wishlist__info">
-              <div className="settings-retroachievements__account">
-                <span className="settings-retroachievements__username">
-                  {state.profile.personaName}
-                </span>
-                <button
-                  type="button"
-                  className="settings-wishlist__profile-link"
-                  onClick={() => window.electron.openExternal(profileUrl)}
-                >
-                  <LinkExternalIcon size={12} />
-                  {t("wishlist_open_profile")}
-                </button>
-                <span className="settings-wishlist__hint">
-                  {t("wishlist_profile_hint")}
-                </span>
-              </div>
-
-              <div className="settings-retroachievements__account settings-wishlist__field">
-                <span className="settings-retroachievements__status">
-                  <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
-                  {t("wishlist_status_connected", {
-                    count: state.items.length,
-                  })}
-                </span>
-                <TextField
-                  label=""
-                  value={state.profile.steamId64}
-                  type="password"
-                  readOnly
-                  disabled
-                  theme="dark"
-                />
-              </div>
+            <div className="settings-retroachievements__account">
+              <span className="settings-retroachievements__username">
+                {state.profile.personaName}
+              </span>
+              <button
+                type="button"
+                className="settings-wishlist__profile-link"
+                onClick={() => window.electron.openExternal(profileUrl)}
+              >
+                <LinkExternalIcon size={12} />
+                {t("wishlist_open_profile")}
+              </button>
+              <span className="settings-retroachievements__status">
+                <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
+                {t("wishlist_status_connected", { count: state.items.length })}
+              </span>
             </div>
           </div>
 
@@ -220,9 +202,9 @@ export function SettingsWishlist() {
     }
 
     return (
-      <div className="settings-retroachievements__connected">
-        <div className="settings-retroachievements__profile settings-wishlist__connect-profile">
-          <div className="settings-retroachievements__avatar">
+      <div className="settings-retroachievements__connected settings-wishlist__connect-profile">
+        <div className="settings-retroachievements__profile">
+          <div className="settings-wishlist__avatar">
             <img src={steamLogo} alt="Steam" />
           </div>
 
@@ -236,19 +218,16 @@ export function SettingsWishlist() {
               </p>
             </div>
 
-            <form
-              className="settings-wishlist__input-row"
-              onSubmit={handleConnect}
-            >
+            <form className="settings-wishlist__form" onSubmit={handleConnect}>
               <TextField
                 label={t("wishlist_profile_label")}
                 value={profileInput}
                 onChange={(event) => setProfileInput(event.target.value)}
                 placeholder={t("wishlist_profile_placeholder")}
-                containerProps={{ className: "settings-wishlist__input" }}
               />
               <Button
                 type="submit"
+                className="settings-wishlist__submit"
                 disabled={!profileInput.trim() || isSubmitting}
               >
                 {t("wishlist_connect")}
