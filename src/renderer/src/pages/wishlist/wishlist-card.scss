@@ -76,4 +76,33 @@
     flex-wrap: wrap;
     gap: 4px;
   }
+
+  // List view: cover left, title + sources on a row.
+  &--list &__link {
+    flex-direction: row;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 2);
+    padding: globals.$spacing-unit;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid globals.$border-color;
+  }
+
+  &--list &__cover {
+    width: 56px;
+    flex-shrink: 0;
+  }
+
+  &--list &__title {
+    flex: 1;
+    min-width: 0;
+    font-size: 1rem;
+    white-space: normal;
+  }
+
+  &--list &__sources {
+    flex-shrink: 0;
+    justify-content: flex-end;
+    max-width: 45%;
+  }
 }

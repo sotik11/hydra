@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { StarIcon, SyncIcon } from "@primer/octicons-react";
+import {
+  StarIcon,
+  SyncIcon,
+  AppsIcon,
+  ListUnorderedIcon,
+} from "@primer/octicons-react";
 
 import { Button } from "@renderer/components";
 import type { WishlistGame } from "@types";
@@ -9,10 +14,15 @@ import { WishlistCard } from "./wishlist-card";
 import "./wishlist-page-i18n";
 import "./wishlist.scss";
 
+type WishlistView = "grid" | "list";
+
 export default function Wishlist() {
   const { t } = useTranslation("wishlist");
   const [games, setGames] = useState<WishlistGame[] | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [view, setView] = useState<WishlistView>(() =>
+    localStorage.getItem("wishlist-view") === "list" ? "list" : "grid"
+  );
 
   const loadGames = useCallback(() => {
     window.electron
@@ -28,6 +38,11 @@ export default function Wishlist() {
   const handleRefresh = () => {
     loadGames();
     setRefreshKey((key) => key + 1);
+  };
+
+  const changeView = (next: WishlistView) => {
+    setView(next);
+    localStorage.setItem("wishlist-view", next);
   };
 
   if (games === null) return null;
@@ -53,15 +68,50 @@ export default function Wishlist() {
             {t("count_games", { count: games.length })}
           </span>
         </div>
-        <Button theme="outline" onClick={handleRefresh}>
-          <SyncIcon size={14} />
-          {t("refresh")}
-        </Button>
+
+        <div className="wishlist__header-actions">
+          <div className="wishlist__view-toggle">
+            <button
+              type="button"
+              className={`wishlist__view-button ${
+                view === "grid" ? "wishlist__view-button--active" : ""
+              }`}
+              onClick={() => changeView("grid")}
+              aria-label="grid"
+            >
+              <AppsIcon size={16} />
+            </button>
+            <button
+              type="button"
+              className={`wishlist__view-button ${
+                view === "list" ? "wishlist__view-button--active" : ""
+              }`}
+              onClick={() => changeView("list")}
+              aria-label="list"
+            >
+              <ListUnorderedIcon size={16} />
+            </button>
+          </div>
+
+          <Button theme="outline" onClick={handleRefresh}>
+            <SyncIcon size={14} />
+            {t("refresh")}
+          </Button>
+        </div>
       </div>
 
-      <ul className="wishlist__grid">
+      <ul
+        className={`wishlist__grid ${
+          view === "list" ? "wishlist__grid--list" : ""
+        }`}
+      >
         {sorted.map((game) => (
-          <WishlistCard key={game.appId} game={game} refreshKey={refreshKey} />
+          <WishlistCard
+            key={game.appId}
+            game={game}
+            refreshKey={refreshKey}
+            view={view}
+          />
         ))}
       </ul>
     </div>

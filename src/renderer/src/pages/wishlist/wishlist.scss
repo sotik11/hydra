@@ -1,7 +1,9 @@
 @use "../../scss/globals.scss";
 
 .wishlist {
+  width: 100%;
   padding: calc(globals.$spacing-unit * 3);
+  box-sizing: border-box;
 
   &__header {
     display: flex;
@@ -14,6 +16,12 @@
   &__header-info {
     display: flex;
     align-items: baseline;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
     gap: calc(globals.$spacing-unit * 2);
   }
 
@@ -42,10 +50,41 @@
     align-items: center;
     justify-content: center;
     gap: globals.$spacing-unit;
+    width: 100%;
     height: 100%;
     padding: calc(globals.$spacing-unit * 6);
+    box-sizing: border-box;
     text-align: center;
     color: var(--text-secondary);
+  }
+
+  &__view-toggle {
+    display: flex;
+    gap: 4px;
+  }
+
+  &__view-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
+    border: 1px solid globals.$border-color;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+
+    &--active {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+    }
+  }
+
+  // List view: cards laid out as rows (cover left, title + sources right).
+  &__grid--list {
+    grid-template-columns: 1fr;
+    gap: globals.$spacing-unit;
   }
 
   &__empty-icon {

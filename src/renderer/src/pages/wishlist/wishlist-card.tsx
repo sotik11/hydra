@@ -17,9 +17,14 @@ import "./wishlist-card.scss";
 interface WishlistCardProps {
   game: WishlistGame;
   refreshKey?: number;
+  view?: "grid" | "list";
 }
 
-export function WishlistCard({ game, refreshKey = 0 }: WishlistCardProps) {
+export function WishlistCard({
+  game,
+  refreshKey = 0,
+  view = "grid",
+}: WishlistCardProps) {
   const ref = useRef<HTMLLIElement>(null);
   const { library } = useLibrary();
 
@@ -102,7 +107,7 @@ export function WishlistCard({ game, refreshKey = 0 }: WishlistCardProps) {
   }, [visible, objectId, refreshKey]);
 
   return (
-    <li ref={ref} className="wishlist-card">
+    <li ref={ref} className={`wishlist-card wishlist-card--${view}`}>
       <Link
         to={buildGameDetailsPath({ shop, objectId, title })}
         className="wishlist-card__link"
