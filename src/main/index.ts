@@ -4,6 +4,7 @@ import i18n from "i18next";
 import path from "node:path";
 import url from "node:url";
 import { electronApp, optimizer } from "@electron-toolkit/utils";
+import { enableDevTools } from "@main/constants";
 import {
   logger,
   clearGamesPlaytime,
@@ -193,6 +194,18 @@ const initializeApp = async () => {
 
 app.on("browser-window-created", (_, window) => {
   optimizer.watchWindowShortcuts(window);
+
+  // Fork dev switch: when enableDevTools is on, bind F12 to toggle DevTools on
+  // every window. Packaged builds don't get the shortcut from
+  // watchWindowShortcuts, so this lets us open the panel on demand instead of
+  // auto-opening it at startup.
+  if (enableDevTools) {
+    window.webContents.on("before-input-event", (_event, input) => {
+      if (input.type === "keyDown" && input.key === "F12") {
+        window.webContents.toggleDevTools();
+      }
+    });
+  }
 });
 
 const handleRunGame = async (shop: GameShop, objectId: string) => {
