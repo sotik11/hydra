@@ -4,30 +4,44 @@ import { logger } from "@main/services";
 import type { Game, SteamOwnedGame } from "@types";
 
 /**
- * Add owned Steam games to the Hydra library as regular entries, skipping any
- * game already present (never touching the user's own records). These are
- * normal library entries — disconnecting the Steam wishlist does NOT remove
- * them. Local writes are awaited (fast) so the games appear immediately; the
- * cloud-sync (createGame) runs in the background so a large library doesn't
- * block the connect flow. Returns how many new games were added.
+ * Add owned Steam games to the Hydra library as regular entries. Behaviour per
+ * owned game:
+ *  - already present & not deleted → just add the Steam import badge (leave the
+ *    rest of the record untouched);
+ *  - soft-deleted (user removed it after a previous import) → SKIP, never
+ *    resurrect it. The isDeleted record lives in gamesSublevel and survives
+ *    disconnect, so it also blocks re-adding after reconnect — this is the
+ *    implicit "removed from Steam import" list;
+ *  - not present → create it.
+ *
+ * Local writes are awaited (fast); cloud-sync (createGame) runs in the
+ * background so a large library doesn't block the connect flow. Returns how
+ * many owned games are actually in the library now (excludes removed ones), so
+ * the "library · N games" counter shrinks after the user prunes junk.
  */
 export async function importOwnedGamesToLibrary(
   owned: SteamOwnedGame[]
 ): Promise<number> {
   const toSync: Game[] = [];
+  let inLibrary = 0;
 
   for (const game of owned) {
     const gameKey = levelKeys.game("steam", game.appId);
     const existing = await gamesSublevel.get(gameKey).catch(() => null);
-    if (existing && !existing.isDeleted) {
-      // Already in the library — just add the Steam import badge, leaving the
-      // rest of the record (added date, playtime, ...) untouched.
+
+    if (existing?.isDeleted) {
+      // User removed this game after a previous import — do NOT resurrect it.
+      continue;
+    }
+
+    if (existing) {
       if (!existing.steamLibraryImport) {
         await gamesSublevel.put(gameKey, {
           ...existing,
           steamLibraryImport: true,
         });
       }
+      inLibrary += 1;
       continue;
     }
 
@@ -51,6 +65,7 @@ export async function importOwnedGamesToLibrary(
 
     await gamesSublevel.put(gameKey, entry);
     toSync.push(entry);
+    inLibrary += 1;
   }
 
   if (toSync.length > 0) {
@@ -64,5 +79,5 @@ export async function importOwnedGamesToLibrary(
     })();
   }
 
-  return toSync.length;
+  return inLibrary;
 }

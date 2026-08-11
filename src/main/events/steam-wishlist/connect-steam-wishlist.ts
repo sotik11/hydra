@@ -29,8 +29,7 @@ const connectSteamWishlist = async (
   if (key) {
     try {
       const owned = await fetchOwnedGames(profile.steamId64, key);
-      await importOwnedGamesToLibrary(owned);
-      libraryCount = owned.length;
+      libraryCount = await importOwnedGamesToLibrary(owned);
     } catch (err) {
       // Library import is optional — a bad/missing key must not fail the
       // wishlist connect.

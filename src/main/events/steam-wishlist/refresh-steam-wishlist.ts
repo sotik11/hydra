@@ -36,8 +36,7 @@ const refreshSteamWishlist = async (): Promise<SteamWishlistState> => {
   if (key) {
     try {
       const owned = await fetchOwnedGames(profile.steamId64, key);
-      await importOwnedGamesToLibrary(owned);
-      libraryCount = owned.length;
+      libraryCount = await importOwnedGamesToLibrary(owned);
     } catch (err) {
       logger.error("[steam-wishlist] refresh owned games failed", err);
     }
