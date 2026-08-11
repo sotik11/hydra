@@ -8,6 +8,8 @@ import {
   PinSlashIcon,
   PlayIcon,
   PlusCircleIcon,
+  StarIcon,
+  StarFillIcon,
 } from "@primer/octicons-react";
 import { Button, ConfirmationModal } from "@renderer/components";
 import { XCircle } from "lucide-react";
@@ -28,10 +30,12 @@ import { DiscSelectionModal } from "../modals/disc-selection-modal";
 import "./hero-panel-actions.scss";
 import { useEffect } from "react";
 import "../modals/localization-i18n";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
 
 export function HeroPanelActions() {
   const [toggleLibraryGameDisabled, setToggleLibraryGameDisabled] =
     useState(false);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
 
   const { isGameDeleting } = useDownload();
   const { userDetails } = useUserDetails();
@@ -337,6 +341,29 @@ export function HeroPanelActions() {
     </Button>
   ) : null;
 
+  const addToWishlist = async () => {
+    if (addedToWishlist || !objectId) return;
+    try {
+      await window.electron.addWishlistGame(objectId);
+      setAddedToWishlist(true);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const wishlistButton =
+    shop === "steam" ? (
+      <Button
+        onClick={addToWishlist}
+        theme="outline"
+        disabled={addedToWishlist}
+        className="hero-panel-actions__action"
+      >
+        {addedToWishlist ? <StarFillIcon /> : <StarIcon />}
+        {t("add_to_wishlist", { ns: "wishlist" })}
+      </Button>
+    ) : null;
+
   const gameActionButton = () => {
     if (isTransferring) {
       const percent = Math.round(transferProgress * 100);
@@ -402,6 +429,7 @@ export function HeroPanelActions() {
     return (
       <>
         {addGameToLibraryButton}
+        {wishlistButton}
         {showDownloadOptionsButton}
       </>
     );
