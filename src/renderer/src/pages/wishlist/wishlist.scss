@@ -35,6 +35,25 @@
     font-size: globals.$small-font-size;
   }
 
+  &__toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 2);
+    margin-bottom: calc(globals.$spacing-unit * 3);
+  }
+
+  &__sort {
+    display: flex;
+    align-items: center;
+    gap: globals.$spacing-unit;
+  }
+
+  &__sort-label {
+    color: var(--text-secondary);
+    font-size: globals.$small-font-size;
+  }
+
   &__grid {
     list-style: none;
     margin: 0;

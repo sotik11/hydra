@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   StarIcon,
@@ -8,14 +8,18 @@ import {
   TrashIcon,
 } from "@primer/octicons-react";
 
-import { Button, ConfirmationModal } from "@renderer/components";
+import { Button, CheckboxField, ConfirmationModal } from "@renderer/components";
+import { useAppSelector } from "@renderer/hooks";
 import type { WishlistGame } from "@types";
 
 import { WishlistCard } from "./wishlist-card";
+import { useWishlistMetadata } from "./use-wishlist-metadata";
+import { LibrarySelect } from "../library/library-select";
 import "./wishlist-page-i18n";
 import "./wishlist.scss";
 
 type WishlistView = "grid" | "list";
+type WishlistSort = "added" | "title";
 
 export default function Wishlist() {
   const { t } = useTranslation("wishlist");
@@ -25,6 +29,14 @@ export default function Wishlist() {
     localStorage.getItem("wishlist-view") === "list" ? "list" : "grid"
   );
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [sortBy, setSortBy] = useState<WishlistSort>("added");
+  const [onlyWithRepack, setOnlyWithRepack] = useState(false);
+
+  const searchTerm = useAppSelector(
+    (state) => state.catalogueSearch.filters.title
+  );
+
+  const { metaById } = useWishlistMetadata(games ?? [], refreshKey);
 
   const loadGames = useCallback(() => {
     window.electron
@@ -57,6 +69,31 @@ export default function Wishlist() {
     localStorage.setItem("wishlist-view", next);
   };
 
+  const displayed = useMemo(() => {
+    if (!games) return [];
+    const term = searchTerm.trim().toLowerCase();
+
+    const filtered = games.filter((game) => {
+      const meta = metaById[game.appId];
+      if (onlyWithRepack && (!meta || meta.sources.length === 0)) return false;
+      if (term) {
+        const title = (meta?.title ?? game.appId).toLowerCase();
+        if (!title.includes(term)) return false;
+      }
+      return true;
+    });
+
+    if (sortBy === "title") {
+      return [...filtered].sort((a, b) =>
+        (metaById[a.appId]?.title ?? a.appId).localeCompare(
+          metaById[b.appId]?.title ?? b.appId
+        )
+      );
+    }
+
+    return [...filtered].sort((a, b) => b.addedAt - a.addedAt);
+  }, [games, metaById, sortBy, onlyWithRepack, searchTerm]);
+
   if (games === null) return null;
 
   if (games.length === 0) {
@@ -69,14 +106,12 @@ export default function Wishlist() {
     );
   }
 
-  const sorted = [...games].sort((a, b) => b.addedAt - a.addedAt);
-
   return (
     <div className="wishlist">
       <div className="wishlist__header">
         <div className="wishlist__summary">
           <span className="wishlist__count">
-            {t("count_games", { count: games.length })}
+            {t("count_games", { count: displayed.length })}
           </span>
           <span className="wishlist__hint">{t("filters_hint")}</span>
         </div>
@@ -117,6 +152,27 @@ export default function Wishlist() {
         </div>
       </div>
 
+      <div className="wishlist__toolbar">
+        <CheckboxField
+          label={t("filter_with_repack")}
+          checked={onlyWithRepack}
+          onChange={() => setOnlyWithRepack((value) => !value)}
+        />
+
+        <div className="wishlist__sort">
+          <span className="wishlist__sort-label">{t("sort_by")}</span>
+          <LibrarySelect
+            value={sortBy}
+            ariaLabel={t("sort_by")}
+            onChange={(value) => setSortBy(value as WishlistSort)}
+            options={[
+              { value: "added", label: t("sort_added") },
+              { value: "title", label: t("sort_title") },
+            ]}
+          />
+        </div>
+      </div>
+
       <ConfirmationModal
         visible={showClearConfirm}
         title={t("clear_confirm_title")}
@@ -132,7 +188,7 @@ export default function Wishlist() {
           view === "list" ? "wishlist__grid--list" : ""
         }`}
       >
-        {sorted.map((game) => (
+        {displayed.map((game) => (
           <WishlistCard
             key={game.appId}
             game={game}

@@ -91,14 +91,18 @@ async function resolveOne(
  */
 export function useWishlistMetadata(games: WishlistGame[], refreshKey: number) {
   const { i18n } = useTranslation();
-  const [metaById, setMetaById] = useState<Record<string, WishlistGameMeta>>({});
+  const [metaById, setMetaById] = useState<Record<string, WishlistGameMeta>>(
+    {}
+  );
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     setReady(false);
     setMetaById(
-      Object.fromEntries(games.map((game) => [game.appId, emptyMeta(game.appId)]))
+      Object.fromEntries(
+        games.map((game) => [game.appId, emptyMeta(game.appId)])
+      )
     );
 
     if (games.length === 0) {

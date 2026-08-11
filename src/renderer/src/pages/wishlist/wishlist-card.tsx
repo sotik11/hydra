@@ -250,14 +250,10 @@ export function WishlistCard({
             onClick={handleFavorite}
             disabled={busy}
             title={
-              isFavorite
-                ? t("remove_from_favorites")
-                : t("add_to_favorites")
+              isFavorite ? t("remove_from_favorites") : t("add_to_favorites")
             }
             aria-label={
-              isFavorite
-                ? t("remove_from_favorites")
-                : t("add_to_favorites")
+              isFavorite ? t("remove_from_favorites") : t("add_to_favorites")
             }
           >
             {isFavorite ? <HeartFillIcon size={14} /> : <HeartIcon size={14} />}
