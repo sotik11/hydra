@@ -20,6 +20,9 @@ const wishlist: Record<string, Record<string, string>> = {
     sort_title: "Title (A-Z)",
     filter_with_repack: "Only with a repack",
     refresh: "Refresh",
+    add_to_wishlist: "Add to wishlist",
+    add_to_library: "Add to library",
+    remove_from_wishlist: "Remove from wishlist",
   },
   ru: {
     page_title: "Список желаемого",
@@ -32,6 +35,9 @@ const wishlist: Record<string, Record<string, string>> = {
     sort_title: "По названию (A-Z)",
     filter_with_repack: "Только с репаком",
     refresh: "Обновить",
+    add_to_wishlist: "В список желаемого",
+    add_to_library: "В библиотеку",
+    remove_from_wishlist: "Убрать из списка",
   },
   uk: {
     page_title: "Список бажаного",
@@ -44,6 +50,9 @@ const wishlist: Record<string, Record<string, string>> = {
     sort_title: "За назвою (A-Z)",
     filter_with_repack: "Лише з репаком",
     refresh: "Оновити",
+    add_to_wishlist: "До списку бажаного",
+    add_to_library: "До бібліотеки",
+    remove_from_wishlist: "Прибрати зі списку",
   },
 };
 

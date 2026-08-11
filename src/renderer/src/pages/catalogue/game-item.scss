@@ -16,7 +16,8 @@
 
   &:hover,
   &:focus-within {
-    .game-item__plus-wrapper {
+    .game-item__plus-wrapper,
+    .game-item__star-wrapper {
       opacity: 1;
     }
   }
@@ -70,6 +71,32 @@
 
   &__plus-wrapper--added {
     opacity: 0.5;
+  }
+
+  &__star-wrapper {
+    position: absolute;
+    top: 40px;
+    right: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    cursor: pointer;
+    z-index: 1;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: inherit;
+    padding: 2px;
+
+    &:focus-visible {
+      opacity: 1;
+      outline: 2px solid var(--color-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  &__star-wrapper--added {
+    opacity: 1;
+    color: #f8c802;
   }
 
   &__cover {

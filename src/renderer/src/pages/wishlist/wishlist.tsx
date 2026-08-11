@@ -40,6 +40,10 @@ export default function Wishlist() {
     setRefreshKey((key) => key + 1);
   };
 
+  const handleRemoved = (appId: string) => {
+    setGames((prev) => (prev ? prev.filter((g) => g.appId !== appId) : prev));
+  };
+
   const changeView = (next: WishlistView) => {
     setView(next);
     localStorage.setItem("wishlist-view", next);
@@ -111,6 +115,7 @@ export default function Wishlist() {
             game={game}
             refreshKey={refreshKey}
             view={view}
+            onRemoved={handleRemoved}
           />
         ))}
       </ul>

@@ -7,7 +7,14 @@ import { Link } from "@renderer/components/link/link";
 import "./game-item.scss";
 import { useTranslation } from "react-i18next";
 import { CatalogueSearchResult } from "@types";
-import { QuestionIcon, PlusIcon, CheckIcon } from "@primer/octicons-react";
+import {
+  QuestionIcon,
+  PlusIcon,
+  CheckIcon,
+  StarIcon,
+  StarFillIcon,
+} from "@primer/octicons-react";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
 import cn from "classnames";
 
 const ProtonDBBadge = lazy(async () => {
@@ -29,6 +36,7 @@ export function GameItem({ game }: GameItemProps) {
   const [isAddingToLibrary, setIsAddingToLibrary] = useState(false);
 
   const [added, setAdded] = useState(false);
+  const [addedToWishlist, setAddedToWishlist] = useState(false);
 
   const { library, updateLibrary } = useLibrary();
   const shouldShowProtonFeatures = window.electron.platform === "linux";
@@ -58,6 +66,16 @@ export function GameItem({ game }: GameItemProps) {
       console.error(error);
     } finally {
       setIsAddingToLibrary(false);
+    }
+  };
+
+  const addToWishlist = async () => {
+    if (addedToWishlist) return;
+    try {
+      await window.electron.addWishlistGame(game.objectId);
+      setAddedToWishlist(true);
+    } catch (error) {
+      console.error(error);
     }
   };
 
@@ -157,6 +175,24 @@ export function GameItem({ game }: GameItemProps) {
       >
         {added ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
       </button>
+      {game.shop === "steam" && (
+        <button
+          type="button"
+          className={cn("game-item__star-wrapper", {
+            "game-item__star-wrapper--added": addedToWishlist,
+          })}
+          onClick={addToWishlist}
+          title={t("add_to_wishlist", { ns: "wishlist" })}
+          aria-label={t("add_to_wishlist", { ns: "wishlist" })}
+          disabled={addedToWishlist}
+        >
+          {addedToWishlist ? (
+            <StarFillIcon size={16} />
+          ) : (
+            <StarIcon size={16} />
+          )}
+        </button>
+      )}
     </article>
   );
 }

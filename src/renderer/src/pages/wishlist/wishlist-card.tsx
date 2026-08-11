@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { BookIcon } from "@primer/octicons-react";
+import { useTranslation } from "react-i18next";
+import { BookIcon, PlusIcon, XIcon } from "@primer/octicons-react";
 import { orderBy } from "lodash-es";
 
 import { Badge } from "@renderer/components/badge/badge";
@@ -18,15 +19,18 @@ interface WishlistCardProps {
   game: WishlistGame;
   refreshKey?: number;
   view?: "grid" | "list";
+  onRemoved?: (appId: string) => void;
 }
 
 export function WishlistCard({
   game,
   refreshKey = 0,
   view = "grid",
+  onRemoved,
 }: WishlistCardProps) {
+  const { t } = useTranslation("wishlist");
   const ref = useRef<HTMLLIElement>(null);
-  const { library } = useLibrary();
+  const { library, updateLibrary } = useLibrary();
 
   const shop = "steam" as const;
   const objectId = game.appId;
@@ -35,6 +39,7 @@ export function WishlistCard({
   const [title, setTitle] = useState<string>(objectId);
   const [cover, setCover] = useState<string | null>(null);
   const [sources, setSources] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
 
   const inLibrary = library.some(
     (entry) =>
@@ -106,6 +111,30 @@ export function WishlistCard({
     };
   }, [visible, objectId, refreshKey]);
 
+  const handleRemove = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setBusy(true);
+    try {
+      await window.electron.removeWishlistGame(objectId);
+      onRemoved?.(objectId);
+    } catch {
+      setBusy(false);
+    }
+  };
+
+  const handleAddToLibrary = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setBusy(true);
+    try {
+      await window.electron.addGameToLibrary(shop, objectId, title, null);
+      updateLibrary();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <li ref={ref} className={`wishlist-card wishlist-card--${view}`}>
       <Link
@@ -136,6 +165,31 @@ export function WishlistCard({
                 <BookIcon size={14} />
               </span>
             )}
+          </div>
+
+          <div className="wishlist-card__actions">
+            {!inLibrary && (
+              <button
+                type="button"
+                className="wishlist-card__action"
+                onClick={handleAddToLibrary}
+                disabled={busy}
+                title={t("add_to_library")}
+                aria-label={t("add_to_library")}
+              >
+                <PlusIcon size={14} />
+              </button>
+            )}
+            <button
+              type="button"
+              className="wishlist-card__action wishlist-card__action--remove"
+              onClick={handleRemove}
+              disabled={busy}
+              title={t("remove_from_wishlist")}
+              aria-label={t("remove_from_wishlist")}
+            >
+              <XIcon size={14} />
+            </button>
           </div>
         </div>
 
