@@ -36,6 +36,7 @@ export async function importOwnedGamesToLibrary(
       lastTimePlayed: null,
       addedToLibraryAt: new Date(),
       platform: null,
+      steamLibraryImport: true,
     };
 
     await gamesSublevel.put(gameKey, entry);

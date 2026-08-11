@@ -19,6 +19,7 @@ import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
+import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card-large.scss";
 
 interface LibraryGameCardLargeProps {
@@ -305,6 +306,15 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
                   </span>
                 )}
               </div>
+            )}
+
+            {game.steamLibraryImport && (
+              <span
+                className="library-game-card-large__steam-badge"
+                title="Steam"
+              >
+                <img src={steamLogo} alt="Steam" />
+              </span>
             )}
           </div>
         </div>

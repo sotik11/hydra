@@ -53,6 +53,7 @@ export interface Game {
   remoteId: string | null;
   collectionIds?: string[];
   isDeleted: boolean;
+  steamLibraryImport?: boolean;
   winePrefixPath?: string | null;
   protonPath?: string | null;
   executablePath?: string | null;

@@ -21,6 +21,7 @@ import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
+import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -221,6 +222,12 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                 </span>
               )}
             </div>
+          )}
+
+          {game.steamLibraryImport && (
+            <span className="library-game-card__steam-badge" title="Steam">
+              <img src={steamLogo} alt="Steam" />
+            </span>
           )}
 
           {isInstalled && (
