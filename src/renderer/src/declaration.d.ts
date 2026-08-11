@@ -6,6 +6,7 @@ import type {
   DownloadProgress,
   SeedingStatus,
   UserPreferences,
+  SteamWishlistState,
   StartGameDownloadPayload,
   RealDebridUser,
   PremiumizeUser,
@@ -926,6 +927,12 @@ declare global {
       enabled: boolean
     ) => Promise<void>;
     syncLocalizationSources: () => Promise<void>;
+
+    /* Steam wishlist */
+    connectSteamWishlist: (profileInput: string) => Promise<SteamWishlistState>;
+    getSteamWishlist: () => Promise<SteamWishlistState>;
+    refreshSteamWishlist: () => Promise<SteamWishlistState>;
+    disconnectSteamWishlist: () => Promise<void>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage>;

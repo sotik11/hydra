@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { SettingsDebrid } from "./settings-debrid";
 import { SettingsRetroAchievements } from "./settings-retroachievements";
+import { SettingsWishlist } from "./settings-wishlist";
 import { SettingsLocalizationSources } from "./settings-localization-sources";
 
 export function SettingsContextIntegrations() {
@@ -11,6 +12,10 @@ export function SettingsContextIntegrations() {
       <div className="settings-context-panel__group">
         <SettingsRetroAchievements />
       </div>
+
+      <hr className="settings-context-panel__divider" />
+
+      <SettingsWishlist />
 
       <hr className="settings-context-panel__divider" />
 
