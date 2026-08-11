@@ -386,6 +386,19 @@ export function HeroPanelActions() {
       </Button>
     ) : null;
 
+  // Icon-only variant for the in-library layout (next to favorite/pin).
+  const wishlistIconButton =
+    shop === "steam" ? (
+      <Button
+        onClick={toggleWishlist}
+        theme="outline"
+        disabled={deleting}
+        className="hero-panel-actions__action"
+      >
+        {addedToWishlist ? <StarFillIcon /> : <StarIcon />}
+      </Button>
+    ) : null;
+
   const gameActionButton = () => {
     if (isTransferring) {
       const percent = Math.round(transferProgress * 100);
@@ -463,6 +476,7 @@ export function HeroPanelActions() {
         {localizationButton}
         {gameActionButton()}
         <div className="hero-panel-actions__separator" />
+        {wishlistIconButton}
         <Button
           onClick={toggleGameFavorite}
           theme="outline"

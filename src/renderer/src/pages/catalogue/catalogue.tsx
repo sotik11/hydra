@@ -155,7 +155,9 @@ export default function Catalogue() {
       .getWishlistGames()
       .then((games) => setWishlistAppIds(new Set(games.map((g) => g.appId))))
       .catch(() => {});
-  }, []);
+    // Reload when the visible results change (search/pagination/return) so the
+    // star reflects the current wishlist, not a stale snapshot.
+  }, [results]);
 
   const [itemsCount, setItemsCount] = useState(0);
 
