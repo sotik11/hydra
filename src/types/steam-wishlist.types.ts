@@ -28,3 +28,15 @@ export interface SteamWishlistState {
   hasApiKey: boolean;
   libraryCount: number | null;
 }
+
+// Working wishlist store (screen + manual adds), separate from the raw Steam
+// wishlist. A game is "in the wishlist" iff it has a record here. `source`
+// tracks how it got in; a Steam denylist blocks the auto-import from bringing
+// back games the user removed by hand.
+export type WishlistGameSource = "steam" | "manual";
+
+export interface WishlistGame {
+  appId: string;
+  source: WishlistGameSource;
+  addedAt: number;
+}

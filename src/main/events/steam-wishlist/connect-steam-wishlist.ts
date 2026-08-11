@@ -5,6 +5,7 @@ import {
   fetchSteamWishlist,
   fetchOwnedGames,
   importOwnedGamesToLibrary,
+  syncSteamWishlistToStore,
 } from "@main/services/steam-wishlist";
 import { logger } from "@main/services";
 import type { SteamWishlistState } from "@types";
@@ -24,6 +25,7 @@ const connectSteamWishlist = async (
   const items = await fetchSteamWishlist(profile.steamId64);
 
   await steamWishlistSublevel.put(profile.steamId64, items);
+  await syncSteamWishlistToStore(items);
 
   let libraryCount: number | null = null;
   if (key) {

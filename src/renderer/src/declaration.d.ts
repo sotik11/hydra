@@ -7,6 +7,7 @@ import type {
   SeedingStatus,
   UserPreferences,
   SteamWishlistState,
+  WishlistGame,
   StartGameDownloadPayload,
   RealDebridUser,
   PremiumizeUser,
@@ -936,6 +937,9 @@ declare global {
     getSteamWishlist: () => Promise<SteamWishlistState>;
     refreshSteamWishlist: () => Promise<SteamWishlistState>;
     disconnectSteamWishlist: () => Promise<void>;
+    getWishlistGames: () => Promise<WishlistGame[]>;
+    addWishlistGame: (appId: string) => Promise<void>;
+    removeWishlistGame: (appId: string) => Promise<void>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage>;

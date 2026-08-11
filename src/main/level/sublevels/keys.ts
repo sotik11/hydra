@@ -28,6 +28,8 @@ export const levelKeys = {
   emulators: "emulators",
   retroarch: "retroarch",
   steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
+  wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
+  wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)
   globalTrackersUrlCache: "globalTrackersUrlCache",
   ps2MemoryCardSaves: "ps2MemoryCardSaves",
   ps2MemoryCardSave: (cardFilePath: string, folderName: string) =>

@@ -892,6 +892,11 @@ contextBridge.exposeInMainWorld("electron", {
   getSteamWishlist: () => ipcRenderer.invoke("getSteamWishlist"),
   refreshSteamWishlist: () => ipcRenderer.invoke("refreshSteamWishlist"),
   disconnectSteamWishlist: () => ipcRenderer.invoke("disconnectSteamWishlist"),
+  getWishlistGames: () => ipcRenderer.invoke("getWishlistGames"),
+  addWishlistGame: (appId: string) =>
+    ipcRenderer.invoke("addWishlistGame", appId),
+  removeWishlistGame: (appId: string) =>
+    ipcRenderer.invoke("removeWishlistGame", appId),
 
   /* Library */
   toggleAutomaticCloudSync: (
