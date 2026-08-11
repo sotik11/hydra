@@ -1,0 +1,55 @@
+@use "../../scss/globals.scss";
+
+.wishlist {
+  padding: calc(globals.$spacing-unit * 3);
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: calc(globals.$spacing-unit * 2);
+    margin-bottom: calc(globals.$spacing-unit * 3);
+  }
+
+  &__header-info {
+    display: flex;
+    align-items: baseline;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+
+  &__count {
+    color: var(--text-secondary);
+    font-size: globals.$small-font-size;
+  }
+
+  &__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: globals.$spacing-unit;
+    height: 100%;
+    padding: calc(globals.$spacing-unit * 6);
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  &__empty-icon {
+    opacity: 0.4;
+    margin-bottom: globals.$spacing-unit;
+  }
+}

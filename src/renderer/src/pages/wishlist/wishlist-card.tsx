@@ -1,0 +1,147 @@
+import { useEffect, useRef, useState } from "react";
+import { BookIcon } from "@primer/octicons-react";
+import { orderBy } from "lodash-es";
+
+import { Badge } from "@renderer/components/badge/badge";
+import { Link } from "@renderer/components/link/link";
+import { useLibrary } from "@renderer/hooks";
+import { buildGameDetailsPath } from "@renderer/helpers";
+import { levelDBService } from "@renderer/services/leveldb.service";
+import { logger } from "@renderer/logger";
+import type { DownloadSource, GameRepack, WishlistGame } from "@types";
+
+import steamLogo from "@renderer/assets/icons/steam.png";
+import HydraLogo from "@renderer/assets/icons/hydra.svg";
+import "./wishlist-card.scss";
+
+interface WishlistCardProps {
+  game: WishlistGame;
+  refreshKey?: number;
+}
+
+export function WishlistCard({ game, refreshKey = 0 }: WishlistCardProps) {
+  const ref = useRef<HTMLLIElement>(null);
+  const { library } = useLibrary();
+
+  const shop = "steam" as const;
+  const objectId = game.appId;
+
+  const [visible, setVisible] = useState(false);
+  const [title, setTitle] = useState<string>(objectId);
+  const [cover, setCover] = useState<string | null>(null);
+  const [sources, setSources] = useState<string[]>([]);
+
+  const inLibrary = library.some(
+    (entry) =>
+      entry.shop === shop && entry.objectId === objectId && !entry.isDeleted
+  );
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!visible) return;
+    let cancelled = false;
+
+    window.electron
+      .getGameAssets(objectId, shop)
+      .then((assets) => {
+        if (cancelled || !assets) return;
+        if (assets.title) setTitle(assets.title);
+        setCover(assets.libraryImageUrl ?? assets.coverImageUrl ?? null);
+      })
+      .catch(() => {});
+
+    (async () => {
+      try {
+        const sourcesRaw = (await levelDBService.values(
+          "downloadSources"
+        )) as DownloadSource[];
+        const ordered = orderBy(sourcesRaw, "createdAt", "desc");
+
+        const repacks = await window.electron.hydraApi.get<GameRepack[]>(
+          `/games/${shop}/${objectId}/download-sources`,
+          {
+            params: {
+              take: 100,
+              skip: 0,
+              downloadSourceIds: ordered.map((source) => source.id),
+            },
+            needsAuth: false,
+          }
+        );
+
+        if (cancelled || !Array.isArray(repacks)) return;
+
+        setSources([
+          ...new Set(repacks.map((repack) => repack.downloadSourceName)),
+        ]);
+      } catch (error) {
+        logger.warn(`[wishlist] sources failed for ${objectId}:`, error);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [visible, objectId, refreshKey]);
+
+  return (
+    <li ref={ref} className="wishlist-card">
+      <Link
+        to={buildGameDetailsPath({ shop, objectId, title })}
+        className="wishlist-card__link"
+        title={title}
+      >
+        <div className="wishlist-card__cover">
+          {cover ? (
+            <img src={cover} alt={title} loading="lazy" />
+          ) : (
+            <div className="wishlist-card__cover-placeholder" />
+          )}
+
+          <div className="wishlist-card__badges">
+            {game.source === "steam" && (
+              <span className="wishlist-card__badge">
+                <img src={steamLogo} alt="Steam" />
+              </span>
+            )}
+            {game.source === "manual" && (
+              <span className="wishlist-card__badge">
+                <HydraLogo width={14} height={14} />
+              </span>
+            )}
+            {inLibrary && (
+              <span className="wishlist-card__badge wishlist-card__badge--library">
+                <BookIcon size={14} />
+              </span>
+            )}
+          </div>
+        </div>
+
+        <span className="wishlist-card__title">{title}</span>
+
+        <div className="wishlist-card__sources">
+          {sources.map((source) => (
+            <Badge key={source}>{source}</Badge>
+          ))}
+        </div>
+      </Link>
+    </li>
+  );
+}

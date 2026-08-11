@@ -4,7 +4,9 @@ import {
   GearIcon,
   HomeIcon,
   BookIcon,
+  StarIcon,
 } from "@primer/octicons-react";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
 
 export const routes = [
   {
@@ -21,6 +23,11 @@ export const routes = [
     path: "/library",
     nameKey: "library",
     render: () => <BookIcon />,
+  },
+  {
+    path: "/wishlist",
+    nameKey: "wishlist",
+    render: () => <StarIcon />,
   },
   {
     path: "/downloads",

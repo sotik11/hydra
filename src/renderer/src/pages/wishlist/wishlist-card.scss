@@ -1,0 +1,79 @@
+@use "../../scss/globals.scss";
+
+.wishlist-card {
+  list-style: none;
+
+  &__link {
+    display: flex;
+    flex-direction: column;
+    gap: globals.$spacing-unit;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  &__cover {
+    position: relative;
+    aspect-ratio: 600 / 900;
+    border-radius: 8px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid globals.$border-color;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__cover-placeholder {
+    width: 100%;
+    height: 100%;
+  }
+
+  &__badges {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 4px;
+  }
+
+  &__badge {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    color: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+
+    img {
+      width: 14px;
+      height: 14px;
+      object-fit: contain;
+    }
+
+    &--library {
+      border-radius: 6px;
+    }
+  }
+
+  &__title {
+    font-size: globals.$small-font-size;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__sources {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+}
