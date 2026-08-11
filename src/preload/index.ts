@@ -886,6 +886,13 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("setLocalizationSourceEnabled", id, enabled),
   syncLocalizationSources: () => ipcRenderer.invoke("syncLocalizationSources"),
 
+  /* Steam wishlist */
+  connectSteamWishlist: (profileInput: string) =>
+    ipcRenderer.invoke("connectSteamWishlist", profileInput),
+  getSteamWishlist: () => ipcRenderer.invoke("getSteamWishlist"),
+  refreshSteamWishlist: () => ipcRenderer.invoke("refreshSteamWishlist"),
+  disconnectSteamWishlist: () => ipcRenderer.invoke("disconnectSteamWishlist"),
+
   /* Library */
   toggleAutomaticCloudSync: (
     shop: GameShop,

@@ -17,6 +17,7 @@ import "./main-window-controls";
 import "./misc";
 import "./notifications";
 import "./profile";
+import "./steam-wishlist";
 import "./themes";
 import "./torrenting";
 import "./user";

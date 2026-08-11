@@ -145,6 +145,10 @@ export interface UserPreferences {
   torBoxApiToken?: string | null;
   retroAchievementsWebApiKey?: string | null;
   retroAchievementsUsername?: string | null;
+  steamWishlistSteamId?: string | null;
+  steamWishlistPersonaName?: string | null;
+  steamWishlistAvatarUrl?: string | null;
+  steamWishlistSyncedAt?: number | null;
   preferQuitInsteadOfHiding?: boolean;
   runAtStartup?: boolean;
   startMinimized?: boolean;

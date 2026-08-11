@@ -27,6 +27,7 @@ export const levelKeys = {
   commonRedistPassed: "commonRedistPassed", // Whether common redistributables preflight has passed
   emulators: "emulators",
   retroarch: "retroarch",
+  steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
   globalTrackersUrlCache: "globalTrackersUrlCache",
   ps2MemoryCardSaves: "ps2MemoryCardSaves",
   ps2MemoryCardSave: (cardFilePath: string, folderName: string) =>
