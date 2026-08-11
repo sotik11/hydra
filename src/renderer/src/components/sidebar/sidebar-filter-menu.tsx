@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { Tooltip } from "react-tooltip";
 import {
   ClassicsIcon,
+  SteamIcon,
   type LibraryCategory,
 } from "@renderer/pages/library/category-filter";
 import type { SortOption } from "@renderer/pages/library/filter-options";
@@ -85,6 +86,11 @@ export function SidebarFilterMenu({
       label: t("category_classics", { ns: "library" }),
       icon: <ClassicsIcon size={14} />,
     },
+    {
+      value: "steam",
+      label: t("category_steam", { ns: "library" }),
+      icon: <SteamIcon size={14} />,
+    },
   ];
 
   const sortOptions: {
@@ -111,6 +117,11 @@ export function SidebarFilterMenu({
       value: "achievements",
       label: t("sort_achievements", { ns: "library" }),
       icon: <TrophyIcon size={14} />,
+    },
+    {
+      value: "steam_import",
+      label: t("sort_steam_import", { ns: "library" }),
+      icon: <SteamIcon size={14} />,
     },
   ];
 

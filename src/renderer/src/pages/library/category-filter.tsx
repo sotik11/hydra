@@ -1,8 +1,32 @@
 import { StackIcon, DeviceDesktopIcon } from "@primer/octicons-react";
 import { useTranslation } from "react-i18next";
+import "./steam-filter-i18n";
 import "./category-filter.scss";
 
-export type LibraryCategory = "all" | "pc" | "classics";
+export type LibraryCategory = "all" | "pc" | "classics" | "steam";
+
+// Monochrome Steam glyph (currentColor) to match the other platform icons in
+// the filter menu (they use monochrome octicons).
+export function SteamIcon({
+  size = 14,
+  className,
+}: {
+  size?: number;
+  className?: string;
+}) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M11.979 0C5.678 0 .511 4.86.022 11.037l6.432 2.658a3.4 3.4 0 0 1 1.912-.59q.094 0 .188.006l2.861-4.142v-.059a4.53 4.53 0 0 1 4.524-4.524 4.53 4.53 0 0 1 4.524 4.527 4.53 4.53 0 0 1-4.524 4.525h-.105l-4.076 2.911q.004.078.004.159a3.396 3.396 0 0 1-6.721.669L.436 15.27C1.862 20.307 6.486 24 11.979 24c6.627 0 11.999-5.373 11.999-12S18.605 0 11.979 0M7.54 18.21l-1.473-.61a2.56 2.56 0 0 0 1.314 1.25 2.55 2.55 0 0 0 3.332-1.375 2.54 2.54 0 0 0 .005-1.949 2.54 2.54 0 0 0-1.377-1.383 2.54 2.54 0 0 0-1.878-.03l1.523.63a1.877 1.877 0 0 1-1.445 3.467zm11.415-9.303a3.02 3.02 0 0 0-3.015-3.015 3.02 3.02 0 0 0-3.015 3.015 3.02 3.02 0 0 0 3.015 3.015 3.02 3.02 0 0 0 3.015-3.015m-5.273-.005a2.26 2.26 0 0 1 2.265-2.266 2.267 2.267 0 0 1 0 4.531 2.26 2.26 0 0 1-2.265-2.265" />
+    </svg>
+  );
+}
 
 export function ClassicsIcon({
   size = 14,
@@ -75,6 +99,11 @@ export function CategoryFilter({
       value: "classics",
       label: t("category_classics"),
       icon: <ClassicsIcon size={16} />,
+    },
+    {
+      value: "steam",
+      label: t("category_steam"),
+      icon: <SteamIcon size={14} />,
     },
   ];
 

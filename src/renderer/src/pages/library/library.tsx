@@ -100,7 +100,12 @@ export default function Library() {
 
   const [category, setCategory] = useState<LibraryCategory>(() => {
     const saved = localStorage.getItem("library-category");
-    if (saved === "all" || saved === "pc" || saved === "classics") {
+    if (
+      saved === "all" ||
+      saved === "pc" ||
+      saved === "classics" ||
+      saved === "steam"
+    ) {
       return saved;
     }
     return "all";
@@ -317,6 +322,8 @@ export default function Library() {
 
     if (effectiveCategory === "pc") {
       filtered = filtered.filter((game) => game.shop !== "launchbox");
+    } else if (effectiveCategory === "steam") {
+      filtered = filtered.filter((game) => game.steamLibraryImport);
     } else if (effectiveCategory === "classics") {
       filtered = filtered.filter((game) => game.shop === "launchbox");
       if (selectedPlatform) {

@@ -570,6 +570,13 @@ export const sortLibraryGames = (
         break;
       }
 
+      case "steam_import": {
+        const aImport = a.steamLibraryImport ? 1 : 0;
+        const bImport = b.steamLibraryImport ? 1 : 0;
+        if (aImport !== bImport) return bImport - aImport;
+        break;
+      }
+
       case "title_desc": {
         return compareLibraryGamesByTitle(a, b, false);
       }
@@ -606,6 +613,10 @@ export const filterLibraryGamesByCategory = (
 
   if (category === "classics") {
     return games.filter((game) => game.shop === "launchbox");
+  }
+
+  if (category === "steam") {
+    return games.filter((game) => game.steamLibraryImport);
   }
 
   return games;
