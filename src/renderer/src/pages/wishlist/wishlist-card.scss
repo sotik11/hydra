@@ -95,6 +95,10 @@
       background: globals.$danger-color;
     }
 
+    &--favorite {
+      color: #ff5b5b;
+    }
+
     &:disabled {
       opacity: 0.5;
       cursor: default;

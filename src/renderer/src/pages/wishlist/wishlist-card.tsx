@@ -1,6 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { BookIcon, PlusIcon, XIcon } from "@primer/octicons-react";
+import {
+  BookIcon,
+  HeartFillIcon,
+  HeartIcon,
+  PlusIcon,
+  XIcon,
+} from "@primer/octicons-react";
 import { orderBy } from "lodash-es";
 
 import { Badge } from "@renderer/components/badge/badge";
@@ -42,10 +48,12 @@ export function WishlistCard({
   const [sources, setSources] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
 
-  const inLibrary = library.some(
+  const libraryEntry = library.find(
     (entry) =>
       entry.shop === shop && entry.objectId === objectId && !entry.isDeleted
   );
+  const inLibrary = Boolean(libraryEntry);
+  const isFavorite = Boolean(libraryEntry?.favorite);
 
   useEffect(() => {
     const element = ref.current;
@@ -82,9 +90,7 @@ export function WishlistCard({
       .getGameShopDetails(objectId, shop, i18n.language)
       .then((details) => {
         if (cancelled || !details?.genres) return;
-        setGenres(
-          details.genres.map((genre) => genre.name).filter(Boolean)
-        );
+        setGenres(details.genres.map((genre) => genre.name).filter(Boolean));
       })
       .catch(() => {});
 
@@ -146,6 +152,26 @@ export function WishlistCard({
     }
   };
 
+  const handleFavorite = async (event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setBusy(true);
+    try {
+      // Favorite is a library-game property, so add to library first if needed.
+      if (!inLibrary) {
+        await window.electron.addGameToLibrary(shop, objectId, title, null);
+      }
+      if (isFavorite) {
+        await window.electron.removeGameFromFavorites(shop, objectId);
+      } else {
+        await window.electron.addGameToFavorites(shop, objectId);
+      }
+      updateLibrary();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
     <li ref={ref} className={`wishlist-card wishlist-card--${view}`}>
       <Link
@@ -192,6 +218,17 @@ export function WishlistCard({
         </div>
 
         <div className="wishlist-card__actions">
+          <button
+            type="button"
+            className="wishlist-card__action wishlist-card__action--remove"
+            onClick={handleRemove}
+            disabled={busy}
+            title={t("remove_from_wishlist")}
+            aria-label={t("remove_from_wishlist")}
+          >
+            <XIcon size={14} />
+          </button>
+
           {!inLibrary && (
             <button
               type="button"
@@ -204,15 +241,26 @@ export function WishlistCard({
               <PlusIcon size={14} />
             </button>
           )}
+
           <button
             type="button"
-            className="wishlist-card__action wishlist-card__action--remove"
-            onClick={handleRemove}
+            className={`wishlist-card__action ${
+              isFavorite ? "wishlist-card__action--favorite" : ""
+            }`}
+            onClick={handleFavorite}
             disabled={busy}
-            title={t("remove_from_wishlist")}
-            aria-label={t("remove_from_wishlist")}
+            title={
+              isFavorite
+                ? t("remove_from_favorites")
+                : t("add_to_favorites")
+            }
+            aria-label={
+              isFavorite
+                ? t("remove_from_favorites")
+                : t("add_to_favorites")
+            }
           >
-            <XIcon size={14} />
+            {isFavorite ? <HeartFillIcon size={14} /> : <HeartIcon size={14} />}
           </button>
         </div>
       </Link>
