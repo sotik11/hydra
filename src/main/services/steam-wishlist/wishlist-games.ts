@@ -1,11 +1,21 @@
-import {
-  wishlistGamesSublevel,
-  wishlistDenylistSublevel,
-} from "@main/level";
+import { wishlistGamesSublevel, wishlistDenylistSublevel } from "@main/level";
 import type { SteamWishlistItem, WishlistGame } from "@types";
 
 export async function getWishlistGames(): Promise<WishlistGame[]> {
   return wishlistGamesSublevel.values().all();
+}
+
+/**
+ * Clear the whole wishlist. Behaves like removing every game by hand: each
+ * appId goes on the denylist so the Steam auto-import won't bring them back;
+ * manual re-adds are still possible.
+ */
+export async function clearWishlist(): Promise<void> {
+  const games = await wishlistGamesSublevel.values().all();
+  await Promise.all(
+    games.map((g) => wishlistDenylistSublevel.put(g.appId, true))
+  );
+  await wishlistGamesSublevel.clear();
 }
 
 /**

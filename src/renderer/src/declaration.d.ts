@@ -940,6 +940,7 @@ declare global {
     getWishlistGames: () => Promise<WishlistGame[]>;
     addWishlistGame: (appId: string) => Promise<void>;
     removeWishlistGame: (appId: string) => Promise<void>;
+    clearWishlist: () => Promise<void>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage>;

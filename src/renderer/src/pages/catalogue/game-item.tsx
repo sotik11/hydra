@@ -24,9 +24,10 @@ const ProtonDBBadge = lazy(async () => {
 
 export interface GameItemProps {
   game: CatalogueSearchResult;
+  wishlistAppIds?: Set<string>;
 }
 
-export function GameItem({ game }: GameItemProps) {
+export function GameItem({ game, wishlistAppIds }: GameItemProps) {
   const { i18n, t } = useTranslation("game_details");
 
   const language = i18n.language.split("-")[0];
@@ -37,6 +38,10 @@ export function GameItem({ game }: GameItemProps) {
 
   const [added, setAdded] = useState(false);
   const [addedToWishlist, setAddedToWishlist] = useState(false);
+
+  useEffect(() => {
+    if (wishlistAppIds?.has(game.objectId)) setAddedToWishlist(true);
+  }, [wishlistAppIds, game.objectId]);
 
   const { library, updateLibrary } = useLibrary();
   const shouldShowProtonFeatures = window.electron.platform === "linux";

@@ -897,6 +897,7 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("addWishlistGame", appId),
   removeWishlistGame: (appId: string) =>
     ipcRenderer.invoke("removeWishlistGame", appId),
+  clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
   /* Library */
   toggleAutomaticCloudSync: (

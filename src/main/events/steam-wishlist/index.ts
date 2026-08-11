@@ -5,3 +5,4 @@ import "./disconnect-steam-wishlist";
 import "./get-wishlist-games";
 import "./add-wishlist-game";
 import "./remove-wishlist-game";
+import "./clear-wishlist";

@@ -5,9 +5,10 @@ import {
   SyncIcon,
   AppsIcon,
   ListUnorderedIcon,
+  TrashIcon,
 } from "@primer/octicons-react";
 
-import { Button } from "@renderer/components";
+import { Button, ConfirmationModal } from "@renderer/components";
 import type { WishlistGame } from "@types";
 
 import { WishlistCard } from "./wishlist-card";
@@ -23,6 +24,7 @@ export default function Wishlist() {
   const [view, setView] = useState<WishlistView>(() =>
     localStorage.getItem("wishlist-view") === "list" ? "list" : "grid"
   );
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const loadGames = useCallback(() => {
     window.electron
@@ -42,6 +44,12 @@ export default function Wishlist() {
 
   const handleRemoved = (appId: string) => {
     setGames((prev) => (prev ? prev.filter((g) => g.appId !== appId) : prev));
+  };
+
+  const handleClear = async () => {
+    await window.electron.clearWishlist().catch(() => {});
+    setGames([]);
+    setShowClearConfirm(false);
   };
 
   const changeView = (next: WishlistView) => {
@@ -101,8 +109,23 @@ export default function Wishlist() {
             <SyncIcon size={14} />
             {t("refresh")}
           </Button>
+
+          <Button theme="danger" onClick={() => setShowClearConfirm(true)}>
+            <TrashIcon size={14} />
+            {t("clear")}
+          </Button>
         </div>
       </div>
+
+      <ConfirmationModal
+        visible={showClearConfirm}
+        title={t("clear_confirm_title")}
+        descriptionText={t("clear_confirm_description")}
+        confirmButtonLabel={t("clear")}
+        cancelButtonLabel={t("clear_cancel")}
+        onConfirm={handleClear}
+        onClose={() => setShowClearConfirm(false)}
+      />
 
       <ul
         className={`wishlist__grid ${

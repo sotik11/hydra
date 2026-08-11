@@ -146,6 +146,17 @@ export default function Catalogue() {
   const [results, setResults] = useState<CatalogueSearchResult[]>([]);
   const [resultsMode, setResultsMode] = useState(mode);
 
+  // Fork: which games are already in the wishlist, so the ⭐ shows the
+  // "added" state on load (not only right after clicking).
+  const [wishlistAppIds, setWishlistAppIds] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    window.electron
+      .getWishlistGames()
+      .then((games) => setWishlistAppIds(new Set(games.map((g) => g.appId))))
+      .catch(() => {});
+  }, []);
+
   const [itemsCount, setItemsCount] = useState(0);
 
   const [showClassicsOnboarding, setShowClassicsOnboarding] = useState(false);
@@ -742,7 +753,13 @@ export default function Catalogue() {
               <GameItemClassics key={game.id} game={game} />
             ))
           ) : (
-            results.map((game) => <GameItem key={game.id} game={game} />)
+            results.map((game) => (
+              <GameItem
+                key={game.id}
+                game={game}
+                wishlistAppIds={wishlistAppIds}
+              />
+            ))
           )}
 
           <div className="catalogue__pagination-container">
