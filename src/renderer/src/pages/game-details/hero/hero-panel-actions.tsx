@@ -12,6 +12,7 @@ import {
 import { Button, ConfirmationModal } from "@renderer/components";
 import { XCircle } from "lucide-react";
 import {
+  useAppSelector,
   useDownload,
   useLibrary,
   useToast,
@@ -54,6 +55,11 @@ export function HeroPanelActions() {
   } = useContext(gameDetailsContext);
 
   const { lastPacket } = useDownload();
+
+  const userPreferences = useAppSelector(
+    (state) => state.userPreferences.value
+  );
+  const localizationsEnabled = userPreferences?.localizationsEnabled ?? true;
 
   const isGameDownloading =
     game?.download?.status === "active" && lastPacket?.gameId === game?.id;
@@ -319,7 +325,7 @@ export function HeroPanelActions() {
     </Button>
   );
 
-  const localizationButton = (
+  const localizationButton = localizationsEnabled ? (
     <Button
       onClick={() => setShowLocalizationsModal(true)}
       theme="outline"
@@ -329,7 +335,7 @@ export function HeroPanelActions() {
       <GlobeIcon />
       {t("localization:localization")}
     </Button>
-  );
+  ) : null;
 
   const gameActionButton = () => {
     if (isTransferring) {

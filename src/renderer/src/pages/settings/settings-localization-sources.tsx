@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
@@ -10,19 +10,23 @@ import {
   TextField,
 } from "@renderer/components";
 import {
+  CheckCircleFillIcon,
+  ChevronRightIcon,
   LinkExternalIcon,
   NoEntryIcon,
   PlusCircleIcon,
   SyncIcon,
   TrashIcon,
 } from "@primer/octicons-react";
-import { useToast } from "@renderer/hooks";
+import { useAppSelector, useToast } from "@renderer/hooks";
+import { settingsContext } from "@renderer/context";
 import { buildGameDetailsPath } from "@renderer/helpers";
 import { useNavigate } from "react-router-dom";
 import { orderBy } from "lodash-es";
 import type { LocalizationSource, LocalizationSourceGame } from "@types";
 import { AddLocalizationSourceModal } from "./add-localization-source-modal";
 import { logger } from "@renderer/logger";
+import "./settings-debrid.scss";
 import "./settings-localization-sources.scss";
 import "../game-details/modals/localization-i18n";
 
@@ -116,6 +120,13 @@ export function SettingsLocalizationSources() {
   const { t } = useTranslation("settings");
   const { showSuccessToast } = useToast();
   const navigate = useNavigate();
+
+  const { updateUserPreferences } = useContext(settingsContext);
+  const userPreferences = useAppSelector(
+    (state) => state.userPreferences.value
+  );
+  const localizationsEnabled = userPreferences?.localizationsEnabled ?? true;
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const loadSources = async () => {
     const all = await window.electron.getLocalizationSources();
@@ -244,225 +255,287 @@ export function SettingsLocalizationSources() {
   };
 
   return (
-    <div className="settings-context-panel__group">
-      <h3>{t("localization:localization_sources")}</h3>
-      <p>{t("localization:localization_sources_description")}</p>
-
-      <AddLocalizationSourceModal
-        visible={showAddModal}
-        onClose={() => setShowAddModal(false)}
-        onAddLocalizationSource={loadSources}
-      />
-
-      <ConfirmationModal
-        cancelButtonLabel={t("cancel_button_confirmation_delete_all_sources")}
-        confirmButtonLabel={t("confirm_button_confirmation_delete_all_sources")}
-        descriptionText={t("description_confirmation_delete_all_sources")}
-        clickOutsideToClose={false}
-        onConfirm={handleRemoveAll}
-        visible={showConfirmDeleteAll}
-        title={t("title_confirmation_delete_all_sources")}
-        onClose={() => setShowConfirmDeleteAll(false)}
-        buttonsIsDisabled={isRemovingAll}
-      />
-
-      <Modal
-        visible={gamesModalSource !== null}
-        title={t("localization:localization_source_games_title")}
-        onClose={closeGamesModal}
-      >
-        <div className="settings-localization-sources__games-search">
-          <TextField
-            placeholder={t("localization:localization_source_games_search")}
-            value={gamesSearchTerm}
-            onChange={(event) => setGamesSearchTerm(event.target.value)}
-          />
-        </div>
-
-        <div
-          className={`settings-localization-sources__games-grid${
-            gamesSearchQuery
-              ? " settings-localization-sources__games-grid--search"
-              : ""
-          }`}
-        >
-          {modalGames.map((game) => (
-            <LocalizationGameCard
-              key={`${game.shop}-${game.objectId}`}
-              game={game}
-              onSelect={(selected) => {
-                closeGamesModal();
-                navigate(buildGameDetailsPath(selected));
-              }}
-            />
-          ))}
-        </div>
-      </Modal>
-
-      <div className="settings-localization-sources__header">
-        <Button
+    <div
+      className={`settings-debrid__section ${
+        isCollapsed ? "" : "settings-debrid__section--expanded"
+      }`}
+    >
+      <div className="settings-debrid__section-header">
+        <button
           type="button"
-          theme="outline"
-          onClick={handleSync}
-          disabled={!hasJsonSources || isSyncing || isRemovingAll}
+          className="settings-debrid__collapse-button"
+          onClick={() => setIsCollapsed((prev) => !prev)}
+          aria-label={
+            isCollapsed
+              ? t("expand_debrid_section", {
+                  provider: t("localization:localization_sources"),
+                })
+              : t("collapse_debrid_section", {
+                  provider: t("localization:localization_sources"),
+                })
+          }
         >
-          <SyncIcon />
-          {t("localization:sync_localization_sources")}
-        </Button>
-
-        <div className="settings-localization-sources__buttons-container">
-          <Button
-            type="button"
-            theme="danger"
-            onClick={() => setShowConfirmDeleteAll(true)}
-            disabled={!hasJsonSources || isSyncing || isRemovingAll}
+          <span
+            className={`settings-debrid__collapse-icon ${
+              isCollapsed ? "" : "settings-debrid__collapse-icon--expanded"
+            }`}
           >
-            <TrashIcon />
-            {t("localization:remove_all_localization_sources")}
-          </Button>
-
-          <Button
-            type="button"
-            theme="outline"
-            onClick={() => setShowAddModal(true)}
-            disabled={isSyncing || isRemovingAll}
-          >
-            <PlusCircleIcon />
-            {t("localization:add_localization_source")}
-          </Button>
+            <ChevronRightIcon size={16} />
+          </span>
+        </button>
+        <h3 className="settings-debrid__section-title">
+          {t("localization:localization_sources")}
+        </h3>
+        {localizationsEnabled && (
+          <CheckCircleFillIcon
+            size={16}
+            className="settings-debrid__check-icon"
+          />
+        )}
+        <div style={{ marginLeft: "auto" }}>
+          <CheckboxField
+            label=""
+            aria-label={t("localization:localization_sources")}
+            checked={localizationsEnabled}
+            onChange={() =>
+              updateUserPreferences({
+                localizationsEnabled: !localizationsEnabled,
+              })
+            }
+          />
         </div>
       </div>
 
-      <ul className="settings-localization-sources__list">
-        {sources.map((source) => {
-          const gamesCount = gamesForSource(source).length;
-          const siteUrl = sourceSiteUrl(source);
-          const languages = sourceLanguages(source);
+      {!isCollapsed && localizationsEnabled && (
+        <div className="settings-context-panel__group">
+          <p>{t("localization:localization_sources_description")}</p>
 
-          return (
-            <li key={source.id} className="settings-localization-sources__item">
-              <div className="settings-localization-sources__item-title-row">
-                <div className="settings-localization-sources__item-title-main">
-                  <h2 className="settings-localization-sources__item-title">
-                    {siteUrl ? (
-                      <button
-                        type="button"
-                        className="settings-localization-sources__item-title-link"
-                        onClick={() => window.electron.openExternal(siteUrl)}
-                      >
-                        {source.name}
-                      </button>
-                    ) : (
-                      source.name
-                    )}
-                  </h2>
-                  {source.category && (
-                    <span className="settings-localization-sources__item-kind">
-                      (
-                      {t(
-                        {
-                          studio:
-                            "localization:localization_source_kind_studio",
-                          "neural-studio":
-                            "localization:localization_source_kind_neural_studio",
-                          aggregator:
-                            "localization:localization_source_kind_aggregator",
-                        }[source.category]
-                      )}
-                      )
-                    </span>
-                  )}
-                </div>
-                <div className="settings-localization-sources__item-languages">
-                  {languages.map((lng) => (
-                    <Badge key={lng}>{lng}</Badge>
-                  ))}
-                </div>
-              </div>
+          <AddLocalizationSourceModal
+            visible={showAddModal}
+            onClose={() => setShowAddModal(false)}
+            onAddLocalizationSource={loadSources}
+          />
 
-              <div className="settings-localization-sources__item-header">
-                <div className="settings-localization-sources__item-header-info">
-                  <Badge>
-                    {source.type === "builtin"
-                      ? t("localization:localization_source_builtin")
-                      : t("localization:localization_source_updated")}
-                  </Badge>
-                  {source.type === "builtin" && (
-                    <span className="settings-localization-sources__synced-at">
-                      {t("localization:localization_source_auto_update")}
-                    </span>
-                  )}
-                  {source.type === "json" && source.syncedAt && (
-                    <span className="settings-localization-sources__synced-at">
-                      {new Date(source.syncedAt).toLocaleDateString()}
-                    </span>
-                  )}
-                </div>
-                <CheckboxField
-                  label=""
-                  aria-label={source.name}
-                  checked={source.enabled}
-                  onChange={() => handleToggle(source)}
+          <ConfirmationModal
+            cancelButtonLabel={t(
+              "cancel_button_confirmation_delete_all_sources"
+            )}
+            confirmButtonLabel={t(
+              "confirm_button_confirmation_delete_all_sources"
+            )}
+            descriptionText={t("description_confirmation_delete_all_sources")}
+            clickOutsideToClose={false}
+            onConfirm={handleRemoveAll}
+            visible={showConfirmDeleteAll}
+            title={t("title_confirmation_delete_all_sources")}
+            onClose={() => setShowConfirmDeleteAll(false)}
+            buttonsIsDisabled={isRemovingAll}
+          />
+
+          <Modal
+            visible={gamesModalSource !== null}
+            title={t("localization:localization_source_games_title")}
+            onClose={closeGamesModal}
+          >
+            <div className="settings-localization-sources__games-search">
+              <TextField
+                placeholder={t("localization:localization_source_games_search")}
+                value={gamesSearchTerm}
+                onChange={(event) => setGamesSearchTerm(event.target.value)}
+              />
+            </div>
+
+            <div
+              className={`settings-localization-sources__games-grid${
+                gamesSearchQuery
+                  ? " settings-localization-sources__games-grid--search"
+                  : ""
+              }`}
+            >
+              {modalGames.map((game) => (
+                <LocalizationGameCard
+                  key={`${game.shop}-${game.objectId}`}
+                  game={game}
+                  onSelect={(selected) => {
+                    closeGamesModal();
+                    navigate(buildGameDetailsPath(selected));
+                  }}
                 />
-              </div>
+              ))}
+            </div>
+          </Modal>
 
-              {gamesCount > 0 && (
-                <button
-                  type="button"
-                  className="settings-localization-sources__games-link"
-                  onClick={() => openGamesModal(source)}
+          <div className="settings-localization-sources__header">
+            <Button
+              type="button"
+              theme="outline"
+              onClick={handleSync}
+              disabled={!hasJsonSources || isSyncing || isRemovingAll}
+            >
+              <SyncIcon />
+              {t("localization:sync_localization_sources")}
+            </Button>
+
+            <div className="settings-localization-sources__buttons-container">
+              <Button
+                type="button"
+                theme="danger"
+                onClick={() => setShowConfirmDeleteAll(true)}
+                disabled={!hasJsonSources || isSyncing || isRemovingAll}
+              >
+                <TrashIcon />
+                {t("localization:remove_all_localization_sources")}
+              </Button>
+
+              <Button
+                type="button"
+                theme="outline"
+                onClick={() => setShowAddModal(true)}
+                disabled={isSyncing || isRemovingAll}
+              >
+                <PlusCircleIcon />
+                {t("localization:add_localization_source")}
+              </Button>
+            </div>
+          </div>
+
+          <ul className="settings-localization-sources__list">
+            {sources.map((source) => {
+              const gamesCount = gamesForSource(source).length;
+              const siteUrl = sourceSiteUrl(source);
+              const languages = sourceLanguages(source);
+
+              return (
+                <li
+                  key={source.id}
+                  className="settings-localization-sources__item"
                 >
-                  {t("localization:localization_source_games", {
-                    count: gamesCount,
-                  })}
-                </button>
-              )}
+                  <div className="settings-localization-sources__item-title-row">
+                    <div className="settings-localization-sources__item-title-main">
+                      <h2 className="settings-localization-sources__item-title">
+                        {siteUrl ? (
+                          <button
+                            type="button"
+                            className="settings-localization-sources__item-title-link"
+                            onClick={() =>
+                              window.electron.openExternal(siteUrl)
+                            }
+                          >
+                            {source.name}
+                          </button>
+                        ) : (
+                          source.name
+                        )}
+                      </h2>
+                      {source.category && (
+                        <span className="settings-localization-sources__item-kind">
+                          (
+                          {t(
+                            {
+                              studio:
+                                "localization:localization_source_kind_studio",
+                              "neural-studio":
+                                "localization:localization_source_kind_neural_studio",
+                              aggregator:
+                                "localization:localization_source_kind_aggregator",
+                            }[source.category]
+                          )}
+                          )
+                        </span>
+                      )}
+                    </div>
+                    <div className="settings-localization-sources__item-languages">
+                      {languages.map((lng) => (
+                        <Badge key={lng}>{lng}</Badge>
+                      ))}
+                    </div>
+                  </div>
 
-              {source.type === "json" && (
-                <TextField
-                  label={t("localization:localization_source_url")}
-                  value={source.url ?? ""}
-                  readOnly
-                  theme="dark"
-                  disabled
-                  rightContent={
-                    <Button
+                  <div className="settings-localization-sources__item-header">
+                    <div className="settings-localization-sources__item-header-info">
+                      <Badge>
+                        {source.type === "builtin"
+                          ? t("localization:localization_source_builtin")
+                          : t("localization:localization_source_updated")}
+                      </Badge>
+                      {source.type === "builtin" && (
+                        <span className="settings-localization-sources__synced-at">
+                          {t("localization:localization_source_auto_update")}
+                        </span>
+                      )}
+                      {source.type === "json" && source.syncedAt && (
+                        <span className="settings-localization-sources__synced-at">
+                          {new Date(source.syncedAt).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                    <CheckboxField
+                      label=""
+                      aria-label={source.name}
+                      checked={source.enabled}
+                      onChange={() => handleToggle(source)}
+                    />
+                  </div>
+
+                  {gamesCount > 0 && (
+                    <button
                       type="button"
-                      theme="outline"
-                      onClick={() => handleRemove(source)}
+                      className="settings-localization-sources__games-link"
+                      onClick={() => openGamesModal(source)}
                     >
-                      <NoEntryIcon />
-                      {t("localization:remove_localization_source")}
-                    </Button>
-                  }
-                />
-              )}
+                      {t("localization:localization_source_games", {
+                        count: gamesCount,
+                      })}
+                    </button>
+                  )}
 
-              {source.type === "builtin" && source.url && (
-                <TextField
-                  label={t("localization:localization_source_url")}
-                  value={source.url}
-                  readOnly
-                  theme="dark"
-                  disabled
-                  rightContent={
-                    <Button
-                      type="button"
-                      theme="outline"
-                      onClick={() =>
-                        window.electron.openExternal(source.url as string)
+                  {source.type === "json" && (
+                    <TextField
+                      label={t("localization:localization_source_url")}
+                      value={source.url ?? ""}
+                      readOnly
+                      theme="dark"
+                      disabled
+                      rightContent={
+                        <Button
+                          type="button"
+                          theme="outline"
+                          onClick={() => handleRemove(source)}
+                        >
+                          <NoEntryIcon />
+                          {t("localization:remove_localization_source")}
+                        </Button>
                       }
-                    >
-                      <LinkExternalIcon />
-                      {t("localization:localization_source_open")}
-                    </Button>
-                  }
-                />
-              )}
-            </li>
-          );
-        })}
-      </ul>
+                    />
+                  )}
+
+                  {source.type === "builtin" && source.url && (
+                    <TextField
+                      label={t("localization:localization_source_url")}
+                      value={source.url}
+                      readOnly
+                      theme="dark"
+                      disabled
+                      rightContent={
+                        <Button
+                          type="button"
+                          theme="outline"
+                          onClick={() =>
+                            window.electron.openExternal(source.url as string)
+                          }
+                        >
+                          <LinkExternalIcon />
+                          {t("localization:localization_source_open")}
+                        </Button>
+                      }
+                    />
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
