@@ -39,43 +39,74 @@ function pickXmlTag(xml: string, tag: string): string | null {
 }
 
 async function fetchProfileXml(url: string): Promise<string> {
-  const { data } = await axios.get<string>(url, { responseType: "text" });
-  return data;
+  // steamcommunity.com aggressively rate-limits the XML endpoint (429). Retry
+  // a few times with backoff before giving up.
+  const maxTries = 3;
+  for (let attempt = 1; attempt <= maxTries; attempt += 1) {
+    try {
+      const { data } = await axios.get<string>(url, {
+        responseType: "text",
+        timeout: 15000,
+      });
+      return data;
+    } catch (err) {
+      const status = axios.isAxiosError(err) ? err.response?.status : undefined;
+      if (status === 429 && attempt < maxTries) {
+        await new Promise((resolve) => setTimeout(resolve, 800 * attempt));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error("steam-wishlist/profile-fetch-failed");
 }
 
-/**
- * Resolve any supported profile input to a SteamProfile (id64 + persona +
- * avatar) via the public community XML endpoint. No API key required; the
- * profile must be public.
- */
-export async function resolveSteamProfile(
-  input: string
-): Promise<SteamProfile> {
-  const value = input.trim().replace(/\/+$/, "");
-  let steamId64 = toSteamId64(value);
-  let xml: string;
-
-  if (steamId64) {
-    xml = await fetchProfileXml(
-      `https://steamcommunity.com/profiles/${steamId64}?xml=1`
-    );
-  } else {
-    const vanityUrl = /steamcommunity\.com\/id\//.test(value)
-      ? `${value}?xml=1`
-      : `https://steamcommunity.com/id/${encodeURIComponent(value)}?xml=1`;
-    xml = await fetchProfileXml(vanityUrl);
-    steamId64 = pickXmlTag(xml, "steamID64");
-  }
-
-  if (!steamId64) {
-    throw new Error("steam-wishlist/invalid-profile");
-  }
-
+function profileFromXml(xml: string, steamId64: string): SteamProfile {
   return {
     steamId64,
     personaName: pickXmlTag(xml, "steamID") ?? steamId64,
     avatarUrl: pickXmlTag(xml, "avatarFull") ?? "",
   };
+}
+
+/**
+ * Resolve any supported profile input to a SteamProfile (id64 + persona +
+ * avatar) via the public community XML endpoint. No API key required; the
+ * profile must be public. When the id64 is already known offline (id64 URL,
+ * legacy/SteamID3/hex), the profile page only adds persona + avatar, so a
+ * rate-limit (429) there degrades gracefully instead of failing the connect.
+ */
+export async function resolveSteamProfile(
+  input: string
+): Promise<SteamProfile> {
+  const value = input.trim().replace(/\/+$/, "");
+  const directId = toSteamId64(value);
+
+  if (directId) {
+    try {
+      const xml = await fetchProfileXml(
+        `https://steamcommunity.com/profiles/${directId}?xml=1`
+      );
+      return profileFromXml(xml, directId);
+    } catch {
+      // Profile page unavailable (e.g. 429) — keep the id64, drop the cosmetics.
+      return { steamId64: directId, personaName: directId, avatarUrl: "" };
+    }
+  }
+
+  // Vanity handle — the XML is the only way to resolve the id64, so it must
+  // succeed here.
+  const vanityUrl = /steamcommunity\.com\/id\//.test(value)
+    ? `${value}?xml=1`
+    : `https://steamcommunity.com/id/${encodeURIComponent(value)}?xml=1`;
+  const xml = await fetchProfileXml(vanityUrl);
+  const steamId64 = pickXmlTag(xml, "steamID64");
+
+  if (!steamId64) {
+    throw new Error("steam-wishlist/invalid-profile");
+  }
+
+  return profileFromXml(xml, steamId64);
 }
 
 interface GetWishlistResponse {

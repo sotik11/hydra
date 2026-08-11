@@ -32,4 +32,29 @@
     color: var(--text-secondary);
     font-size: globals.$small-font-size;
   }
+
+  &__connect {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 2);
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__connect-profile {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  &__input-row {
+    display: flex;
+    gap: globals.$spacing-unit;
+    align-items: flex-end;
+    max-width: 560px;
+  }
+
+  &__input {
+    flex: 1;
+    min-width: 0;
+  }
 }

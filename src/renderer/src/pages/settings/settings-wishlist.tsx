@@ -220,34 +220,43 @@ export function SettingsWishlist() {
     }
 
     return (
-      <form
-        className="settings-retroachievements__form"
-        onSubmit={handleConnect}
-      >
-        <div className="settings-retroachievements__description-container">
-          <p className="settings-retroachievements__description">
-            {t("wishlist_description")}
-          </p>
-          <p className="settings-retroachievements__emulator-note">
-            {t("wishlist_privacy_note")}
-          </p>
+      <div className="settings-retroachievements__connected">
+        <div className="settings-retroachievements__profile settings-wishlist__connect-profile">
+          <div className="settings-retroachievements__avatar">
+            <img src={steamLogo} alt="Steam" />
+          </div>
+
+          <div className="settings-wishlist__connect">
+            <div className="settings-retroachievements__description-container">
+              <p className="settings-retroachievements__description">
+                {t("wishlist_description")}
+              </p>
+              <p className="settings-retroachievements__emulator-note">
+                {t("wishlist_privacy_note")}
+              </p>
+            </div>
+
+            <form
+              className="settings-wishlist__input-row"
+              onSubmit={handleConnect}
+            >
+              <TextField
+                label={t("wishlist_profile_label")}
+                value={profileInput}
+                onChange={(event) => setProfileInput(event.target.value)}
+                placeholder={t("wishlist_profile_placeholder")}
+                containerProps={{ className: "settings-wishlist__input" }}
+              />
+              <Button
+                type="submit"
+                disabled={!profileInput.trim() || isSubmitting}
+              >
+                {t("wishlist_connect")}
+              </Button>
+            </form>
+          </div>
         </div>
-
-        <TextField
-          label={t("wishlist_profile_label")}
-          value={profileInput}
-          onChange={(event) => setProfileInput(event.target.value)}
-          placeholder={t("wishlist_profile_placeholder")}
-        />
-
-        <Button
-          type="submit"
-          className="settings-retroachievements__submit-button"
-          disabled={!profileInput.trim() || isSubmitting}
-        >
-          {t("wishlist_connect")}
-        </Button>
-      </form>
+      </div>
     );
   };
 
