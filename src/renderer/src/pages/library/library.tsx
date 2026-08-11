@@ -65,6 +65,7 @@ const SORT_OPTIONS: SortOption[] = [
   "achievements",
   "installed_first",
   "title_desc",
+  "steam_import",
 ];
 
 export default function Library() {
