@@ -19,7 +19,17 @@ export async function importOwnedGamesToLibrary(
   for (const game of owned) {
     const gameKey = levelKeys.game("steam", game.appId);
     const existing = await gamesSublevel.get(gameKey).catch(() => null);
-    if (existing && !existing.isDeleted) continue;
+    if (existing && !existing.isDeleted) {
+      // Already in the library — just add the Steam import badge, leaving the
+      // rest of the record (added date, playtime, ...) untouched.
+      if (!existing.steamLibraryImport) {
+        await gamesSublevel.put(gameKey, {
+          ...existing,
+          steamLibraryImport: true,
+        });
+      }
+      continue;
+    }
 
     const assets = await gamesShopAssetsSublevel.get(gameKey).catch(() => null);
 
