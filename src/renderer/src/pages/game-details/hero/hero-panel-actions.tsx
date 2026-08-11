@@ -341,11 +341,32 @@ export function HeroPanelActions() {
     </Button>
   ) : null;
 
-  const addToWishlist = async () => {
-    if (addedToWishlist || !objectId) return;
+  useEffect(() => {
+    if (!objectId) return;
+    let active = true;
+    window.electron
+      .getWishlistGames()
+      .then((games) => {
+        if (active) {
+          setAddedToWishlist(games.some((g) => g.appId === objectId));
+        }
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [objectId]);
+
+  const toggleWishlist = async () => {
+    if (!objectId) return;
     try {
-      await window.electron.addWishlistGame(objectId);
-      setAddedToWishlist(true);
+      if (addedToWishlist) {
+        await window.electron.removeWishlistGame(objectId);
+        setAddedToWishlist(false);
+      } else {
+        await window.electron.addWishlistGame(objectId);
+        setAddedToWishlist(true);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -354,13 +375,14 @@ export function HeroPanelActions() {
   const wishlistButton =
     shop === "steam" ? (
       <Button
-        onClick={addToWishlist}
+        onClick={toggleWishlist}
         theme="outline"
-        disabled={addedToWishlist}
         className="hero-panel-actions__action"
       >
         {addedToWishlist ? <StarFillIcon /> : <StarIcon />}
-        {t("add_to_wishlist", { ns: "wishlist" })}
+        {addedToWishlist
+          ? t("remove_from_wishlist", { ns: "wishlist" })
+          : t("add_to_wishlist", { ns: "wishlist" })}
       </Button>
     ) : null;
 

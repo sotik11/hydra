@@ -74,11 +74,15 @@ export function GameItem({ game, wishlistAppIds }: GameItemProps) {
     }
   };
 
-  const addToWishlist = async () => {
-    if (addedToWishlist) return;
+  const toggleWishlist = async () => {
     try {
-      await window.electron.addWishlistGame(game.objectId);
-      setAddedToWishlist(true);
+      if (addedToWishlist) {
+        await window.electron.removeWishlistGame(game.objectId);
+        setAddedToWishlist(false);
+      } else {
+        await window.electron.addWishlistGame(game.objectId);
+        setAddedToWishlist(true);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -186,10 +190,17 @@ export function GameItem({ game, wishlistAppIds }: GameItemProps) {
           className={cn("game-item__star-wrapper", {
             "game-item__star-wrapper--added": addedToWishlist,
           })}
-          onClick={addToWishlist}
-          title={t("add_to_wishlist", { ns: "wishlist" })}
-          aria-label={t("add_to_wishlist", { ns: "wishlist" })}
-          disabled={addedToWishlist}
+          onClick={toggleWishlist}
+          title={
+            addedToWishlist
+              ? t("remove_from_wishlist", { ns: "wishlist" })
+              : t("add_to_wishlist", { ns: "wishlist" })
+          }
+          aria-label={
+            addedToWishlist
+              ? t("remove_from_wishlist", { ns: "wishlist" })
+              : t("add_to_wishlist", { ns: "wishlist" })
+          }
         >
           {addedToWishlist ? (
             <StarFillIcon size={16} />

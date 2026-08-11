@@ -82,7 +82,9 @@ export function WishlistCard({
       .getGameShopDetails(objectId, shop, i18n.language)
       .then((details) => {
         if (cancelled || !details?.genres) return;
-        setGenres(details.genres.map((genre) => genre.name));
+        setGenres(
+          details.genres.map((genre) => genre.name).filter(Boolean)
+        );
       })
       .catch(() => {});
 
@@ -175,31 +177,6 @@ export function WishlistCard({
               </span>
             )}
           </div>
-
-          <div className="wishlist-card__actions">
-            {!inLibrary && (
-              <button
-                type="button"
-                className="wishlist-card__action"
-                onClick={handleAddToLibrary}
-                disabled={busy}
-                title={t("add_to_library")}
-                aria-label={t("add_to_library")}
-              >
-                <PlusIcon size={14} />
-              </button>
-            )}
-            <button
-              type="button"
-              className="wishlist-card__action wishlist-card__action--remove"
-              onClick={handleRemove}
-              disabled={busy}
-              title={t("remove_from_wishlist")}
-              aria-label={t("remove_from_wishlist")}
-            >
-              <XIcon size={14} />
-            </button>
-          </div>
         </div>
 
         <div className="wishlist-card__info">
@@ -212,6 +189,31 @@ export function WishlistCard({
               <Badge key={source}>{source}</Badge>
             ))}
           </div>
+        </div>
+
+        <div className="wishlist-card__actions">
+          {!inLibrary && (
+            <button
+              type="button"
+              className="wishlist-card__action"
+              onClick={handleAddToLibrary}
+              disabled={busy}
+              title={t("add_to_library")}
+              aria-label={t("add_to_library")}
+            >
+              <PlusIcon size={14} />
+            </button>
+          )}
+          <button
+            type="button"
+            className="wishlist-card__action wishlist-card__action--remove"
+            onClick={handleRemove}
+            disabled={busy}
+            title={t("remove_from_wishlist")}
+            aria-label={t("remove_from_wishlist")}
+          >
+            <XIcon size={14} />
+          </button>
         </div>
       </Link>
     </li>

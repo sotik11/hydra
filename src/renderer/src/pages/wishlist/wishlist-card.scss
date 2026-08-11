@@ -4,6 +4,7 @@
   list-style: none;
 
   &__link {
+    position: relative;
     display: flex;
     flex-direction: column;
     gap: globals.$spacing-unit;
@@ -152,5 +153,13 @@
   &--list &__title {
     font-size: 1rem;
     white-space: normal;
+  }
+
+  // List view: actions on the right, stacked (add on top, remove below).
+  &--list &__actions {
+    position: static;
+    flex-direction: column;
+    align-self: center;
+    flex-shrink: 0;
   }
 }

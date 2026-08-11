@@ -232,7 +232,11 @@ export function Header() {
     }
     handleSearch(query);
 
-    if (!isOnLibraryPage && !location.pathname.startsWith("/catalogue")) {
+    if (
+      !isOnLibraryPage &&
+      !location.pathname.startsWith("/catalogue") &&
+      !location.pathname.startsWith("/wishlist")
+    ) {
       navigate("/catalogue");
     }
 

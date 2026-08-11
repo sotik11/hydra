@@ -13,10 +13,10 @@
     margin-bottom: calc(globals.$spacing-unit * 3);
   }
 
-  &__header-info {
+  &__summary {
     display: flex;
-    align-items: baseline;
-    gap: calc(globals.$spacing-unit * 2);
+    flex-direction: column;
+    gap: 2px;
   }
 
   &__header-actions {
@@ -25,12 +25,12 @@
     gap: calc(globals.$spacing-unit * 2);
   }
 
-  &__title {
-    font-size: 1.5rem;
-    font-weight: bold;
+  &__count {
+    font-size: 1rem;
+    font-weight: 500;
   }
 
-  &__count {
+  &__hint {
     color: var(--text-secondary);
     font-size: globals.$small-font-size;
   }
