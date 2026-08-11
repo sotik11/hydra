@@ -12,7 +12,7 @@ import { logger } from "@renderer/logger";
 import type { DownloadSource, GameRepack, WishlistGame } from "@types";
 
 import steamLogo from "@renderer/assets/icons/steam.png";
-import HydraLogo from "@renderer/assets/icons/hydra.svg";
+import HydraLogo from "@renderer/assets/icons/hydra.svg?react";
 import "./wishlist-card.scss";
 
 interface WishlistCardProps {
