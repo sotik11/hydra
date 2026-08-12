@@ -8,6 +8,7 @@ import type {
   UserPreferences,
   SteamWishlistState,
   WishlistGame,
+  WishlistGameMetaCache,
   StartGameDownloadPayload,
   RealDebridUser,
   PremiumizeUser,
@@ -940,6 +941,10 @@ declare global {
     getWishlistGames: () => Promise<WishlistGame[]>;
     addWishlistGame: (appId: string) => Promise<void>;
     removeWishlistGame: (appId: string) => Promise<void>;
+    updateWishlistMeta: (
+      appId: string,
+      meta: WishlistGameMetaCache
+    ) => Promise<void>;
     clearWishlist: () => Promise<void>;
 
     /* Hardware */

@@ -18,51 +18,73 @@ export interface WishlistGameMeta {
 
 const CONCURRENCY = 4;
 
-function emptyMeta(appId: string): WishlistGameMeta {
+// Seed a game's meta from whatever the store already cached. Title/cover/genres/
+// year survive here between sessions, so search and title-sort work instantly on
+// open — only the repack sources still need a fresh fetch.
+function fromCache(game: WishlistGame): WishlistGameMeta {
   return {
-    appId,
-    title: appId,
-    cover: null,
-    genres: [],
-    releaseYear: null,
+    appId: game.appId,
+    title: game.title ?? game.appId,
+    cover: game.cover ?? null,
+    genres: game.genres ?? [],
+    releaseYear: game.releaseYear ?? null,
     sources: [],
     loaded: false,
   };
 }
 
 async function resolveOne(
-  appId: string,
+  game: WishlistGame,
   language: string,
   downloadSourceIds: string[]
 ): Promise<WishlistGameMeta> {
-  const meta = emptyMeta(appId);
+  const meta = fromCache(game);
+  const appId = game.appId;
 
-  try {
-    const assets = await window.electron.getGameAssets(appId, "steam");
-    if (assets?.title) meta.title = assets.title;
-    meta.cover = assets?.libraryImageUrl ?? assets?.coverImageUrl ?? null;
-  } catch {
-    // keep defaults
+  // Static metadata (title/cover/genres/year) is resolved once and cached in the
+  // store; skip the network round-trips when we already have it.
+  if (!game.metaCachedAt) {
+    try {
+      const assets = await window.electron.getGameAssets(appId, "steam");
+      if (assets?.title) meta.title = assets.title;
+      meta.cover = assets?.libraryImageUrl ?? assets?.coverImageUrl ?? null;
+    } catch {
+      // keep defaults
+    }
+
+    try {
+      const details = await window.electron.getGameShopDetails(
+        appId,
+        "steam",
+        language
+      );
+      if (details?.genres) {
+        meta.genres = details.genres.map((genre) => genre.name).filter(Boolean);
+      }
+      const rawDate = details?.release_date?.date;
+      if (rawDate) {
+        const match = rawDate.match(/(\d{4})/);
+        if (match) meta.releaseYear = Number(match[1]);
+      }
+    } catch {
+      // keep defaults
+    }
+
+    // Write the resolved static metadata back so next time it's instant.
+    window.electron
+      .updateWishlistMeta(appId, {
+        title: meta.title,
+        cover: meta.cover,
+        genres: meta.genres,
+        releaseYear: meta.releaseYear,
+      })
+      .catch((error) => {
+        logger.warn(`[wishlist] meta cache write failed for ${appId}:`, error);
+      });
   }
 
-  try {
-    const details = await window.electron.getGameShopDetails(
-      appId,
-      "steam",
-      language
-    );
-    if (details?.genres) {
-      meta.genres = details.genres.map((genre) => genre.name).filter(Boolean);
-    }
-    const rawDate = details?.release_date?.date;
-    if (rawDate) {
-      const match = rawDate.match(/(\d{4})/);
-      if (match) meta.releaseYear = Number(match[1]);
-    }
-  } catch {
-    // keep defaults
-  }
-
+  // Repack sources are always fetched fresh — they change over time and drive
+  // the "only with a repack" filter and (later) the repack reminders.
   try {
     const repacks = await window.electron.hydraApi.get<GameRepack[]>(
       `/games/steam/${appId}/download-sources`,
@@ -85,9 +107,11 @@ async function resolveOne(
 }
 
 /**
- * Progressively resolve metadata (title/genres/year/sources) for every wishlist
- * game, with a small concurrency pool. Returns a map keyed by appId that fills
- * in over time, plus a "ready" flag when all games are resolved.
+ * Progressively resolve metadata for every wishlist game with a small
+ * concurrency pool. Static fields (title/genres/year) come straight from the
+ * store cache when present — so the returned map is already useful for search
+ * and title-sort on the first render — while repack sources always refresh.
+ * Returns a map keyed by appId plus a "ready" flag when all games are resolved.
  */
 export function useWishlistMetadata(games: WishlistGame[], refreshKey: number) {
   const { i18n } = useTranslation();
@@ -100,9 +124,7 @@ export function useWishlistMetadata(games: WishlistGame[], refreshKey: number) {
     let cancelled = false;
     setReady(false);
     setMetaById(
-      Object.fromEntries(
-        games.map((game) => [game.appId, emptyMeta(game.appId)])
-      )
+      Object.fromEntries(games.map((game) => [game.appId, fromCache(game)]))
     );
 
     if (games.length === 0) {
@@ -123,11 +145,7 @@ export function useWishlistMetadata(games: WishlistGame[], refreshKey: number) {
         while (!cancelled) {
           const next = queue.shift();
           if (!next) break;
-          const meta = await resolveOne(
-            next.appId,
-            i18n.language,
-            downloadSourceIds
-          );
+          const meta = await resolveOne(next, i18n.language, downloadSourceIds);
           if (cancelled) return;
           setMetaById((prev) => ({ ...prev, [next.appId]: meta }));
         }

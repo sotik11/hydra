@@ -64,6 +64,7 @@ import type {
   LegacySaveExportIpcProgress,
   LegacySaveExportProgress,
   LegacySaveExportResult,
+  WishlistGameMetaCache,
 } from "@types";
 import type { AuthPage } from "@shared";
 import type { AxiosProgressEvent } from "axios";
@@ -897,6 +898,8 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("addWishlistGame", appId),
   removeWishlistGame: (appId: string) =>
     ipcRenderer.invoke("removeWishlistGame", appId),
+  updateWishlistMeta: (appId: string, meta: WishlistGameMetaCache) =>
+    ipcRenderer.invoke("updateWishlistMeta", appId, meta),
   clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
   /* Library */

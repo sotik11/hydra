@@ -1,8 +1,32 @@
 import { wishlistGamesSublevel, wishlistDenylistSublevel } from "@main/level";
-import type { SteamWishlistItem, WishlistGame } from "@types";
+import type {
+  SteamWishlistItem,
+  WishlistGame,
+  WishlistGameMetaCache,
+} from "@types";
 
 export async function getWishlistGames(): Promise<WishlistGame[]> {
   return wishlistGamesSublevel.values().all();
+}
+
+/**
+ * Cache resolved static metadata (title/cover/genres/year) onto an existing
+ * wishlist record so search and title-sort are instant next time. No-ops if the
+ * game isn't in the wishlist (e.g. removed while resolving). Repack sources are
+ * never cached here — they're always fetched fresh.
+ */
+export async function updateWishlistGameMeta(
+  appId: string,
+  meta: WishlistGameMetaCache
+): Promise<void> {
+  const existing = await wishlistGamesSublevel.get(appId).catch(() => null);
+  if (!existing) return;
+
+  await wishlistGamesSublevel.put(appId, {
+    ...existing,
+    ...meta,
+    metaCachedAt: Date.now(),
+  });
 }
 
 /**

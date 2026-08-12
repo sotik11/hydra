@@ -35,7 +35,20 @@ export interface SteamWishlistState {
 // back games the user removed by hand.
 export type WishlistGameSource = "steam" | "manual";
 
-export interface WishlistGame {
+// Cached static metadata for a wishlist game. The raw Steam wishlist gives us
+// only appIds, so we resolve title/cover/genres/year once and store them here —
+// that makes search and title-sort instant on later opens (like the library,
+// which keeps titles for its games). Repack sources are deliberately NOT cached:
+// they change over time and are always fetched fresh.
+export interface WishlistGameMetaCache {
+  title?: string;
+  cover?: string | null;
+  genres?: string[];
+  releaseYear?: number | null;
+  metaCachedAt?: number;
+}
+
+export interface WishlistGame extends WishlistGameMetaCache {
   appId: string;
   source: WishlistGameSource;
   addedAt: number;
