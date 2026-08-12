@@ -45,7 +45,8 @@ export const parseParamSfo = (buf: Buffer): ParamSfo | null => {
     if (dataStart > buf.length) continue;
 
     if (dataFmt === FMT_INT32) {
-      if (dataStart + 4 <= buf.length) values[key] = buf.readUInt32LE(dataStart);
+      if (dataStart + 4 <= buf.length)
+        values[key] = buf.readUInt32LE(dataStart);
     } else {
       const end = Math.min(dataStart + dataLen, buf.length);
       let str = buf.toString("utf8", dataStart, end);

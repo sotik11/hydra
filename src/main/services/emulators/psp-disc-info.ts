@@ -64,7 +64,10 @@ const findEntryInDir = (
     if (semi !== -1) name = name.slice(0, semi);
 
     if (name.toUpperCase() === targetName && isDir === wantDir) {
-      return { lba: iso.readUInt32LE(offset + 2), size: iso.readUInt32LE(offset + 10) };
+      return {
+        lba: iso.readUInt32LE(offset + 2),
+        size: iso.readUInt32LE(offset + 10),
+      };
     }
     offset += recLen;
   }
@@ -91,7 +94,11 @@ const findFileInIso = (iso: Buffer, segments: string[]): Buffer | null => {
     if (isLast) {
       const start = entry.lba * ISO_SECTOR;
       const fileEnd = start + entry.size;
-      if (fileEnd > iso.length || entry.size <= 0 || entry.size > MAX_SFO_BYTES) {
+      if (
+        fileEnd > iso.length ||
+        entry.size <= 0 ||
+        entry.size > MAX_SFO_BYTES
+      ) {
         return null;
       }
       return iso.subarray(start, fileEnd);
