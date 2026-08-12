@@ -21,11 +21,18 @@ import {
   FileDirectoryIcon,
   SearchIcon,
   SyncIcon,
+  TrashIcon,
 } from "@primer/octicons-react";
 import { useTranslation } from "react-i18next";
 import { AuthPage, removeDiacritics } from "@shared";
 import { GameCollection, LibraryGame } from "@types";
-import { CreateCollectionModal, GameContextMenu } from "@renderer/components";
+import {
+  Button,
+  ConfirmationModal,
+  CreateCollectionModal,
+  GameContextMenu,
+} from "@renderer/components";
+import "./library-clear-i18n";
 import { useCollectionContextMenu } from "@renderer/context";
 import { getGameCollectionIds, sortLibraryGames } from "@renderer/helpers";
 import { useSearchParams } from "react-router-dom";
@@ -98,6 +105,7 @@ export default function Library() {
   }>({ game: null, visible: false, position: { x: 0, y: 0 } });
   const [showCreateCollectionModal, setShowCreateCollectionModal] =
     useState(false);
+  const [showClearLibraryConfirm, setShowClearLibraryConfirm] = useState(false);
 
   const [category, setCategory] = useState<LibraryCategory>(() => {
     const saved = localStorage.getItem("library-category");
@@ -272,6 +280,12 @@ export default function Library() {
     return () => {
       window.removeEventListener("hydra:game-pin-toggled", handlePinToggled);
     };
+  }, [updateLibrary]);
+
+  const handleClearLibrary = useCallback(async () => {
+    await window.electron.clearLibrary().catch(() => {});
+    setShowClearLibraryConfirm(false);
+    updateLibrary();
   }, [updateLibrary]);
 
   const handleCreateCollectionButtonClick = useCallback(() => {
@@ -498,6 +512,13 @@ export default function Library() {
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
               />
+              <Button
+                theme="danger"
+                onClick={() => setShowClearLibraryConfirm(true)}
+              >
+                <TrashIcon size={14} />
+                {t("clear_library")}
+              </Button>
             </div>
           </div>
         </div>
@@ -625,6 +646,16 @@ export default function Library() {
       <ClassicsOnboardingModal
         visible={showClassicsOnboarding}
         onClose={() => setShowClassicsOnboarding(false)}
+      />
+
+      <ConfirmationModal
+        visible={showClearLibraryConfirm}
+        title={t("clear_library_title")}
+        descriptionText={t("clear_library_description")}
+        confirmButtonLabel={t("clear_library_confirm")}
+        cancelButtonLabel={t("clear_library_cancel")}
+        onConfirm={handleClearLibrary}
+        onClose={() => setShowClearLibraryConfirm(false)}
       />
     </section>
   );
