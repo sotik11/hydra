@@ -54,18 +54,24 @@ export function GameItem({ game, wishlistAppIds }: GameItemProps) {
     setAdded(exists);
   }, [library, game.shop, game.objectId]);
 
-  const addGameToLibrary = async () => {
-    if (added || isAddingToLibrary) return;
+  const toggleLibrary = async () => {
+    if (isAddingToLibrary) return;
 
     setIsAddingToLibrary(true);
 
     try {
-      await window.electron.addGameToLibrary(
-        game.shop,
-        game.objectId,
-        game.title,
-        game.platform ?? null
-      );
+      if (added) {
+        // Toggle off: remove from the library (soft delete). The wishlist star
+        // comes back once the game is no longer owned.
+        await window.electron.removeGameFromLibrary(game.shop, game.objectId);
+      } else {
+        await window.electron.addGameToLibrary(
+          game.shop,
+          game.objectId,
+          game.title,
+          game.platform ?? null
+        );
+      }
       updateLibrary();
     } catch (error) {
       console.error(error);
@@ -177,10 +183,10 @@ export function GameItem({ game, wishlistAppIds }: GameItemProps) {
         className={cn("game-item__plus-wrapper", {
           "game-item__plus-wrapper--added": added,
         })}
-        onClick={addGameToLibrary}
-        title={added ? t("already_in_library") : t("add_to_library")}
-        aria-label={added ? t("already_in_library") : t("add_to_library")}
-        disabled={added || isAddingToLibrary}
+        onClick={toggleLibrary}
+        title={added ? t("remove_from_library") : t("add_to_library")}
+        aria-label={added ? t("remove_from_library") : t("add_to_library")}
+        disabled={isAddingToLibrary}
       >
         {added ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
       </button>

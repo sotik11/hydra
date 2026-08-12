@@ -396,7 +396,7 @@ export function HeroPanelActions() {
         await cancelDownload(shop, objectId);
       }
       await removeGameFromLibrary(shop, objectId);
-      await updateLibrary();
+      await Promise.all([updateLibrary(), updateGame()]);
       showSuccessToast(t("game_removed_from_library"));
     } catch (error) {
       showErrorToast(t("failed_remove_from_library"));
@@ -574,5 +574,12 @@ export function HeroPanelActions() {
     );
   }
 
-  return addGameToLibraryButton;
+  // No repacks and not in the library yet: still offer the wishlist button
+  // (next to "add to library") so the game can be tracked for future repacks.
+  return (
+    <>
+      {addGameToLibraryButton}
+      {wishlistButton}
+    </>
+  );
 }
