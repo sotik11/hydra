@@ -504,8 +504,8 @@ export function HeroPanelActions() {
       <>
         {addGameToLibraryButton}
         {wishlistButton}
-        {steamButton}
         {showDownloadOptionsButton}
+        {steamButton}
       </>
     );
   }

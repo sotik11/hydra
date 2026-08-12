@@ -17,7 +17,7 @@ import { levelDBService } from "@renderer/services/leveldb.service";
 import { logger } from "@renderer/logger";
 import type { DownloadSource, GameRepack, WishlistGame } from "@types";
 
-import steamLogo from "@renderer/assets/icons/steam.png";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
 import HydraLogo from "@renderer/assets/icons/hydra.svg?react";
 import "./wishlist-card.scss";
 
@@ -188,8 +188,8 @@ export function WishlistCard({
 
           <div className="wishlist-card__badges">
             {game.source === "steam" && (
-              <span className="wishlist-card__badge">
-                <img src={steamLogo} alt="Steam" />
+              <span className="wishlist-card__badge wishlist-card__badge--steam">
+                <SteamIcon size={14} />
               </span>
             )}
             {game.source === "manual" && (
