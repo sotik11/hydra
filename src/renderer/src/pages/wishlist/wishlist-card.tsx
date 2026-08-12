@@ -187,6 +187,15 @@ export function WishlistCard({
           )}
 
           <div className="wishlist-card__badges">
+            {/* Download-available badge always comes first (highest priority). */}
+            {game.reminderState === "available" && (
+              <span
+                className="wishlist-card__badge wishlist-card__badge--available"
+                title={t("available_badge")}
+              >
+                <DownloadIcon size={14} />
+              </span>
+            )}
             {game.source === "steam" && (
               <span className="wishlist-card__badge wishlist-card__badge--steam">
                 <SteamIcon size={14} />
@@ -195,14 +204,6 @@ export function WishlistCard({
             {game.source === "manual" && (
               <span className="wishlist-card__badge">
                 <HydraLogo width={14} height={14} />
-              </span>
-            )}
-            {game.reminderState === "available" && (
-              <span
-                className="wishlist-card__badge wishlist-card__badge--available"
-                title={t("available_badge")}
-              >
-                <DownloadIcon size={14} />
               </span>
             )}
           </div>

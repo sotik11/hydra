@@ -169,12 +169,22 @@
     flex-shrink: 0;
   }
 
+  // List view: spread title / genres / sources across the full row height
+  // (title on top, genres in the middle, repack badges at the bottom).
   &--list &__info {
     flex: 1;
+    align-self: stretch;
+    justify-content: space-between;
+    gap: globals.$spacing-unit;
+    padding: 4px 0;
   }
 
   &--list &__title {
     font-size: 1rem;
+    white-space: normal;
+  }
+
+  &--list &__genres {
     white-space: normal;
   }
 

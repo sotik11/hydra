@@ -29,8 +29,15 @@ export default function Wishlist() {
     localStorage.getItem("wishlist-view") === "list" ? "list" : "grid"
   );
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [sortBy, setSortBy] = useState<WishlistSort>("added");
+  const [sortBy, setSortBy] = useState<WishlistSort>(() =>
+    localStorage.getItem("wishlist-sort") === "title" ? "title" : "added"
+  );
   const [onlyWithRepack, setOnlyWithRepack] = useState(false);
+
+  const changeSort = (next: WishlistSort) => {
+    setSortBy(next);
+    localStorage.setItem("wishlist-sort", next);
+  };
 
   const searchTerm = useAppSelector(
     (state) => state.wishlistSearch.searchQuery
@@ -189,7 +196,7 @@ export default function Wishlist() {
           <LibrarySelect
             value={sortBy}
             ariaLabel={t("sort_by")}
-            onChange={(value) => setSortBy(value as WishlistSort)}
+            onChange={(value) => changeSort(value as WishlistSort)}
             options={[
               { value: "added", label: t("sort_added") },
               { value: "title", label: t("sort_title") },
