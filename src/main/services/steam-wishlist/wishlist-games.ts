@@ -44,16 +44,14 @@ export async function updateWishlistGameMeta(
 }
 
 /**
- * Clear the whole wishlist. Behaves like removing every game by hand: each
- * appId goes on the denylist so the Steam auto-import won't bring them back;
- * manual re-adds are still possible.
+ * Clear the whole wishlist as a full reset: wipe the store AND the denylist, so
+ * the next Steam import brings every game back. This is different from removing
+ * a single game by hand (the X on a card), which denylists that appId so it
+ * won't auto-return.
  */
 export async function clearWishlist(): Promise<void> {
-  const games = await wishlistGamesSublevel.values().all();
-  await Promise.all(
-    games.map((g) => wishlistDenylistSublevel.put(g.appId, true))
-  );
   await wishlistGamesSublevel.clear();
+  await wishlistDenylistSublevel.clear();
 }
 
 /**
