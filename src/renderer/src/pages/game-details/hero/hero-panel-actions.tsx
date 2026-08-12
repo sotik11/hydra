@@ -10,6 +10,7 @@ import {
   PlusCircleIcon,
   StarIcon,
   StarFillIcon,
+  XIcon,
 } from "@primer/octicons-react";
 import { Button, ConfirmationModal } from "@renderer/components";
 import { XCircle } from "lucide-react";
@@ -36,8 +37,10 @@ export function HeroPanelActions() {
   const [toggleLibraryGameDisabled, setToggleLibraryGameDisabled] =
     useState(false);
   const [addedToWishlist, setAddedToWishlist] = useState(false);
+  const [showRemoveFromLibrary, setShowRemoveFromLibrary] = useState(false);
 
-  const { isGameDeleting } = useDownload();
+  const { isGameDeleting, removeGameFromLibrary, cancelDownload } =
+    useDownload();
   const { userDetails } = useUserDetails();
 
   const {
@@ -386,18 +389,34 @@ export function HeroPanelActions() {
       </Button>
     ) : null;
 
-  // Icon-only variant for the in-library layout (next to favorite/pin).
-  const wishlistIconButton =
-    shop === "steam" ? (
-      <Button
-        onClick={toggleWishlist}
-        theme="outline"
-        disabled={deleting}
-        className="hero-panel-actions__action"
-      >
-        {addedToWishlist ? <StarFillIcon /> : <StarIcon />}
-      </Button>
-    ) : null;
+  const handleRemoveFromLibrary = async () => {
+    if (!objectId) return;
+    try {
+      if (isGameDownloading) {
+        await cancelDownload(shop, objectId);
+      }
+      await removeGameFromLibrary(shop, objectId);
+      await updateLibrary();
+      showSuccessToast(t("game_removed_from_library"));
+    } catch (error) {
+      showErrorToast(t("failed_remove_from_library"));
+      console.error(error);
+    }
+  };
+
+  // In-library layout: no wishlist star (a library game can't be wishlisted).
+  // Instead, an X button that mirrors the context-menu "remove from library".
+  const removeFromLibraryButton = (
+    <Button
+      onClick={() => setShowRemoveFromLibrary(true)}
+      theme="outline"
+      disabled={deleting}
+      className="hero-panel-actions__action"
+      title={t("remove_from_library")}
+    >
+      <XIcon />
+    </Button>
+  );
 
   const gameActionButton = () => {
     if (isTransferring) {
@@ -476,7 +495,7 @@ export function HeroPanelActions() {
         {localizationButton}
         {gameActionButton()}
         <div className="hero-panel-actions__separator" />
-        {wishlistIconButton}
+        {removeFromLibraryButton}
         <Button
           onClick={toggleGameFavorite}
           theme="outline"
@@ -534,6 +553,21 @@ export function HeroPanelActions() {
             if (pending) {
               void launchClassicsWithErrorHandling(pending.discPath, true);
             }
+          }}
+        />
+
+        <ConfirmationModal
+          visible={showRemoveFromLibrary}
+          title={t("remove_from_library_title")}
+          descriptionText={t("remove_from_library_description", {
+            game: gameTitle,
+          })}
+          confirmButtonLabel={t("remove")}
+          cancelButtonLabel={t("cancel")}
+          onClose={() => setShowRemoveFromLibrary(false)}
+          onConfirm={async () => {
+            setShowRemoveFromLibrary(false);
+            await handleRemoveFromLibrary();
           }}
         />
       </div>

@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
-  BookIcon,
   HeartFillIcon,
   HeartIcon,
   PlusIcon,
@@ -197,11 +196,6 @@ export function WishlistCard({
                 <HydraLogo width={14} height={14} />
               </span>
             )}
-            {inLibrary && (
-              <span className="wishlist-card__badge wishlist-card__badge--library">
-                <BookIcon size={14} />
-              </span>
-            )}
           </div>
         </div>
 
@@ -244,9 +238,7 @@ export function WishlistCard({
 
           <button
             type="button"
-            className={`wishlist-card__action ${
-              isFavorite ? "wishlist-card__action--favorite" : ""
-            }`}
+            className="wishlist-card__action"
             onClick={handleFavorite}
             disabled={busy}
             title={

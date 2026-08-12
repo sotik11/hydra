@@ -184,7 +184,7 @@ export function GameItem({ game, wishlistAppIds }: GameItemProps) {
       >
         {added ? <CheckIcon size={16} /> : <PlusIcon size={16} />}
       </button>
-      {game.shop === "steam" && (
+      {game.shop === "steam" && !added && (
         <button
           type="button"
           className={cn("game-item__star-wrapper", {

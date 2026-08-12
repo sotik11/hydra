@@ -3,7 +3,7 @@ import i18n from "i18next";
 // Fork feature strings kept inline (like localization-i18n) so we don't touch
 // upstream translation.json files. Unlisted languages fall back to English.
 const en = {
-  wishlist_title: "Steam Wishlist",
+  wishlist_title: "Steam Wishlist & Library",
   wishlist_loading: "Loading…",
   wishlist_description:
     "Import your public Steam wishlist and see which games already have repacks available.",
@@ -31,7 +31,7 @@ const en = {
 };
 
 const ru: typeof en = {
-  wishlist_title: "Список желаемого Steam",
+  wishlist_title: "Список желаемого и библиотека Steam",
   wishlist_loading: "Загрузка…",
   wishlist_description:
     "Импортируй свой публичный вишлист Steam и смотри, для каких игр уже есть репаки.",
@@ -60,7 +60,7 @@ const ru: typeof en = {
 };
 
 const uk: typeof en = {
-  wishlist_title: "Список бажаного Steam",
+  wishlist_title: "Список бажаного та бібліотека Steam",
   wishlist_loading: "Завантаження…",
   wishlist_description:
     "Імпортуй свій публічний список бажаного Steam і дивись, для яких ігор вже є репаки.",

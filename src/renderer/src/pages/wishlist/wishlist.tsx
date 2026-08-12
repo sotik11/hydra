@@ -9,7 +9,7 @@ import {
 } from "@primer/octicons-react";
 
 import { Button, CheckboxField, ConfirmationModal } from "@renderer/components";
-import { useAppSelector } from "@renderer/hooks";
+import { useAppSelector, useLibrary } from "@renderer/hooks";
 import type { WishlistGame } from "@types";
 
 import { WishlistCard } from "./wishlist-card";
@@ -34,6 +34,17 @@ export default function Wishlist() {
 
   const searchTerm = useAppSelector(
     (state) => state.catalogueSearch.filters.title
+  );
+
+  const { library } = useLibrary();
+  const libraryAppIds = useMemo(
+    () =>
+      new Set(
+        library
+          .filter((entry) => entry.shop === "steam" && !entry.isDeleted)
+          .map((entry) => entry.objectId)
+      ),
+    [library]
   );
 
   const { metaById } = useWishlistMetadata(games ?? [], refreshKey);
@@ -75,6 +86,9 @@ export default function Wishlist() {
 
     const filtered = games.filter((game) => {
       const meta = metaById[game.appId];
+      // A game already in the library is never shown in the wishlist. Removing it
+      // from the library brings it back here (it's a filter, not a hard delete).
+      if (libraryAppIds.has(game.appId)) return false;
       // Drop resolved junk (non-game apps / delisted entries).
       if (meta?.hidden) return false;
       if (onlyWithRepack && (!meta || meta.sources.length === 0)) return false;
@@ -94,7 +108,7 @@ export default function Wishlist() {
     }
 
     return [...filtered].sort((a, b) => b.addedAt - a.addedAt);
-  }, [games, metaById, sortBy, onlyWithRepack, searchTerm]);
+  }, [games, metaById, sortBy, onlyWithRepack, searchTerm, libraryAppIds]);
 
   if (games === null) return null;
 

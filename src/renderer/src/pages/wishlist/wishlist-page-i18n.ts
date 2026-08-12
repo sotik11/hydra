@@ -15,7 +15,8 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Import your Steam wishlist in Settings → Integrations, or add games from the Catalogue with ⭐.",
     count_games: "{{count}} games",
-    filters_hint: "Use the sidebar to refine the list",
+    filters_hint:
+      "For every game without a download source, you'll get a message once it becomes available in at least one of your installed sources.",
     clear: "Clear",
     clear_cancel: "Cancel",
     clear_confirm_title: "Clear the wishlist?",
@@ -39,7 +40,8 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Импортируй вишлист Steam в Настройках → Интеграции или добавь игры из Каталога через ⭐.",
     count_games: "{{count}} игр",
-    filters_hint: "Используйте боковую панель для уточнения списка",
+    filters_hint:
+      "Для всех игр без источников для скачивания вы получите сообщение, когда игра станет доступна для загрузки хотя бы в одном из установленных у вас источников.",
     clear: "Очистить",
     clear_cancel: "Отмена",
     clear_confirm_title: "Очистить список желаемого?",
@@ -63,7 +65,8 @@ const wishlist: Record<string, Record<string, string>> = {
     empty_hint:
       "Імпортуй список Steam у Налаштуваннях → Інтеграції або додай ігри з Каталогу через ⭐.",
     count_games: "{{count}} ігор",
-    filters_hint: "Використовуйте бічну панель для уточнення списку",
+    filters_hint:
+      "Для всіх ігор без джерел для завантаження ви отримаєте повідомлення, коли гра стане доступною хоча б в одному з установлених у вас джерел.",
     clear: "Очистити",
     clear_cancel: "Скасувати",
     clear_confirm_title: "Очистити список бажаного?",

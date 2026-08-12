@@ -1,9 +1,23 @@
-import { wishlistGamesSublevel, wishlistDenylistSublevel } from "@main/level";
+import {
+  wishlistGamesSublevel,
+  wishlistDenylistSublevel,
+  gamesSublevel,
+  levelKeys,
+} from "@main/level";
 import type {
   SteamWishlistItem,
   WishlistGame,
   WishlistGameMetaCache,
 } from "@types";
+
+// A game that already lives in the library (not soft-deleted) never belongs in
+// the wishlist — you wishlist what you don't own yet.
+async function isInLibrary(appId: string): Promise<boolean> {
+  const entry = await gamesSublevel
+    .get(levelKeys.game("steam", appId))
+    .catch(() => null);
+  return Boolean(entry && !entry.isDeleted);
+}
 
 export async function getWishlistGames(): Promise<WishlistGame[]> {
   return wishlistGamesSublevel.values().all();
@@ -96,6 +110,7 @@ export async function syncSteamWishlistToStore(
   for (const item of items) {
     if (denied.has(item.appId)) continue;
     if (existingIds.has(item.appId)) continue;
+    if (await isInLibrary(item.appId)) continue;
 
     await wishlistGamesSublevel.put(item.appId, {
       appId: item.appId,
