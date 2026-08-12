@@ -33,7 +33,7 @@ export default function Wishlist() {
   const [onlyWithRepack, setOnlyWithRepack] = useState(false);
 
   const searchTerm = useAppSelector(
-    (state) => state.catalogueSearch.filters.title
+    (state) => state.wishlistSearch.searchQuery
   );
 
   const { library } = useLibrary();

@@ -28,7 +28,11 @@ import {
 import "./header.scss";
 import { AutoUpdateSubHeader } from "./auto-update-sub-header";
 import { ScanGamesModal, type ScanResult } from "./scan-games-modal";
-import { setFilters, setLibrarySearchQuery } from "@renderer/features";
+import {
+  setFilters,
+  setLibrarySearchQuery,
+  setWishlistSearchQuery,
+} from "@renderer/features";
 import cn from "classnames";
 import { SearchDropdown } from "@renderer/components";
 import { buildGameDetailsPath } from "@renderer/helpers";
@@ -68,8 +72,13 @@ export function Header() {
     (state) => state.library.searchQuery
   );
 
+  const wishlistSearchValue = useAppSelector(
+    (state) => state.wishlistSearch.searchQuery
+  );
+
   const isOnLibraryPage = location.pathname.startsWith("/library");
   const isOnCataloguePage = location.pathname.startsWith("/catalogue");
+  const isOnWishlistPage = location.pathname.startsWith("/wishlist");
 
   const isLibraryScanSupported =
     window.electron.platform === "win32" ||
@@ -77,7 +86,9 @@ export function Header() {
 
   const searchValue = isOnLibraryPage
     ? librarySearchValue
-    : catalogueSearchValue;
+    : isOnWishlistPage
+      ? wishlistSearchValue
+      : catalogueSearchValue;
 
   const [localSearchValue, setLocalSearchValue] = useState(searchValue);
   const deferredSearchValue = useDeferredValue(localSearchValue);
@@ -97,6 +108,14 @@ export function Header() {
       debounce((value: string) => {
         dispatch(setFilters({ title: value }));
       }, 250),
+    [dispatch]
+  );
+
+  const debouncedWishlistSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        dispatch(setWishlistSearchQuery(value));
+      }, 180),
     [dispatch]
   );
 
@@ -122,7 +141,7 @@ export function Header() {
   const { suggestions, isLoading: isLoadingSuggestions } = useSearchSuggestions(
     deferredSearchValue,
     isOnLibraryPage,
-    isDropdownVisible && isFocused && !isOnCataloguePage,
+    isDropdownVisible && isFocused && !isOnCataloguePage && !isOnWishlistPage,
     suggestionShop
   );
 
@@ -147,14 +166,19 @@ export function Header() {
 
   useEffect(() => {
     setLocalSearchValue(searchValue);
-  }, [searchValue, isOnLibraryPage, isOnCataloguePage]);
+  }, [searchValue, isOnLibraryPage, isOnCataloguePage, isOnWishlistPage]);
 
   useEffect(() => {
     return () => {
       debouncedLibrarySearch.cancel();
       debouncedCatalogueSearch.cancel();
+      debouncedWishlistSearch.cancel();
     };
-  }, [debouncedCatalogueSearch, debouncedLibrarySearch]);
+  }, [
+    debouncedCatalogueSearch,
+    debouncedLibrarySearch,
+    debouncedWishlistSearch,
+  ]);
 
   const updateDropdownPosition = () => {
     if (searchContainerRef.current) {
@@ -200,9 +224,12 @@ export function Header() {
   const handleSearch = (value: string) => {
     debouncedLibrarySearch.cancel();
     debouncedCatalogueSearch.cancel();
+    debouncedWishlistSearch.cancel();
 
     if (isOnLibraryPage) {
       dispatch(setLibrarySearchQuery(value.slice(0, 255)));
+    } else if (isOnWishlistPage) {
+      dispatch(setWishlistSearchQuery(value.slice(0, 255)));
     } else {
       dispatch(setFilters({ title: value.slice(0, 255) }));
     }
@@ -217,9 +244,15 @@ export function Header() {
 
     if (isOnLibraryPage) {
       debouncedCatalogueSearch.cancel();
+      debouncedWishlistSearch.cancel();
       debouncedLibrarySearch(normalizedValue);
+    } else if (isOnWishlistPage) {
+      debouncedLibrarySearch.cancel();
+      debouncedCatalogueSearch.cancel();
+      debouncedWishlistSearch(normalizedValue);
     } else {
       debouncedLibrarySearch.cancel();
+      debouncedWishlistSearch.cancel();
       debouncedCatalogueSearch(normalizedValue);
     }
   };
