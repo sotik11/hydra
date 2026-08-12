@@ -35,7 +35,10 @@ async function hasRepack(
     );
     return Array.isArray(repacks) && repacks.length > 0;
   } catch (error) {
-    logger.warn(`[wishlist-reminders] sources check failed for ${appId}`, error);
+    logger.warn(
+      `[wishlist-reminders] sources check failed for ${appId}`,
+      error
+    );
     return false;
   }
 }
