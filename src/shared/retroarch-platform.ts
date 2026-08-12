@@ -18,6 +18,7 @@ export const platformToRetroArchPlatform = (
     )
   )
     return "genesis";
+  if (/playstation\s*portable|\bpsp\b/.test(p)) return "psp";
   return null;
 };
 
@@ -29,4 +30,5 @@ export const RETROARCH_PLATFORM_LABELS: Record<RetroArchPlatform, string> = {
   gbc: "GBC",
   gba: "GBA",
   genesis: "MD",
+  psp: "PSP",
 };

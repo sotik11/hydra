@@ -94,7 +94,7 @@ const wrapPlaceholderTitle = (title: string): string[] => {
 // so coverless entries stay identifiable in the grid views — not only the
 // large view, which already prints the title beside the card. An
 // <img>-embeddable data URI, so nothing in the renderer needs touching.
-const PLACEHOLDER_BRANDED = new Set<RetroArchPlatform>(["genesis"]);
+const PLACEHOLDER_BRANDED = new Set<RetroArchPlatform>(["genesis", "psp"]);
 
 const buildPlaceholderIcon = (
   platform: RetroArchPlatform,
