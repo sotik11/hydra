@@ -33,8 +33,9 @@ interface PlatformIndexFile {
 }
 
 // Bump when the index schema changes (e.g. new fields) so stale caches without
-// the new data are rebuilt instead of served. v2 added screenshots.
-const INDEX_VERSION = 2;
+// the new data are rebuilt instead of served. v2 added screenshots. v3 forces a
+// rebuild after fixing the PSP LaunchBox platform name ("Sony PSP").
+const INDEX_VERSION = 3;
 
 const METADATA_URL = "https://gamesdb.launchbox-app.com/Metadata.zip";
 const XML_MEMBER = "Metadata.xml";

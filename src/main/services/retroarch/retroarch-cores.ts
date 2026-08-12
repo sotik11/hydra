@@ -100,7 +100,9 @@ export const PLATFORM_TO_LAUNCHBOX_NAME: Record<RetroArchPlatform, string> = {
   gbc: "Nintendo Game Boy Color",
   gba: "Nintendo Game Boy Advance",
   genesis: "Sega Genesis",
-  psp: "Sony Playstation Portable",
+  // Must match the LaunchBox platform name exactly, or its metadata/screenshots
+  // won't resolve (their platform is "Sony PSP", not "...Playstation Portable").
+  psp: "Sony PSP",
 };
 
 export const ALL_RETROARCH_ROM_EXTENSIONS: readonly string[] = Array.from(
