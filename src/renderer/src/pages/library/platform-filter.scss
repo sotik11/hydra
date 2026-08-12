@@ -2,5 +2,14 @@
   &__container {
     display: flex;
     align-items: center;
+    // Long console names ("Super Nintendo Entertainment System") must not blow
+    // up the controls row and push the right group onto a second line — cap the
+    // width and let the trigger label ellipsize.
+    max-width: 240px;
+    min-width: 0;
+
+    .library-select__trigger {
+      max-width: 100%;
+    }
   }
 }
