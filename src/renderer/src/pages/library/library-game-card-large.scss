@@ -317,15 +317,15 @@
     }
   }
 
-  // Steam library import marker: round badge with the same rainbow gradient
-  // ring used by the classics platform/emulator badges.
+  // Steam library import marker: cyan-aquamarine-violet ring (matches the
+  // wishlist Steam badge).
   &__steam-badge {
     flex-shrink: 0;
     border: 1px solid transparent;
     border-radius: 50%;
     background:
       linear-gradient(#1c1c1c, #1c1c1c) padding-box,
-      globals.$classics-rainbow border-box;
+      linear-gradient(135deg, #2a6df4, #22d3ee, #2af5c8, #a855f7) border-box;
     width: 28px;
     height: 28px;
     box-sizing: border-box;
