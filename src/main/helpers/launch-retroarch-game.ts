@@ -86,6 +86,12 @@ export const launchRetroArchGame = async (
   // box. Done here, before launch, because RetroArch rewrites its config on exit.
   retroarch.ensureRetroArchGamepadMenuCombo(executableTarget);
 
+  // PSP: make sure PPSSPP's asset bundle is present (covers cores installed
+  // before we added the auto-download). Idempotent — skips when already there.
+  if (platform === "psp") {
+    await retroarch.ensurePpssppAssets(executableTarget);
+  }
+
   const baseArgs = ["-L", core.path, romPath, "-f"];
 
   const resolvedLaunchCommand = resolveLaunchCommand({

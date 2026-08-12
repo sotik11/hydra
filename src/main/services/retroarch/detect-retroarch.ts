@@ -110,22 +110,27 @@ const resolveLibretroPath = (raw: string, cfgPath: string): string => {
   return path.isAbsolute(raw) ? raw : path.join(path.dirname(cfgPath), raw);
 };
 
-const readLibretroDirectory = (cfgPath: string): string | null => {
+// Read a raw path-valued setting (e.g. libretro_directory / system_directory)
+// from a retroarch.cfg, unquoted. Returns null when absent/empty.
+const readCfgRawValue = (cfgPath: string, key: string): string | null => {
   try {
     const content = fs.readFileSync(cfgPath, "utf8");
     for (const line of content.split("\n")) {
       const eq = line.indexOf("=");
       if (eq === -1) continue;
-      if (line.slice(0, eq).trim() !== "libretro_directory") continue;
-
+      if (line.slice(0, eq).trim() !== key) continue;
       const raw = stripQuotes(line.slice(eq + 1).trim());
-      if (!raw) return null;
-      return resolveLibretroPath(raw, cfgPath);
+      return raw || null;
     }
     return null;
   } catch {
     return null;
   }
+};
+
+const readLibretroDirectory = (cfgPath: string): string | null => {
+  const raw = readCfgRawValue(cfgPath, "libretro_directory");
+  return raw ? resolveLibretroPath(raw, cfgPath) : null;
 };
 
 export const retroArchConfigRoots = (executablePath: string): string[] => {
@@ -154,6 +159,30 @@ export const retroArchConfigRoots = (executablePath: string): string[] => {
     roots.push(path.join(home, ".config", "retroarch"));
   }
   return roots;
+};
+
+// Resolves RetroArch's system directory (where cores look for BIOS/assets, e.g.
+// system/PPSSPP). Honors a custom `system_directory` from the user's config
+// (their RA folder may be non-standard), treating "default"/absent as
+// <config root>/system. Returns a path even if it doesn't exist yet (callers
+// create it).
+export const detectRetroArchSystemDir = (executablePath: string): string => {
+  const roots = retroArchConfigRoots(executablePath);
+
+  for (const root of roots) {
+    const raw = readCfgRawValue(
+      path.join(root, "retroarch.cfg"),
+      "system_directory"
+    );
+    if (raw && raw.toLowerCase() !== "default") {
+      return resolveLibretroPath(raw, path.join(root, "retroarch.cfg"));
+    }
+  }
+
+  for (const root of roots) {
+    if (isDirectory(root)) return path.join(root, "system");
+  }
+  return path.join(roots[0], "system");
 };
 
 export const detectRetroArchCoresDir = (
