@@ -19,6 +19,7 @@ const SYSTEM_DIR: Partial<Record<RetroArchPlatform, string>> = {
   gbc: "Nintendo - Game Boy Color",
   gba: "Nintendo - Game Boy Advance",
   genesis: "Sega - Mega Drive - Genesis",
+  psp: "Sony - PlayStation Portable",
 };
 
 const THUMBNAIL_HOST = "https://thumbnails.libretro.com";
