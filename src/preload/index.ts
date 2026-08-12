@@ -900,6 +900,19 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.invoke("removeWishlistGame", appId),
   updateWishlistMeta: (appId: string, meta: WishlistGameMetaCache) =>
     ipcRenderer.invoke("updateWishlistMeta", appId, meta),
+  refreshWishlistReminders: () =>
+    ipcRenderer.invoke("refreshWishlistReminders"),
+  onWishlistGameAvailable: (
+    cb: (payload: { appId: string; title: string }) => void
+  ) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      payload: { appId: string; title: string }
+    ) => cb(payload);
+    ipcRenderer.on("on-wishlist-game-available", listener);
+    return () =>
+      ipcRenderer.removeListener("on-wishlist-game-available", listener);
+  },
   clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
   /* Library */

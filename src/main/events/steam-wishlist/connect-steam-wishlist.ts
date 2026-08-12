@@ -6,6 +6,7 @@ import {
   fetchOwnedGames,
   importOwnedGamesToLibrary,
   syncSteamWishlistToStore,
+  checkWishlistReminders,
 } from "@main/services/steam-wishlist";
 import { logger } from "@main/services";
 import type { SteamWishlistState } from "@types";
@@ -38,6 +39,10 @@ const connectSteamWishlist = async (
       logger.error("[steam-wishlist] owned games import failed", err);
     }
   }
+
+  // Record baseline reminder state for the freshly-synced games (fire-and-forget
+  // — resolving sources for the whole wishlist shouldn't block connect).
+  void checkWishlistReminders();
 
   logger.info("[steam-wishlist] connected", {
     steamId: profile.steamId64,

@@ -28,6 +28,7 @@ import {
   logger,
   migrateCloudSaveAutomaticSyncDefaults,
 } from "@main/services";
+import { checkWishlistReminders } from "@main/services/steam-wishlist";
 import { migrateDownloadSources } from "./helpers/migrate-download-sources";
 import { getDirSize } from "./services/download/helpers";
 import { GofileApi } from "./services/hosters";
@@ -120,6 +121,8 @@ export const loadState = async () => {
     // Check for new download options on startup (if enabled)
     (async () => {
       await DownloadSourcesChecker.checkForChanges();
+      // Fork: notify when a wishlisted game without a repack gets one.
+      await checkWishlistReminders();
     })();
 
     if (HydraApi.isLoggedIn()) {

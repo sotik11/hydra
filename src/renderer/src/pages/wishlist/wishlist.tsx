@@ -60,9 +60,18 @@ export default function Wishlist() {
     loadGames();
   }, [loadGames]);
 
+  // Reload when a game becomes available so its green badge shows up right away.
+  useEffect(() => {
+    const unsubscribe = window.electron.onWishlistGameAvailable(() =>
+      loadGames()
+    );
+    return unsubscribe;
+  }, [loadGames]);
+
   const handleRefresh = () => {
     loadGames();
     setRefreshKey((key) => key + 1);
+    window.electron.refreshWishlistReminders().catch(() => {});
   };
 
   const handleRemoved = (appId: string) => {

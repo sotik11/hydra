@@ -33,6 +33,8 @@ const wishlist: Record<string, Record<string, string>> = {
     remove_from_wishlist: "Remove from wishlist",
     add_to_favorites: "Add to favorites",
     remove_from_favorites: "Remove from favorites",
+    available_toast: "{{game}} is now available to download!",
+    available_badge: "Available to download",
   },
   ru: {
     page_title: "Список желаемого",
@@ -58,6 +60,8 @@ const wishlist: Record<string, Record<string, string>> = {
     remove_from_wishlist: "Убрать из списка",
     add_to_favorites: "В избранное",
     remove_from_favorites: "Убрать из избранного",
+    available_toast: "Игра {{game}} стала доступна для скачивания!",
+    available_badge: "Доступна для скачивания",
   },
   uk: {
     page_title: "Список бажаного",
@@ -83,6 +87,8 @@ const wishlist: Record<string, Record<string, string>> = {
     remove_from_wishlist: "Прибрати зі списку",
     add_to_favorites: "До обраного",
     remove_from_favorites: "Прибрати з обраного",
+    available_toast: "Гра {{game}} стала доступною для завантаження!",
+    available_badge: "Доступна для завантаження",
   },
 };
 

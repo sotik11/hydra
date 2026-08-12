@@ -39,6 +39,7 @@ import Wishlist from "./pages/wishlist/wishlist";
 import Notifications from "./pages/notifications/notifications";
 import { AchievementNotification } from "./pages/achievements/notification/achievement-notification";
 import { AchievementNotificationOverlay } from "./components/achievements/notification/achievement-notification-overlay";
+import { WishlistAvailableNotification } from "./pages/wishlist/wishlist-available-notification";
 import GameLauncher from "./pages/game-launcher/game-launcher";
 import FriendsWindow from "./pages/friends-window/friends-window";
 import AuthWindow from "./pages/auth-window/auth-window";
@@ -128,6 +129,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         <HashRouter>
           <CollectionContextMenuProvider>
             <AchievementNotificationOverlay />
+            <WishlistAvailableNotification />
             <Routes>
               <Route element={<App />}>
                 <Route path="/" element={<Home />} />

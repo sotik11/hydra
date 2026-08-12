@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
+  DownloadIcon,
   HeartFillIcon,
   HeartIcon,
   PlusIcon,
@@ -194,6 +195,14 @@ export function WishlistCard({
             {game.source === "manual" && (
               <span className="wishlist-card__badge">
                 <HydraLogo width={14} height={14} />
+              </span>
+            )}
+            {game.reminderState === "available" && (
+              <span
+                className="wishlist-card__badge wishlist-card__badge--available"
+                title={t("available_badge")}
+              >
+                <DownloadIcon size={14} />
               </span>
             )}
           </div>

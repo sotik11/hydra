@@ -945,6 +945,10 @@ declare global {
       appId: string,
       meta: WishlistGameMetaCache
     ) => Promise<void>;
+    refreshWishlistReminders: () => Promise<void>;
+    onWishlistGameAvailable: (
+      cb: (payload: { appId: string; title: string }) => void
+    ) => () => void;
     clearWishlist: () => Promise<void>;
 
     /* Hardware */

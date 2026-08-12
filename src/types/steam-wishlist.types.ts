@@ -35,6 +35,13 @@ export interface SteamWishlistState {
 // back games the user removed by hand.
 export type WishlistGameSource = "steam" | "manual";
 
+// Repack-reminder state for a wishlist game:
+//   undefined  — not checked yet
+//   "na"       — had a repack when first seen; reminders don't apply
+//   "watching" — no repack yet; we watch for one to appear
+//   "available"— a repack appeared while watching; user was notified (green badge)
+export type WishlistReminderState = "na" | "watching" | "available";
+
 // Cached static metadata for a wishlist game. The raw Steam wishlist gives us
 // only appIds, so we resolve title/cover/genres/year once and store them here —
 // that makes search and title-sort instant on later opens (like the library,
@@ -56,4 +63,6 @@ export interface WishlistGame extends WishlistGameMetaCache {
   appId: string;
   source: WishlistGameSource;
   addedAt: number;
+  reminderState?: WishlistReminderState;
+  becameAvailableAt?: number;
 }

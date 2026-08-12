@@ -6,6 +6,7 @@ import {
   fetchOwnedGames,
   importOwnedGamesToLibrary,
   syncSteamWishlistToStore,
+  checkWishlistReminders,
 } from "@main/services/steam-wishlist";
 import { logger } from "@main/services";
 import type { SteamWishlistState, UserPreferences } from "@types";
@@ -43,6 +44,8 @@ const refreshSteamWishlist = async (): Promise<SteamWishlistState> => {
       logger.error("[steam-wishlist] refresh owned games failed", err);
     }
   }
+
+  void checkWishlistReminders();
 
   return {
     connected: true,
