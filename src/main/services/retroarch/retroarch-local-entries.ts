@@ -94,13 +94,36 @@ const wrapPlaceholderTitle = (title: string): string[] => {
 // so coverless entries stay identifiable in the grid views — not only the
 // large view, which already prints the title beside the card. An
 // <img>-embeddable data URI, so nothing in the renderer needs touching.
-const PLACEHOLDER_BRANDED = new Set<RetroArchPlatform>(["genesis", "psp"]);
+// Platforms that get a branded coverless placeholder (with the SVG header
+// below). Others fall back to Hydra's default cover.
+interface PlaceholderBrand {
+  bigText: string;
+  bigSvgAttrs: string;
+  smallText: string;
+}
+
+const PLACEHOLDER_BRANDS: Partial<Record<RetroArchPlatform, PlaceholderBrand>> =
+  {
+    genesis: {
+      bigText: "SEGA",
+      bigSvgAttrs:
+        'font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-3"',
+      smallText: "GENESIS",
+    },
+    psp: {
+      bigText: "PSP",
+      bigSvgAttrs:
+        'font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#dfe3e8" letter-spacing="4"',
+      smallText: "PLAYSTATION PORTABLE",
+    },
+  };
 
 const buildPlaceholderIcon = (
   platform: RetroArchPlatform,
   title: string
 ): string | null => {
-  if (!PLACEHOLDER_BRANDED.has(platform)) return null;
+  const brand = PLACEHOLDER_BRANDS[platform];
+  if (!brand) return null;
   const lines = wrapPlaceholderTitle(title);
   const fontSize = lines.length <= 2 ? 62 : lines.length === 3 ? 52 : 42;
   const lineHeight = Math.round(fontSize * 1.15);
@@ -114,8 +137,8 @@ const buildPlaceholderIcon = (
   const svg =
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 720">' +
     '<rect width="512" height="720" fill="#0b0e14"/>' +
-    '<text x="256" y="150" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-3">SEGA</text>' +
-    '<text x="256" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" letter-spacing="8" fill="#7d8590">GENESIS</text>' +
+    `<text x="256" y="150" text-anchor="middle" ${brand.bigSvgAttrs}>${brand.bigText}</text>` +
+    `<text x="256" y="192" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" letter-spacing="8" fill="#7d8590">${brand.smallText}</text>` +
     titleSvg +
     "</svg>";
   return `data:image/svg+xml,${encodeURIComponent(svg)}`;

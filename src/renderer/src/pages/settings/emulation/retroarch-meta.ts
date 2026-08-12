@@ -20,6 +20,7 @@ export const RETROARCH_CORE_LIST: RetroArchCoreMeta[] = [
   { name: "gambatte", label: "Gambatte", platforms: "GB / GBC" },
   { name: "mgba", label: "mGBA", platforms: "GBA" },
   { name: "genesis_plus_gx", label: "Genesis Plus GX", platforms: "Genesis" },
+  { name: "ppsspp", label: "PPSSPP", platforms: "PSP" },
 ];
 
 export const RETROARCH_LABEL = "RetroArch";
