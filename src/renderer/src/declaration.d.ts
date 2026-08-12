@@ -474,7 +474,9 @@ declare global {
     ) => Promise<string[]>;
     closeGame: (shop: GameShop, objectId: string) => Promise<boolean>;
     removeGameFromLibrary: (shop: GameShop, objectId: string) => Promise<void>;
-    clearLibrary: () => Promise<void>;
+    clearLibrary: (
+      targets?: { shop: GameShop; objectId: string }[]
+    ) => Promise<void>;
     removeGame: (shop: GameShop, objectId: string) => Promise<void>;
     deleteGameFolder: (shop: GameShop, objectId: string) => Promise<unknown>;
     getGameByObjectId: (

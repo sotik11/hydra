@@ -119,7 +119,15 @@ export default function Library() {
     }
     return "all";
   });
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null);
+  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(
+    () => localStorage.getItem("library-platform") || null
+  );
+
+  const changePlatform = useCallback((next: string | null) => {
+    setSelectedPlatform(next);
+    if (next) localStorage.setItem("library-platform", next);
+    else localStorage.removeItem("library-platform");
+  }, []);
   const [isImportingClassics, setIsImportingClassics] = useState(false);
 
   // The category switch and platform filter are always available, so the
@@ -190,13 +198,16 @@ export default function Library() {
     }
   }, [effectiveCategory]);
 
-  const handleCategoryChange = useCallback((next: LibraryCategory) => {
-    setCategory(next);
-    localStorage.setItem("library-category", next);
-    if (next === "pc") {
-      setSelectedPlatform(null);
-    }
-  }, []);
+  const handleCategoryChange = useCallback(
+    (next: LibraryCategory) => {
+      setCategory(next);
+      localStorage.setItem("library-category", next);
+      if (next === "pc") {
+        changePlatform(null);
+      }
+    },
+    [changePlatform]
+  );
 
   const searchQuery = useAppSelector((state) => state.library.searchQuery);
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -280,12 +291,6 @@ export default function Library() {
     return () => {
       window.removeEventListener("hydra:game-pin-toggled", handlePinToggled);
     };
-  }, [updateLibrary]);
-
-  const handleClearLibrary = useCallback(async () => {
-    await window.electron.clearLibrary().catch(() => {});
-    setShowClearLibraryConfirm(false);
-    updateLibrary();
   }, [updateLibrary]);
 
   const handleCreateCollectionButtonClick = useCallback(() => {
@@ -380,6 +385,26 @@ export default function Library() {
     effectiveCategory,
     selectedPlatform,
   ]);
+
+  // "Clear" acts on the current filter: with any category/platform/collection/
+  // search filter active it removes only what's shown; with none it clears all.
+  const isLibraryFiltered =
+    effectiveCategory !== "all" ||
+    Boolean(selectedPlatform) ||
+    Boolean(selectedCollectionId) ||
+    deferredSearchQuery.trim().length > 0;
+
+  const handleClearLibrary = useCallback(async () => {
+    const targets = isLibraryFiltered
+      ? filteredLibrary.map((game) => ({
+          shop: game.shop,
+          objectId: game.objectId,
+        }))
+      : undefined;
+    await window.electron.clearLibrary(targets).catch(() => {});
+    setShowClearLibraryConfirm(false);
+    updateLibrary();
+  }, [isLibraryFiltered, filteredLibrary, updateLibrary]);
 
   const uniquePlatforms = useMemo(() => {
     const set = new Set<string>();
@@ -505,7 +530,7 @@ export default function Library() {
                 <PlatformFilter
                   platform={selectedPlatform}
                   platforms={uniquePlatforms}
-                  onPlatformChange={setSelectedPlatform}
+                  onPlatformChange={changePlatform}
                 />
               )}
               <ViewOptions
@@ -651,7 +676,13 @@ export default function Library() {
       <ConfirmationModal
         visible={showClearLibraryConfirm}
         title={t("clear_library_title")}
-        descriptionText={t("clear_library_description")}
+        descriptionText={
+          isLibraryFiltered
+            ? t("clear_library_filtered_description", {
+                count: filteredLibrary.length,
+              })
+            : t("clear_library_description")
+        }
         confirmButtonLabel={t("clear_library_confirm")}
         cancelButtonLabel={t("clear_library_cancel")}
         onConfirm={handleClearLibrary}

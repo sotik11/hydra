@@ -8,6 +8,8 @@ const strings: Record<string, Record<string, string>> = {
     clear_library_title: "Clear the library?",
     clear_library_description:
       "All games will be removed from the library. Downloaded files on disk are kept, and Steam-imported games can be imported again.",
+    clear_library_filtered_description:
+      "The {{count}} games currently shown will be removed from the library. Downloaded files on disk are kept.",
     clear_library_confirm: "Clear",
     clear_library_cancel: "Cancel",
   },
@@ -16,6 +18,8 @@ const strings: Record<string, Record<string, string>> = {
     clear_library_title: "Очистить библиотеку?",
     clear_library_description:
       "Все игры будут убраны из библиотеки. Скачанные файлы на диске остаются, а импортированные из Steam можно импортировать заново.",
+    clear_library_filtered_description:
+      "{{count}} отображённых игр будут убраны из библиотеки. Скачанные файлы на диске остаются.",
     clear_library_confirm: "Очистить",
     clear_library_cancel: "Отмена",
   },
@@ -24,6 +28,8 @@ const strings: Record<string, Record<string, string>> = {
     clear_library_title: "Очистити бібліотеку?",
     clear_library_description:
       "Усі ігри буде прибрано з бібліотеки. Завантажені файли на диску залишаються, а імпортовані зі Steam можна імпортувати знову.",
+    clear_library_filtered_description:
+      "{{count}} показаних ігор буде прибрано з бібліотеки. Завантажені файли на диску залишаються.",
     clear_library_confirm: "Очистити",
     clear_library_cancel: "Скасувати",
   },
