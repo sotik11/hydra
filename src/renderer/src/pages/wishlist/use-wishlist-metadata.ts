@@ -12,11 +12,22 @@ export interface WishlistGameMeta {
   cover: string | null;
   genres: string[];
   releaseYear: number | null;
+  appType: string | null;
   sources: string[];
   loaded: boolean;
+  hidden: boolean;
 }
 
 const CONCURRENCY = 4;
+
+// A wishlist entry is "junk" once resolved if it's a non-game Steam app (DLC,
+// soundtrack, demo, ...) or it doesn't resolve at all (delisted — no title and
+// no cover, just the bare appId). Such entries are hidden from the screen.
+function isJunk(meta: WishlistGameMeta): boolean {
+  if (meta.appType && meta.appType !== "game") return true;
+  if (meta.title === meta.appId && !meta.cover) return true;
+  return false;
+}
 
 // Seed a game's meta from whatever the store already cached. Title/cover/genres/
 // year survive here between sessions, so search and title-sort work instantly on
@@ -28,8 +39,10 @@ function fromCache(game: WishlistGame): WishlistGameMeta {
     cover: game.cover ?? null,
     genres: game.genres ?? [],
     releaseYear: game.releaseYear ?? null,
+    appType: game.appType ?? null,
     sources: [],
     loaded: false,
+    hidden: false,
   };
 }
 
@@ -66,6 +79,9 @@ async function resolveOne(
         const match = rawDate.match(/(\d{4})/);
         if (match) meta.releaseYear = Number(match[1]);
       }
+      // Steam returns an app "type" that isn't in our typed model; read it raw.
+      const appType = (details as { type?: string } | null)?.type;
+      if (appType) meta.appType = appType;
     } catch {
       // keep defaults
     }
@@ -77,10 +93,18 @@ async function resolveOne(
         cover: meta.cover,
         genres: meta.genres,
         releaseYear: meta.releaseYear,
+        appType: meta.appType,
       })
       .catch((error) => {
         logger.warn(`[wishlist] meta cache write failed for ${appId}:`, error);
       });
+  }
+
+  // Non-game / delisted junk: hide it and skip the sources fetch entirely.
+  meta.hidden = isJunk(meta);
+  if (meta.hidden) {
+    meta.loaded = true;
+    return meta;
   }
 
   // Repack sources are always fetched fresh — they change over time and drive

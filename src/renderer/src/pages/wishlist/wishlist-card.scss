@@ -159,11 +159,12 @@
     white-space: normal;
   }
 
-  // List view: actions on the right, stacked (add on top, remove below).
+  // List view: actions on the right, stacked and top-aligned so 2 buttons start
+  // on the first row just like 3 do (remove / add / favorite).
   &--list &__actions {
     position: static;
     flex-direction: column;
-    align-self: center;
+    align-self: flex-start;
     flex-shrink: 0;
   }
 }

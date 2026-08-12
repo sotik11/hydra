@@ -45,6 +45,10 @@ export interface WishlistGameMetaCache {
   cover?: string | null;
   genres?: string[];
   releaseYear?: number | null;
+  // Steam app type ("game" / "dlc" / "music" / "demo" / ...). Anything that
+  // isn't a game (or doesn't resolve at all — delisted apps) is filtered out of
+  // the wishlist screen. Cached so we don't re-fetch and re-hide it every open.
+  appType?: string | null;
   metaCachedAt?: number;
 }
 

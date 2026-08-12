@@ -75,6 +75,8 @@ export default function Wishlist() {
 
     const filtered = games.filter((game) => {
       const meta = metaById[game.appId];
+      // Drop resolved junk (non-game apps / delisted entries).
+      if (meta?.hidden) return false;
       if (onlyWithRepack && (!meta || meta.sources.length === 0)) return false;
       if (term) {
         const title = (meta?.title ?? game.appId).toLowerCase();
