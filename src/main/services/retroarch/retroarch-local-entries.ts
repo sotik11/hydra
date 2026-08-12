@@ -290,7 +290,10 @@ const buildLocalShopDetails = (
     pc_requirements: { minimum: "", recommended: "" },
     mac_requirements: { minimum: "", recommended: "" },
     linux_requirements: { minimum: "", recommended: "" },
-    release_date: { coming_soon: false, date: toReleaseDate(meta?.releaseDate) },
+    release_date: {
+      coming_soon: false,
+      date: toReleaseDate(meta?.releaseDate),
+    },
     content_descriptors: { ids: [] },
   };
 };
