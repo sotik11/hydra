@@ -955,7 +955,7 @@ declare global {
     clearWishlist: () => Promise<void>;
 
     /* Hardware */
-    getDiskFreeSpace: (path: string) => Promise<DiskUsage>;
+    getDiskFreeSpace: (path: string) => Promise<DiskUsage | null>;
     checkFolderWritePermission: (path: string) => Promise<boolean>;
     getNetworkInterfaces: () => Promise<NetworkInterface[]>;
 
