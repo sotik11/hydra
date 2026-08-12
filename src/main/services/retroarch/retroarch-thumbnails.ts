@@ -149,8 +149,15 @@ const loadIndex = async (
 
 // --- title -> boxart name matching ------------------------------------------
 
+// Lowercase and strip punctuation (hyphens, colons, apostrophes, ...) so titles
+// match across naming styles: libretro uses "God of War - Chains of Olympus"
+// while our folder-derived title is "God Of War Chains Of Olympus".
 const normalize = (value: string): string =>
-  value.toLowerCase().replace(/\s+/g, " ").trim();
+  value
+    .toLowerCase()
+    .replace(/[-–—:_'’.,!]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 
 // Region/dump ranking: prefer a clean US/World release over Japan/betas/hacks.
 const scoreName = (name: string): number => {

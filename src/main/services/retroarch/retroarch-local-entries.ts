@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import path from "node:path";
 
 import {
   db,
@@ -17,6 +18,7 @@ import type {
 } from "@types";
 
 import { logger } from "../logger";
+import { readPspDiscInfo } from "../emulators/psp-disc-info";
 import { PLATFORM_TO_LAUNCHBOX_NAME } from "./retroarch-cores";
 import {
   ensureLocalBoxart,
@@ -60,13 +62,56 @@ const baseNameWithoutExt = (fileName: string): string =>
 
 // Turns "Sonic_the_Hedgehog_(JUE)_[!]" into "Sonic the Hedgehog": drop the
 // extension, parenthesised/bracketed dump-and-region tags, and underscores.
+const REGION_SUFFIX =
+  /\s+(us|usa|eu|europe|jp|japan|jpn|world|en|eng|ru|rus|fr|de|es|it|multi\d*|m\d)$/i;
+
+// Drop trailing region/language tags repeatedly ("... USA rus" -> "...").
+const stripRegionSuffix = (value: string): string => {
+  let out = value.trim();
+  let prev: string;
+  do {
+    prev = out;
+    out = out.replace(REGION_SUFFIX, "").trim();
+  } while (out !== prev);
+  return out;
+};
+
 const titleFromFileName = (fileName: string): string => {
   const cleaned = baseNameWithoutExt(fileName)
     .replace(/_+/g, " ")
     .replace(/\s*[([][^()[\]]*[)\]]/g, "")
     .replace(/\s+/g, " ")
     .trim();
-  return cleaned || baseNameWithoutExt(fileName);
+  return stripRegionSuffix(cleaned) || cleaned || baseNameWithoutExt(fileName);
+};
+
+// Folder-name variant: PSP dumps are usually "<Game Name>/EBOOT.PBP", where the
+// file name is generic and the real name lives on the folder (often hyphenated,
+// with a region suffix like "_US"). Turn "god-of-war-chains-of-olympus_US" into
+// "God Of War Chains Of Olympus".
+const titleFromFolderName = (folder: string): string => {
+  const words = folder
+    .replace(/[-_]+/g, " ")
+    .replace(/\s*[([][^()[\]]*[)\]]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(REGION_SUFFIX, "")
+    .trim()
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1));
+  return words.join(" ");
+};
+
+// Prefer the parent folder name for generic executables (PSP EBOOT.PBP), else
+// derive from the file name as usual.
+const deriveRomTitle = (fileName: string, primaryPath: string): string => {
+  if (/^eboot$/i.test(baseNameWithoutExt(fileName).trim())) {
+    const folder = path.basename(path.dirname(primaryPath));
+    const fromFolder = folder ? titleFromFolderName(folder) : "";
+    if (fromFolder) return fromFolder;
+  }
+  return titleFromFileName(fileName);
 };
 
 const xmlEscape = (value: string): string =>
@@ -394,7 +439,14 @@ export const persistUnmatchedRetroArchRoms = async (
     const objectId = localEntryObjectId(rom.platform, rom.crc32);
     const gameKey = levelKeys.game("launchbox", objectId);
     const platformName = PLATFORM_TO_LAUNCHBOX_NAME[rom.platform];
-    const title = titleFromFileName(rom.name);
+    // PSP: read the official TITLE from the image's PARAM.SFO so the name (and
+    // therefore the box art / metadata match) doesn't depend on the file name.
+    // Falls back to the file/folder name when the image can't be read.
+    let title = deriveRomTitle(rom.name, rom.primaryPath);
+    if (rom.platform === "psp") {
+      const discInfo = await readPspDiscInfo(rom.primaryPath);
+      if (discInfo?.title) title = discInfo.title;
+    }
     const placeholderIcon = buildPlaceholderIcon(rom.platform, title);
     const disc: ClassicsDisc = {
       path: rom.primaryPath,
@@ -407,6 +459,7 @@ export const persistUnmatchedRetroArchRoms = async (
     if (existing) {
       existing.isDeleted = false;
       existing.addedToLibraryAt ??= new Date();
+      existing.title = title; // refresh name on rescan (e.g. resolved via SFO)
       existing.discs = [disc];
       existing.selectedDiscPath = rom.primaryPath;
       existing.romSizeBytes = rom.sizeBytes;
