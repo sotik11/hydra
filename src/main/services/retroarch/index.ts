@@ -9,3 +9,4 @@ export * from "./scan-retroarch-folder";
 export * from "./retroarch-shop-details";
 export * from "./retroarch-local-entries";
 export * from "./retroarch-retroachievements";
+export * from "./retroarch-input-config";

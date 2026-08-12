@@ -128,7 +128,7 @@ const readLibretroDirectory = (cfgPath: string): string | null => {
   }
 };
 
-const retroArchConfigRoots = (executablePath: string): string[] => {
+export const retroArchConfigRoots = (executablePath: string): string[] => {
   const home = os.homedir();
 
   if (executablePath.includes("org.libretro.RetroArch")) {

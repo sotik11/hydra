@@ -82,6 +82,10 @@ export const launchRetroArchGame = async (
     });
   }
 
+  // Make sure a controller can open the Quick Menu (Save/Load State) out of the
+  // box. Done here, before launch, because RetroArch rewrites its config on exit.
+  retroarch.ensureRetroArchGamepadMenuCombo(executableTarget);
+
   const baseArgs = ["-L", core.path, romPath, "-f"];
 
   const resolvedLaunchCommand = resolveLaunchCommand({
