@@ -242,6 +242,15 @@ const localDescription = (platformName: string, language: string): string => {
 // null — which is what left the page without a description and glitched the
 // hero. retroAchievementsGameId is 0: a number (so the details cache-gate
 // accepts it) that downstream treats as "no RA mapping" (`if (!gameId)`).
+// LaunchBox release dates come as full ISO ("2008-09-16T00:00:00+00:00"), but
+// the game-details header only formats a bare YYYY-MM-DD. Trim to that so the
+// date renders nicely instead of showing the raw timestamp.
+const toReleaseDate = (raw?: string): string => {
+  if (!raw) return "";
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : raw;
+};
+
 const buildLocalShopDetails = (
   objectId: string,
   title: string,
@@ -281,7 +290,7 @@ const buildLocalShopDetails = (
     pc_requirements: { minimum: "", recommended: "" },
     mac_requirements: { minimum: "", recommended: "" },
     linux_requirements: { minimum: "", recommended: "" },
-    release_date: { coming_soon: false, date: meta?.releaseDate ?? "" },
+    release_date: { coming_soon: false, date: toReleaseDate(meta?.releaseDate) },
     content_descriptors: { ids: [] },
   };
 };
