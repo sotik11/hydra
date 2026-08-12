@@ -26,6 +26,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { gameDetailsContext } from "@renderer/context";
 import { handleClassicsLaunchError } from "@renderer/helpers";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
 import { DiscSelectionModal } from "../modals/disc-selection-modal";
 
 import "./hero-panel-actions.scss";
@@ -404,6 +405,25 @@ export function HeroPanelActions() {
     }
   };
 
+  // Opens the game's Steam store page in the browser. Shown for Steam games in
+  // every layout (in library or not).
+  const steamButton =
+    shop === "steam" ? (
+      <Button
+        onClick={() =>
+          window.electron.openExternal(
+            `https://store.steampowered.com/app/${objectId}`
+          )
+        }
+        theme="outline"
+        disabled={deleting}
+        className="hero-panel-actions__action"
+        title={t("open_in_steam", { ns: "wishlist" })}
+      >
+        <SteamIcon size={16} />
+      </Button>
+    ) : null;
+
   // In-library layout: no wishlist star (a library game can't be wishlisted).
   // Instead, an X button that mirrors the context-menu "remove from library".
   const removeFromLibraryButton = (
@@ -484,6 +504,7 @@ export function HeroPanelActions() {
       <>
         {addGameToLibraryButton}
         {wishlistButton}
+        {steamButton}
         {showDownloadOptionsButton}
       </>
     );
@@ -528,6 +549,8 @@ export function HeroPanelActions() {
           <GearIcon />
           {t("options")}
         </Button>
+
+        {steamButton}
 
         {game.shop === "launchbox" && (
           <DiscSelectionModal
@@ -580,6 +603,7 @@ export function HeroPanelActions() {
     <>
       {addGameToLibraryButton}
       {wishlistButton}
+      {steamButton}
     </>
   );
 }
