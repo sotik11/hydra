@@ -921,6 +921,10 @@ contextBridge.exposeInMainWorld("electron", {
   getNexusMods: () => ipcRenderer.invoke("getNexusMods"),
   refreshNexusMods: () => ipcRenderer.invoke("refreshNexusMods"),
   disconnectNexusMods: () => ipcRenderer.invoke("disconnectNexusMods"),
+  getNexusMatchForGame: (shop: GameShop, objectId: string) =>
+    ipcRenderer.invoke("getNexusMatchForGame", shop, objectId),
+  getNexusHighlights: (domain: string) =>
+    ipcRenderer.invoke("getNexusHighlights", domain),
 
   /* Library */
   toggleAutomaticCloudSync: (

@@ -8,6 +8,8 @@ import type {
   UserPreferences,
   SteamWishlistState,
   NexusModsState,
+  NexusMatch,
+  NexusHighlights,
   WishlistGame,
   WishlistGameMetaCache,
   StartGameDownloadPayload,
@@ -960,6 +962,11 @@ declare global {
     getNexusMods: () => Promise<NexusModsState>;
     refreshNexusMods: () => Promise<NexusModsState>;
     disconnectNexusMods: () => Promise<void>;
+    getNexusMatchForGame: (
+      shop: GameShop,
+      objectId: string
+    ) => Promise<NexusMatch | null>;
+    getNexusHighlights: (domain: string) => Promise<NexusHighlights>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage | null>;

@@ -40,3 +40,21 @@ export interface NexusMatch {
 }
 
 export type NexusMatchMap = Record<string, NexusMatch>;
+
+// One mod card shown in the highlights modal.
+export interface NexusModCard {
+  modId: number;
+  name: string;
+  summary: string;
+  author: string;
+  endorsements: number;
+  pictureUrl: string | null;
+  updatedAt: number; // unix seconds
+}
+
+// Three cheap highlight lists for a game's mods page.
+export interface NexusHighlights {
+  trending: NexusModCard[];
+  latestAdded: NexusModCard[];
+  latestUpdated: NexusModCard[];
+}

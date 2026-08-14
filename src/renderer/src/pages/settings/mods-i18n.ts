@@ -27,6 +27,15 @@ const en = {
   mods_open_profile: "Open profile",
   mods_expand: "Expand Nexus Mods section",
   mods_collapse: "Collapse Nexus Mods section",
+  mods_button: "Mods",
+  mods_modal_title: "Mods",
+  mods_modal_source: "nexus mods",
+  mods_modal_trending: "Trending",
+  mods_modal_new: "New",
+  mods_modal_updated: "Updated",
+  mods_modal_all: "All mods on Nexus",
+  mods_modal_loading: "Loading mods…",
+  mods_modal_empty: "Nothing here yet.",
 };
 
 const ru: typeof en = {
@@ -53,6 +62,15 @@ const ru: typeof en = {
   mods_open_profile: "Открыть профиль",
   mods_expand: "Развернуть раздел Nexus Mods",
   mods_collapse: "Свернуть раздел Nexus Mods",
+  mods_button: "Модификации",
+  mods_modal_title: "Модификации",
+  mods_modal_source: "nexus mods",
+  mods_modal_trending: "Популярные",
+  mods_modal_new: "Новые",
+  mods_modal_updated: "Обновлённые",
+  mods_modal_all: "Все моды на Nexus",
+  mods_modal_loading: "Загрузка модов…",
+  mods_modal_empty: "Здесь пока пусто.",
 };
 
 const uk: typeof en = {
@@ -80,6 +98,15 @@ const uk: typeof en = {
   mods_open_profile: "Відкрити профіль",
   mods_expand: "Розгорнути розділ Nexus Mods",
   mods_collapse: "Згорнути розділ Nexus Mods",
+  mods_button: "Модифікації",
+  mods_modal_title: "Модифікації",
+  mods_modal_source: "nexus mods",
+  mods_modal_trending: "Популярні",
+  mods_modal_new: "Нові",
+  mods_modal_updated: "Оновлені",
+  mods_modal_all: "Всі моди на Nexus",
+  mods_modal_loading: "Завантаження модів…",
+  mods_modal_empty: "Тут поки порожньо.",
 };
 
 const bundles: Record<string, typeof en> = { en, ru, uk };

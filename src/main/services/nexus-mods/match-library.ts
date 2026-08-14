@@ -3,7 +3,7 @@ import {
   nexusModsSublevel,
   NEXUS_MATCHES_KEY,
 } from "@main/level/sublevels/nexus-mods";
-import type { Game, NexusMatchMap } from "@types";
+import type { Game, NexusMatch, NexusMatchMap } from "@types";
 import {
   ensureNexusCatalogue,
   readNexusCatalogueCache,
@@ -127,4 +127,13 @@ export async function updateNexusMatchForGame(game: Game): Promise<void> {
 export async function getNexusMatchCount(): Promise<number> {
   const matches = await readMatches();
   return Object.keys(matches).length;
+}
+
+/** The stored Nexus match for one library game, or null when it didn't match. */
+export async function getNexusMatchForGame(
+  shop: string,
+  objectId: string
+): Promise<NexusMatch | null> {
+  const matches = await readMatches();
+  return matches[`${shop}:${objectId}`] ?? null;
 }
