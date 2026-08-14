@@ -12,6 +12,7 @@ import type { ArtworkAssetType } from "./artwork.types";
 export type FriendRequestAction = "ACCEPTED" | "REFUSED" | "CANCEL";
 export * from "./download-contract";
 export * from "./steam-wishlist.types";
+export * from "./nexus-mods.types";
 
 export type HydraCloudFeature =
   | "achievements"

@@ -18,6 +18,7 @@ import "./misc";
 import "./notifications";
 import "./profile";
 import "./steam-wishlist";
+import "./nexus-mods";
 import "./themes";
 import "./torrenting";
 import "./user";

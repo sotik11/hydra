@@ -7,6 +7,7 @@ import type {
   SeedingStatus,
   UserPreferences,
   SteamWishlistState,
+  NexusModsState,
   WishlistGame,
   WishlistGameMetaCache,
   StartGameDownloadPayload,
@@ -953,6 +954,12 @@ declare global {
       cb: (payload: { appId: string; title: string }) => void
     ) => () => void;
     clearWishlist: () => Promise<void>;
+
+    /* Nexus mods */
+    connectNexusMods: (apiKey: string) => Promise<NexusModsState>;
+    getNexusMods: () => Promise<NexusModsState>;
+    refreshNexusMods: () => Promise<NexusModsState>;
+    disconnectNexusMods: () => Promise<void>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage | null>;

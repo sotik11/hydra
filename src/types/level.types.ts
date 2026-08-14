@@ -152,6 +152,12 @@ export interface UserPreferences {
   steamWishlistSyncedAt?: number | null;
   steamWishlistApiKey?: string | null;
   steamWishlistLibraryCount?: number | null;
+  nexusApiKey?: string | null;
+  nexusUserId?: number | null;
+  nexusUserName?: string | null;
+  nexusAvatarUrl?: string | null;
+  nexusIsPremium?: boolean | null;
+  nexusConnectedAt?: number | null;
   localizationsEnabled?: boolean;
   preferQuitInsteadOfHiding?: boolean;
   runAtStartup?: boolean;

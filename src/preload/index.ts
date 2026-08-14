@@ -915,6 +915,13 @@ contextBridge.exposeInMainWorld("electron", {
   },
   clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
+  /* Nexus mods */
+  connectNexusMods: (apiKey: string) =>
+    ipcRenderer.invoke("connectNexusMods", apiKey),
+  getNexusMods: () => ipcRenderer.invoke("getNexusMods"),
+  refreshNexusMods: () => ipcRenderer.invoke("refreshNexusMods"),
+  disconnectNexusMods: () => ipcRenderer.invoke("disconnectNexusMods"),
+
   /* Library */
   toggleAutomaticCloudSync: (
     shop: GameShop,
