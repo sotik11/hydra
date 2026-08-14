@@ -9,6 +9,7 @@ import {
 } from "@main/level";
 import { clearFinishedDownload } from "@main/helpers";
 import { AchievementWatcherManager } from "@main/services/achievements/achievement-watcher-manager";
+import { updateNexusMatchForGame } from "@main/services/nexus-mods";
 
 const lookupCachedPlatform = async (
   shop: GameShop,
@@ -82,6 +83,10 @@ const addGameToLibrary = async (
       game.shop,
       game.objectId
     );
+
+    // Keep the Nexus match map fresh for this game (no-op when Nexus isn't
+    // connected / has no cached catalogue). Fire-and-forget.
+    void updateNexusMatchForGame(game);
   }
 };
 

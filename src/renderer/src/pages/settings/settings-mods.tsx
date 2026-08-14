@@ -13,6 +13,7 @@ import {
 } from "@primer/octicons-react";
 
 import type { NexusModsState } from "@types";
+import NexusLogo from "@renderer/assets/icons/nexus.svg?react";
 
 import "./settings-debrid.scss";
 import "./settings-retroachievements.scss";
@@ -289,6 +290,10 @@ export function SettingsMods() {
           </span>
         </button>
         <h3 className="settings-debrid__section-title">{t("mods_title")}</h3>
+        <NexusLogo
+          className="settings-retroachievements__title-logo"
+          aria-hidden="true"
+        />
         {state.connected && (
           <CheckCircleFillIcon
             size={CHEVRON_ICON_SIZE}

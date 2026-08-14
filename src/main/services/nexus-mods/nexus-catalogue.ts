@@ -40,7 +40,7 @@ export async function fetchNexusCatalogue(
     }));
 }
 
-async function readCatalogueCache(): Promise<NexusCatalogueCache | null> {
+export async function readNexusCatalogueCache(): Promise<NexusCatalogueCache | null> {
   return (
     ((await nexusModsSublevel
       .get(NEXUS_CATALOGUE_KEY)
@@ -58,7 +58,7 @@ export async function ensureNexusCatalogue(
   force = false
 ): Promise<NexusGameLite[]> {
   if (!force) {
-    const cached = await readCatalogueCache();
+    const cached = await readNexusCatalogueCache();
     if (cached && now - cached.fetchedAt < CATALOGUE_MAX_AGE_MS) {
       return cached.games;
     }

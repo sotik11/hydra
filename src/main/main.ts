@@ -77,6 +77,14 @@ export const loadState = async () => {
     LocalizationService.seedDefaultSources()
   );
 
+  // Fork: refresh the Nexus match map from the cached catalogue (offline, no
+  // key) so library changes made while the app was closed are reflected.
+  if (userPreferences?.nexusApiKey) {
+    void import("./services/nexus-mods")
+      .then(({ matchLibraryFromCache }) => matchLibraryFromCache())
+      .catch(() => {});
+  }
+
   if (userPreferences?.realDebridApiToken) {
     RealDebridClient.authorize(userPreferences.realDebridApiToken);
   }
