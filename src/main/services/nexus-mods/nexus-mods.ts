@@ -3,10 +3,10 @@ import axios from "axios";
 import { app } from "electron";
 import type { NexusProfile } from "@types";
 
-const NEXUS_API_BASE = "https://api.nexusmods.com/v1";
+export const NEXUS_API_BASE = "https://api.nexusmods.com/v1";
 
 // Nexus asks every API client to identify itself with these headers.
-function nexusHeaders(apiKey: string) {
+export function nexusHeaders(apiKey: string) {
   return {
     apikey: apiKey,
     "Application-Name": "Hydra",

@@ -1,10 +1,10 @@
 import { registerEvent } from "../register-event";
+import { nexusModsSublevel } from "@main/level";
 
-// The connection state lives entirely in user preferences, which the renderer
-// clears on disconnect. Nothing to tear down here yet (no item store); the
-// handler exists for symmetry and future cleanup (matched-games cache).
+// Drop the cached catalogue and match map. The renderer clears the profile
+// fields and key from user preferences.
 const disconnectNexusMods = async (): Promise<void> => {
-  // no-op
+  await nexusModsSublevel.clear().catch(() => {});
 };
 
 registerEvent("disconnectNexusMods", disconnectNexusMods);

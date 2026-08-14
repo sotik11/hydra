@@ -28,6 +28,7 @@ const emptyState: NexusModsState = {
   connected: false,
   profile: null,
   connectedAt: null,
+  matchedCount: null,
 };
 
 export function SettingsMods() {
@@ -191,6 +192,12 @@ export function SettingsMods() {
                   ? t("mods_status_premium")
                   : t("mods_status_free")}
               </span>
+              {state.matchedCount != null && (
+                <span className="settings-retroachievements__status">
+                  <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
+                  {t("mods_status_matched", { count: state.matchedCount })}
+                </span>
+              )}
             </div>
           </div>
 

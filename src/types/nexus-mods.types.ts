@@ -14,4 +14,29 @@ export interface NexusModsState {
   connected: boolean;
   profile: NexusProfile | null;
   connectedAt: number | null;
+  // How many library games resolved to a Nexus game with mods (null = not
+  // computed yet).
+  matchedCount: number | null;
 }
+
+// Trimmed game record from /v1/games.json (the fields we actually use).
+export interface NexusGameLite {
+  id: number;
+  name: string;
+  domainName: string;
+  mods: number;
+}
+
+export interface NexusCatalogueCache {
+  fetchedAt: number;
+  games: NexusGameLite[];
+}
+
+// A resolved library-game -> Nexus match. Keyed in the store by `${shop}:${objectId}`.
+export interface NexusMatch {
+  domain: string;
+  name: string;
+  mods: number;
+}
+
+export type NexusMatchMap = Record<string, NexusMatch>;
