@@ -225,12 +225,6 @@ export const LibraryGameCard = memo(function LibraryGameCard({
               </div>
             )}
 
-            {game.steamLibraryImport && (
-              <span className="library-game-card__steam-badge" title="Steam">
-                <img src={steamLogo} alt="Steam" />
-              </span>
-            )}
-
             {isInstalled && (
               <div
                 className="library-game-card__installed-badge"
@@ -244,6 +238,14 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                   {t("installed")}
                 </span>
               </div>
+            )}
+
+            {/* Our icon (Steam) stays at the far right; text badges sit to its
+                left. Matches the large/banner card. */}
+            {game.steamLibraryImport && (
+              <span className="library-game-card__steam-badge" title="Steam">
+                <img src={steamLogo} alt="Steam" />
+              </span>
             )}
           </div>
         </div>
