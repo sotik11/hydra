@@ -46,6 +46,19 @@
     &:hover {
       background-color: rgba(255, 255, 255, 0.1);
     }
+
+    // Not-yet-earned badges: greyed out so they read as locked.
+    &--locked {
+      .all-badges-modal__item-icon img {
+        filter: grayscale(1);
+        opacity: 0.35;
+      }
+
+      .all-badges-modal__item-title,
+      .all-badges-modal__item-description {
+        opacity: 0.5;
+      }
+    }
   }
 
   &__item-icon {
