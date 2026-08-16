@@ -50,12 +50,12 @@ export const LibraryGameCard = memo(function LibraryGameCard({
 
   const isInstalled = Boolean(game.executablePath);
 
-  // On a medium (grid) cover with all three top badges (playtime + status +
-  // Steam) the row runs out of room, so drop the Steam icon and keep just the
-  // "Steam" label there.
+  // On a compact (small) cover with all three top badges (playtime + status +
+  // Steam) the row runs out of room, so drop the icons from the playtime and
+  // Steam pills and keep just their labels. The wider grid view keeps them.
   const hasStatusPill = isInstalled || Boolean(game.availableToInstall);
-  const omitSteamIcon =
-    viewMode === "grid" && hasStatusPill && Boolean(game.steamLibraryImport);
+  const hideBadgeIcons =
+    viewMode === "compact" && hasStatusPill && Boolean(game.steamLibraryImport);
 
   const hasPickedCover = Boolean(game.selectedArtworkTypes?.includes("grid"));
 
@@ -207,14 +207,15 @@ export const LibraryGameCard = memo(function LibraryGameCard({
       >
         <div className="library-game-card__top-section">
           <div className="library-game-card__playtime">
-            {game.hasManuallyUpdatedPlaytime ? (
-              <AlertFillIcon
-                size={11}
-                className="library-game-card__manual-playtime"
-              />
-            ) : (
-              <ClockIcon size={11} />
-            )}
+            {!hideBadgeIcons &&
+              (game.hasManuallyUpdatedPlaytime ? (
+                <AlertFillIcon
+                  size={11}
+                  className="library-game-card__manual-playtime"
+                />
+              ) : (
+                <ClockIcon size={11} />
+              ))}
             <span className="library-game-card__playtime-long">
               {formatPlayTime(game.playTimeInMilliseconds)}
             </span>
@@ -245,10 +246,12 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                 className="library-game-card__installed-badge library-game-card__installed-badge--status"
                 title={t("installed_tooltip")}
               >
-                <CheckCircleFillIcon
-                  size={11}
-                  className="library-game-card__installed-icon"
-                />
+                {!hideBadgeIcons && (
+                  <CheckCircleFillIcon
+                    size={11}
+                    className="library-game-card__installed-icon"
+                  />
+                )}
                 <span className="library-game-card__installed-text">
                   {t("library_fork:installed_label")}
                 </span>
@@ -259,7 +262,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                   className="library-game-card__installed-badge library-game-card__installed-badge--status"
                   title={t("wishlist:available_badge")}
                 >
-                  <DownloadIcon size={11} />
+                  {!hideBadgeIcons && <DownloadIcon size={11} />}
                   <span className="library-game-card__installed-text">
                     {t("library_fork:available_label")}
                   </span>
@@ -270,7 +273,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             {/* Steam pill (same stock style, light-blue accent). */}
             {game.steamLibraryImport && (
               <div className="library-game-card__installed-badge library-game-card__installed-badge--steam">
-                {!omitSteamIcon && <SteamIcon size={12} />}
+                {!hideBadgeIcons && <SteamIcon size={12} />}
                 <span className="library-game-card__installed-text">Steam</span>
               </div>
             )}
