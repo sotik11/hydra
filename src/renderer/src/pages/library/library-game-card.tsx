@@ -36,17 +36,25 @@ interface LibraryGameCardProps {
   ) => void;
   onShowTooltip?: (gameId: string) => void;
   onHideTooltip?: () => void;
+  viewMode?: string;
 }
 
 export const LibraryGameCard = memo(function LibraryGameCard({
   game,
   onContextMenu,
+  viewMode,
 }: Readonly<LibraryGameCardProps>) {
   const { t } = useTranslation("library");
   const { formatPlayTime, handleCardClick, handleContextMenuClick } =
     useGameCard(game, onContextMenu);
 
   const isInstalled = Boolean(game.executablePath);
+
+  // On medium (grid) covers, when all three top badges show (playtime + status +
+  // Steam) the row runs out of room; tighten its spacing so they fit.
+  const hasStatusPill = isInstalled || Boolean(game.availableToInstall);
+  const isTightTopRow =
+    viewMode === "grid" && hasStatusPill && Boolean(game.steamLibraryImport);
 
   const hasPickedCover = Boolean(game.selectedArtworkTypes?.includes("grid"));
 
@@ -196,7 +204,11 @@ export const LibraryGameCard = memo(function LibraryGameCard({
       <div
         className={`library-game-card__overlay${game.shop === "launchbox" && !isChosenCoverActive ? " library-game-card__overlay--classics" : ""}${(game.achievementCount ?? 0) > 0 ? "" : " library-game-card__overlay--no-fade"}`}
       >
-        <div className="library-game-card__top-section">
+        <div
+          className={`library-game-card__top-section ${
+            isTightTopRow ? "library-game-card__top-section--tight" : ""
+          }`}
+        >
           <div className="library-game-card__playtime">
             {game.hasManuallyUpdatedPlaytime ? (
               <AlertFillIcon
