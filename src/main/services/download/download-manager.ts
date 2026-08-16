@@ -9,6 +9,7 @@ import {
   publishDownloadCompleteNotification,
   publishDownloadHaltedNotification,
 } from "../notifications";
+import { handleShutdownOnDownloadComplete } from "./shutdown-on-complete";
 import type { Download, DownloadProgress, Game, UserPreferences } from "@types";
 import {
   GofileApi,
@@ -802,6 +803,11 @@ export class DownloadManager {
     gameId: string
   ) {
     publishDownloadCompleteNotification(game);
+
+    // Fork: if this download was flagged "shut down when finished", start the
+    // cancelable shutdown countdown. Only the download that actually completes
+    // triggers it (pausing never reaches here).
+    handleShutdownOnDownloadComplete(game.shop, game.objectId);
 
     const userPreferences = await db.get<string, UserPreferences | null>(
       levelKeys.userPreferences,

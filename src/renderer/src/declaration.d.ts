@@ -258,6 +258,20 @@ declare global {
     onDownloadProgress: (
       cb: (value: DownloadProgress | null) => void
     ) => () => Electron.IpcRenderer;
+    setShutdownOnComplete: (
+      shop: GameShop,
+      objectId: string,
+      enabled: boolean
+    ) => Promise<void>;
+    getShutdownOnComplete: (
+      shop: GameShop,
+      objectId: string
+    ) => Promise<boolean>;
+    cancelDownloadShutdown: () => Promise<void>;
+    onShutdownScheduled: (
+      cb: (payload: { seconds: number }) => void
+    ) => () => Electron.IpcRenderer;
+    onShutdownCancelled: (cb: () => void) => () => Electron.IpcRenderer;
     onSeedingStatus: (
       cb: (value: SeedingStatus[]) => void
     ) => () => Electron.IpcRenderer;

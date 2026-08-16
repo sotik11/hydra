@@ -20,6 +20,7 @@ import {
 } from "@renderer/hooks";
 
 import "./download-group.scss";
+import { ShutdownOnCompleteCheckbox } from "./shutdown-on-complete-checkbox";
 import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -527,6 +528,15 @@ function HeroDownloadView({
                     {DOWNLOADER_NAME[Number(game.download.downloader)]}
                   </Badge>
                 </div>
+              </div>
+            )}
+
+            {isGameDownloading && (
+              <div className="download-group__stat-item">
+                <ShutdownOnCompleteCheckbox
+                  shop={game.shop}
+                  objectId={game.objectId}
+                />
               </div>
             )}
           </div>

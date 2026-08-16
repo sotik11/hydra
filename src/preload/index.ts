@@ -373,6 +373,28 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("on-download-progress", listener);
     return () => ipcRenderer.removeListener("on-download-progress", listener);
   },
+  /* Shutdown after download completes (fork) */
+  setShutdownOnComplete: (
+    shop: GameShop,
+    objectId: string,
+    enabled: boolean
+  ) => ipcRenderer.invoke("setShutdownOnComplete", shop, objectId, enabled),
+  getShutdownOnComplete: (shop: GameShop, objectId: string) =>
+    ipcRenderer.invoke("getShutdownOnComplete", shop, objectId),
+  cancelDownloadShutdown: () => ipcRenderer.invoke("cancelDownloadShutdown"),
+  onShutdownScheduled: (cb: (payload: { seconds: number }) => void) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      payload: { seconds: number }
+    ) => cb(payload);
+    ipcRenderer.on("on-shutdown-scheduled", listener);
+    return () => ipcRenderer.removeListener("on-shutdown-scheduled", listener);
+  },
+  onShutdownCancelled: (cb: () => void) => {
+    const listener = (_event: Electron.IpcRendererEvent) => cb();
+    ipcRenderer.on("on-shutdown-cancelled", listener);
+    return () => ipcRenderer.removeListener("on-shutdown-cancelled", listener);
+  },
   onHardDelete: (cb: () => void) => {
     const listener = (_event: Electron.IpcRendererEvent) => cb();
     ipcRenderer.on("on-hard-delete", listener);
