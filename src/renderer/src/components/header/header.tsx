@@ -294,11 +294,14 @@ export function Header() {
   const handleClearSearch = () => {
     debouncedLibrarySearch.cancel();
     debouncedCatalogueSearch.cancel();
+    debouncedWishlistSearch.cancel();
 
     setLocalSearchValue("");
 
     if (isOnLibraryPage) {
       dispatch(setLibrarySearchQuery(""));
+    } else if (isOnWishlistPage) {
+      dispatch(setWishlistSearchQuery(""));
     } else {
       dispatch(setFilters({ title: "" }));
     }

@@ -211,39 +211,41 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             </span>
           </div>
 
-          {classicsPlatformLabel && (
-            <div className="library-game-card__classics-badges">
-              <span className="library-game-card__platform-badge">
-                {classicsPlatformLabel}
-              </span>
-              {classicsEmulatorIcon && (
-                <span className="library-game-card__emulator-badge">
-                  <img src={classicsEmulatorIcon} alt="" />
+          <div className="library-game-card__top-right">
+            {classicsPlatformLabel && (
+              <div className="library-game-card__classics-badges">
+                <span className="library-game-card__platform-badge">
+                  {classicsPlatformLabel}
                 </span>
-              )}
-            </div>
-          )}
+                {classicsEmulatorIcon && (
+                  <span className="library-game-card__emulator-badge">
+                    <img src={classicsEmulatorIcon} alt="" />
+                  </span>
+                )}
+              </div>
+            )}
 
-          {game.steamLibraryImport && (
-            <span className="library-game-card__steam-badge" title="Steam">
-              <img src={steamLogo} alt="Steam" />
-            </span>
-          )}
-
-          {isInstalled && (
-            <div
-              className="library-game-card__installed-badge"
-              title={t("installed_tooltip")}
-            >
-              <CheckCircleFillIcon
-                size={11}
-                className="library-game-card__installed-icon"
-              />
-              <span className="library-game-card__installed-text">
-                {t("installed")}
+            {game.steamLibraryImport && (
+              <span className="library-game-card__steam-badge" title="Steam">
+                <img src={steamLogo} alt="Steam" />
               </span>
-            </div>
-          )}
+            )}
+
+            {isInstalled && (
+              <div
+                className="library-game-card__installed-badge"
+                title={t("installed_tooltip")}
+              >
+                <CheckCircleFillIcon
+                  size={11}
+                  className="library-game-card__installed-icon"
+                />
+                <span className="library-game-card__installed-text">
+                  {t("installed")}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
 
         {(game.achievementCount ?? 0) > 0 && (

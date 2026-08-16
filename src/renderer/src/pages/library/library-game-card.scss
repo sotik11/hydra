@@ -80,6 +80,17 @@
     width: 100%;
   }
 
+  // Right-side badges (classics / steam / installed) stay grouped at the right
+  // with a fixed gap instead of being spread apart by the top-section's
+  // space-between when more than one appears.
+  &__top-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    min-width: 0;
+  }
+
   &__playtime {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);

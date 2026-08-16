@@ -1,5 +1,6 @@
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu";
 import {
+  CheckCircleIcon,
   CheckIcon,
   ClockIcon,
   DeviceDesktopIcon,
@@ -117,6 +118,11 @@ export function SidebarFilterMenu({
       value: "achievements",
       label: t("sort_achievements", { ns: "library" }),
       icon: <TrophyIcon size={14} />,
+    },
+    {
+      value: "installed_first",
+      label: t("sort_installed_first", { ns: "library" }),
+      icon: <CheckCircleIcon size={14} />,
     },
     {
       value: "steam_import",
