@@ -16,7 +16,11 @@ import {
   AlertFillIcon,
   ImageIcon,
   CheckCircleFillIcon,
+  CheckIcon,
+  DownloadIcon,
 } from "@primer/octicons-react";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "./library-i18n";
 import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
@@ -235,13 +239,34 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                   className="library-game-card__installed-icon"
                 />
                 <span className="library-game-card__installed-text">
-                  {t("installed")}
+                  {t("library_fork:installed_label")}
                 </span>
               </div>
             )}
 
-            {/* Our icon (Steam) stays at the far right; text badges sit to its
-                left. Matches the large/banner card. */}
+            {/* Our download-status marker: "installed" once the game is
+                installed, otherwise "available to install" (carried from the
+                wishlist). Same slot, mutually exclusive. */}
+            {isInstalled ? (
+              <span
+                className="library-game-card__status-marker library-game-card__status-marker--installed"
+                title={t("installed_tooltip")}
+              >
+                <CheckIcon size={13} />
+              </span>
+            ) : (
+              game.availableToInstall && (
+                <span
+                  className="library-game-card__status-marker library-game-card__status-marker--available"
+                  title={t("wishlist:available_badge")}
+                >
+                  <DownloadIcon size={13} />
+                </span>
+              )
+            )}
+
+            {/* Our icons stay at the far right; text badges sit to their left.
+                Matches the large/banner card. */}
             {game.steamLibraryImport && (
               <span className="library-game-card__steam-badge" title="Steam">
                 <img src={steamLogo} alt="Steam" />

@@ -54,6 +54,10 @@ export interface Game {
   collectionIds?: string[];
   isDeleted: boolean;
   steamLibraryImport?: boolean;
+  // Fork: carried over from the wishlist "download available" state when the
+  // game is added to the library, so the card can show an "available to install"
+  // marker until it's actually installed.
+  availableToInstall?: boolean;
   winePrefixPath?: string | null;
   protonPath?: string | null;
   executablePath?: string | null;

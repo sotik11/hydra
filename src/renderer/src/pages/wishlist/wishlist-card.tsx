@@ -145,7 +145,13 @@ export function WishlistCard({
     event.stopPropagation();
     setBusy(true);
     try {
-      await window.electron.addGameToLibrary(shop, objectId, title, null);
+      await window.electron.addGameToLibrary(
+        shop,
+        objectId,
+        title,
+        null,
+        game.reminderState === "available"
+      );
       updateLibrary();
     } finally {
       setBusy(false);
@@ -159,7 +165,13 @@ export function WishlistCard({
     try {
       // Favorite is a library-game property, so add to library first if needed.
       if (!inLibrary) {
-        await window.electron.addGameToLibrary(shop, objectId, title, null);
+        await window.electron.addGameToLibrary(
+          shop,
+          objectId,
+          title,
+          null,
+          game.reminderState === "available"
+        );
       }
       if (isFavorite) {
         await window.electron.removeGameFromFavorites(shop, objectId);

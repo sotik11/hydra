@@ -12,7 +12,11 @@ import {
   DatabaseIcon,
   FileZipIcon,
   CheckCircleFillIcon,
+  CheckIcon,
+  DownloadIcon,
 } from "@primer/octicons-react";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "./library-i18n";
 import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -276,7 +280,7 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
                   className="library-game-card-large__installed-icon"
                 />
                 <span className="library-game-card-large__installed-text">
-                  {t("installed")}
+                  {t("library_fork:installed_label")}
                 </span>
               </div>
             )}
@@ -306,6 +310,26 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
                   </span>
                 )}
               </div>
+            )}
+
+            {/* Our download-status marker: "installed" once installed, else
+                "available to install" (carried from the wishlist). */}
+            {isInstalled ? (
+              <span
+                className="library-game-card-large__status-marker library-game-card-large__status-marker--installed"
+                title={t("installed_tooltip")}
+              >
+                <CheckIcon size={14} />
+              </span>
+            ) : (
+              game.availableToInstall && (
+                <span
+                  className="library-game-card-large__status-marker library-game-card-large__status-marker--available"
+                  title={t("wishlist:available_badge")}
+                >
+                  <DownloadIcon size={14} />
+                </span>
+              )
             )}
 
             {game.steamLibraryImport && (

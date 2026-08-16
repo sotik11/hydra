@@ -374,11 +374,8 @@ contextBridge.exposeInMainWorld("electron", {
     return () => ipcRenderer.removeListener("on-download-progress", listener);
   },
   /* Shutdown after download completes (fork) */
-  setShutdownOnComplete: (
-    shop: GameShop,
-    objectId: string,
-    enabled: boolean
-  ) => ipcRenderer.invoke("setShutdownOnComplete", shop, objectId, enabled),
+  setShutdownOnComplete: (shop: GameShop, objectId: string, enabled: boolean) =>
+    ipcRenderer.invoke("setShutdownOnComplete", shop, objectId, enabled),
   getShutdownOnComplete: (shop: GameShop, objectId: string) =>
     ipcRenderer.invoke("getShutdownOnComplete", shop, objectId),
   cancelDownloadShutdown: () => ipcRenderer.invoke("cancelDownloadShutdown"),
@@ -979,8 +976,17 @@ contextBridge.exposeInMainWorld("electron", {
     shop: GameShop,
     objectId: string,
     title: string,
-    platform?: string | null
-  ) => ipcRenderer.invoke("addGameToLibrary", shop, objectId, title, platform),
+    platform?: string | null,
+    availableToInstall?: boolean
+  ) =>
+    ipcRenderer.invoke(
+      "addGameToLibrary",
+      shop,
+      objectId,
+      title,
+      platform,
+      availableToInstall
+    ),
   addCustomGameToLibrary: (
     title: string,
     executablePath: string,

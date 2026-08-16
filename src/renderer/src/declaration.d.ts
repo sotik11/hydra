@@ -324,7 +324,8 @@ declare global {
       shop: GameShop,
       objectId: string,
       title: string,
-      platform?: string | null
+      platform?: string | null,
+      availableToInstall?: boolean
     ) => Promise<void>;
     addCustomGameToLibrary: (
       title: string,
