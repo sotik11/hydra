@@ -50,10 +50,11 @@ export const LibraryGameCard = memo(function LibraryGameCard({
 
   const isInstalled = Boolean(game.executablePath);
 
-  // On medium (grid) covers, when all three top badges show (playtime + status +
-  // Steam) the row runs out of room; tighten its spacing so they fit.
+  // On a medium (grid) cover with all three top badges (playtime + status +
+  // Steam) the row runs out of room, so drop the Steam icon and keep just the
+  // "Steam" label there.
   const hasStatusPill = isInstalled || Boolean(game.availableToInstall);
-  const isTightTopRow =
+  const omitSteamIcon =
     viewMode === "grid" && hasStatusPill && Boolean(game.steamLibraryImport);
 
   const hasPickedCover = Boolean(game.selectedArtworkTypes?.includes("grid"));
@@ -204,11 +205,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
       <div
         className={`library-game-card__overlay${game.shop === "launchbox" && !isChosenCoverActive ? " library-game-card__overlay--classics" : ""}${(game.achievementCount ?? 0) > 0 ? "" : " library-game-card__overlay--no-fade"}`}
       >
-        <div
-          className={`library-game-card__top-section ${
-            isTightTopRow ? "library-game-card__top-section--tight" : ""
-          }`}
-        >
+        <div className="library-game-card__top-section">
           <div className="library-game-card__playtime">
             {game.hasManuallyUpdatedPlaytime ? (
               <AlertFillIcon
@@ -273,7 +270,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             {/* Steam pill (same stock style, light-blue accent). */}
             {game.steamLibraryImport && (
               <div className="library-game-card__installed-badge library-game-card__installed-badge--steam">
-                <SteamIcon size={12} />
+                {!omitSteamIcon && <SteamIcon size={12} />}
                 <span className="library-game-card__installed-text">Steam</span>
               </div>
             )}

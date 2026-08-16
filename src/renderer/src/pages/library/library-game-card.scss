@@ -80,24 +80,6 @@
     width: 100%;
   }
 
-  // Medium (grid) cover with all three top badges: run the row edge-to-edge
-  // (cancel the overlay's 8px padding) and squeeze the gaps/pill padding so
-  // playtime + status + Steam all fit.
-  &__top-section--tight {
-    margin: 0 -8px;
-    width: calc(100% + 16px);
-    gap: 2px;
-
-    .library-game-card__top-right {
-      gap: 2px;
-    }
-
-    .library-game-card__playtime,
-    .library-game-card__installed-badge {
-      padding: 0 4px;
-    }
-  }
-
   // Right-side badges (classics / steam / installed) stay grouped at the right
   // with a fixed gap instead of being spread apart by the top-section's
   // space-between when more than one appears.
