@@ -233,7 +233,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                 Same stock pill style as the playtime badge. */}
             {isInstalled ? (
               <div
-                className="library-game-card__installed-badge"
+                className="library-game-card__installed-badge library-game-card__installed-badge--status"
                 title={t("installed_tooltip")}
               >
                 <CheckCircleFillIcon
@@ -247,7 +247,7 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             ) : (
               game.availableToInstall && (
                 <div
-                  className="library-game-card__installed-badge library-game-card__installed-badge--available"
+                  className="library-game-card__installed-badge library-game-card__installed-badge--status"
                   title={t("wishlist:available_badge")}
                 >
                   <DownloadIcon size={11} />

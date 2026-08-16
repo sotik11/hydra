@@ -190,8 +190,9 @@
     }
   }
 
-  // Status / Steam pills reuse the stock installed-badge look (like the playtime
-  // badge); only the accent colour changes per state.
+  // Status / Steam pills reuse the stock installed-badge look and match the
+  // playtime badge's height; only the accent colour changes per state. Smaller
+  // font than the banner so three of them fit on a medium (grid) cover.
   &__installed-badge {
     flex-shrink: 0;
     background: rgba(0, 0, 0, 0.4);
@@ -202,12 +203,15 @@
     border-radius: 4px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px;
+    gap: 3px;
+    padding: 0 5px;
+    height: 24px;
+    box-sizing: border-box;
+    line-height: 1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all ease 0.2s;
 
-    &--available {
+    &--status {
       color: #22c55e;
     }
 
@@ -217,12 +221,12 @@
   }
 
   &__installed-icon {
-    color: #fff;
+    color: inherit;
     flex-shrink: 0;
   }
 
   &__installed-text {
-    font-size: 12px;
+    font-size: 11px;
     display: inline;
 
     // Hide label on narrow cards, keep the icon as the indicator

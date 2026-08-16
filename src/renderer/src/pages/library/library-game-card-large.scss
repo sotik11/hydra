@@ -223,7 +223,7 @@
     font-size: 12px;
     font-weight: 500;
 
-    &--available {
+    &--status {
       color: #22c55e;
     }
 
@@ -233,7 +233,7 @@
   }
 
   &__installed-icon {
-    color: #fff;
+    color: inherit;
     flex-shrink: 0;
   }
 

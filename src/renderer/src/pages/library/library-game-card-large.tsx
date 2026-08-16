@@ -300,7 +300,7 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
                 (carried from the wishlist). Same stock pill style as playtime. */}
             {isInstalled ? (
               <div
-                className="library-game-card-large__installed-badge"
+                className="library-game-card-large__installed-badge library-game-card-large__installed-badge--status"
                 title={t("installed_tooltip")}
               >
                 <CheckCircleFillIcon
@@ -314,7 +314,7 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
             ) : (
               game.availableToInstall && (
                 <div
-                  className="library-game-card-large__installed-badge library-game-card-large__installed-badge--available"
+                  className="library-game-card-large__installed-badge library-game-card-large__installed-badge--status"
                   title={t("wishlist:available_badge")}
                 >
                   <DownloadIcon size={12} />
