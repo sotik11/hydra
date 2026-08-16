@@ -6,7 +6,7 @@ import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ConfirmationModal, GameContextMenu, useGameActions } from "..";
-import { HeartFillIcon } from "@primer/octicons-react";
+import { CheckCircleFillIcon, HeartFillIcon } from "@primer/octicons-react";
 import { useAppSelector, useToast } from "@renderer/hooks";
 import { useCollectionContextMenu } from "@renderer/context";
 
@@ -115,6 +115,14 @@ export function SidebarGameItem({
                 +{game.newDownloadOptionsCount}
               </span>
             )}
+
+          {Boolean(game.executablePath) && (
+            <CheckCircleFillIcon
+              size={12}
+              className="sidebar__game-installed-icon"
+              aria-label={t("installed_tooltip", { ns: "library" })}
+            />
+          )}
 
           {game.favorite && (
             <HeartFillIcon size={12} className="sidebar__game-favorite-icon" />
