@@ -16,16 +16,15 @@ import {
   AlertFillIcon,
   ImageIcon,
   CheckCircleFillIcon,
-  CheckIcon,
   DownloadIcon,
 } from "@primer/octicons-react";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
 import "@renderer/pages/wishlist/wishlist-page-i18n";
 import "./library-i18n";
 import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
-import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -229,7 +228,10 @@ export const LibraryGameCard = memo(function LibraryGameCard({
               </div>
             )}
 
-            {isInstalled && (
+            {/* Status pill: "Installed" once installed, otherwise "Available"
+                (carried from the wishlist). Same slot, mutually exclusive.
+                Same stock pill style as the playtime badge. */}
+            {isInstalled ? (
               <div
                 className="library-game-card__installed-badge"
                 title={t("installed_tooltip")}
@@ -242,35 +244,26 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                   {t("library_fork:installed_label")}
                 </span>
               </div>
-            )}
-
-            {/* Our download-status marker: "installed" once the game is
-                installed, otherwise "available to install" (carried from the
-                wishlist). Same slot, mutually exclusive. */}
-            {isInstalled ? (
-              <span
-                className="library-game-card__status-marker library-game-card__status-marker--installed"
-                title={t("installed_tooltip")}
-              >
-                <CheckIcon size={13} />
-              </span>
             ) : (
               game.availableToInstall && (
-                <span
-                  className="library-game-card__status-marker library-game-card__status-marker--available"
+                <div
+                  className="library-game-card__installed-badge library-game-card__installed-badge--available"
                   title={t("wishlist:available_badge")}
                 >
-                  <DownloadIcon size={13} />
-                </span>
+                  <DownloadIcon size={11} />
+                  <span className="library-game-card__installed-text">
+                    {t("library_fork:available_label")}
+                  </span>
+                </div>
               )
             )}
 
-            {/* Our icons stay at the far right; text badges sit to their left.
-                Matches the large/banner card. */}
+            {/* Steam pill (same stock style, light-blue accent). */}
             {game.steamLibraryImport && (
-              <span className="library-game-card__steam-badge" title="Steam">
-                <img src={steamLogo} alt="Steam" />
-              </span>
+              <div className="library-game-card__installed-badge library-game-card__installed-badge--steam">
+                <SteamIcon size={12} />
+                <span className="library-game-card__installed-text">Steam</span>
+              </div>
             )}
           </div>
         </div>

@@ -6,14 +6,17 @@ import i18n from "i18next";
 // back to English.
 const en = {
   installed_label: "Installed",
+  available_label: "Available",
 };
 
 const ru: typeof en = {
   installed_label: "Установлено",
+  available_label: "Доступно",
 };
 
 const uk: typeof en = {
   installed_label: "Встановлено",
+  available_label: "Доступно",
 };
 
 const bundles: Record<string, typeof en> = { en, ru, uk };

@@ -12,9 +12,9 @@ import {
   DatabaseIcon,
   FileZipIcon,
   CheckCircleFillIcon,
-  CheckIcon,
   DownloadIcon,
 } from "@primer/octicons-react";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
 import "@renderer/pages/wishlist/wishlist-page-i18n";
 import "./library-i18n";
 import { memo, useEffect, useMemo, useState } from "react";
@@ -23,7 +23,6 @@ import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
-import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card-large.scss";
 
 interface LibraryGameCardLargeProps {
@@ -270,21 +269,6 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
           )}
 
           <div className="library-game-card-large__top-right">
-            {isInstalled && (
-              <div
-                className="library-game-card-large__installed-badge"
-                title={t("installed_tooltip")}
-              >
-                <CheckCircleFillIcon
-                  size={12}
-                  className="library-game-card-large__installed-icon"
-                />
-                <span className="library-game-card-large__installed-text">
-                  {t("library_fork:installed_label")}
-                </span>
-              </div>
-            )}
-
             <div className="library-game-card-large__playtime">
               {game.hasManuallyUpdatedPlaytime ? (
                 <AlertFillIcon
@@ -312,33 +296,43 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
               </div>
             )}
 
-            {/* Our download-status marker: "installed" once installed, else
-                "available to install" (carried from the wishlist). */}
+            {/* Status pill: "Installed" once installed, else "Available"
+                (carried from the wishlist). Same stock pill style as playtime. */}
             {isInstalled ? (
-              <span
-                className="library-game-card-large__status-marker library-game-card-large__status-marker--installed"
+              <div
+                className="library-game-card-large__installed-badge"
                 title={t("installed_tooltip")}
               >
-                <CheckIcon size={14} />
-              </span>
+                <CheckCircleFillIcon
+                  size={12}
+                  className="library-game-card-large__installed-icon"
+                />
+                <span className="library-game-card-large__installed-text">
+                  {t("library_fork:installed_label")}
+                </span>
+              </div>
             ) : (
               game.availableToInstall && (
-                <span
-                  className="library-game-card-large__status-marker library-game-card-large__status-marker--available"
+                <div
+                  className="library-game-card-large__installed-badge library-game-card-large__installed-badge--available"
                   title={t("wishlist:available_badge")}
                 >
-                  <DownloadIcon size={14} />
-                </span>
+                  <DownloadIcon size={12} />
+                  <span className="library-game-card-large__installed-text">
+                    {t("library_fork:available_label")}
+                  </span>
+                </div>
               )
             )}
 
+            {/* Steam pill (same stock style, light-blue accent). */}
             {game.steamLibraryImport && (
-              <span
-                className="library-game-card-large__steam-badge"
-                title="Steam"
-              >
-                <img src={steamLogo} alt="Steam" />
-              </span>
+              <div className="library-game-card-large__installed-badge library-game-card-large__installed-badge--steam">
+                <SteamIcon size={13} />
+                <span className="library-game-card-large__installed-text">
+                  Steam
+                </span>
+              </div>
             )}
           </div>
         </div>

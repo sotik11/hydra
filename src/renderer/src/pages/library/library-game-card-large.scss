@@ -202,7 +202,10 @@
     margin-left: auto;
   }
 
+  // Status / Steam pills reuse the stock installed-badge look (like playtime);
+  // only the accent colour changes per state.
   &__installed-badge {
+    flex-shrink: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -219,6 +222,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     font-size: 12px;
     font-weight: 500;
+
+    &--available {
+      color: #22c55e;
+    }
+
+    &--steam {
+      color: #7dd3fc;
+    }
   }
 
   &__installed-icon {
@@ -314,49 +325,6 @@
       display: block;
       transform: translateZ(0);
       backface-visibility: hidden;
-    }
-  }
-
-  // Our download-status marker (installed / available-to-install): dark circle
-  // with a green gradient ring and a green icon, sized like the Steam badge.
-  &__status-marker {
-    flex-shrink: 0;
-    box-sizing: border-box;
-    width: 28px;
-    height: 28px;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    color: #22c55e;
-    background:
-      linear-gradient(#1c1c1c, #1c1c1c) padding-box,
-      linear-gradient(135deg, #16a34a, #22c55e, #4ade80, #10b981) border-box;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-  }
-
-  // Steam library import marker: cyan-aquamarine-violet ring (matches the
-  // wishlist Steam badge).
-  &__steam-badge {
-    flex-shrink: 0;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    background:
-      linear-gradient(#1c1c1c, #1c1c1c) padding-box,
-      linear-gradient(135deg, #2a6df4, #22d3ee, #2af5c8, #a855f7) border-box;
-    width: 28px;
-    height: 28px;
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-
-    img {
-      width: 16px;
-      height: 16px;
-      object-fit: contain;
     }
   }
 
