@@ -26,7 +26,9 @@ import { orderBy } from "lodash-es";
 import type { LocalizationSource, LocalizationSourceGame } from "@types";
 import { AddLocalizationSourceModal } from "./add-localization-source-modal";
 import { logger } from "@renderer/logger";
+import LocalizationLogo from "@renderer/assets/icons/localization.svg?react";
 import "./settings-debrid.scss";
+import "./settings-retroachievements.scss";
 import "./settings-localization-sources.scss";
 import "../game-details/modals/localization-i18n";
 
@@ -286,6 +288,10 @@ export function SettingsLocalizationSources() {
         <h3 className="settings-debrid__section-title">
           {t("localization:localization_sources")}
         </h3>
+        <LocalizationLogo
+          className="settings-retroachievements__title-logo"
+          aria-hidden="true"
+        />
         {localizationsEnabled && (
           <CheckCircleFillIcon
             size={16}

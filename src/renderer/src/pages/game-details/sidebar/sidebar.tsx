@@ -26,6 +26,7 @@ import {
 } from "@primer/octicons-react";
 import { HowLongToBeatSection } from "./how-long-to-beat-section";
 import { LaunchboxDetailsSection } from "./launchbox-details-section";
+import { CriticScoresSection } from "./critic-scores-section";
 import { SidebarSection } from "../sidebar-section/sidebar-section";
 import { buildGameAchievementPath } from "@renderer/helpers";
 import { useSubscription } from "@renderer/hooks/use-subscription";
@@ -134,6 +135,16 @@ export function Sidebar() {
   const { formatDateTime } = useDate();
   const { numberFormatter } = useFormat();
   const achievementsCount = achievements?.length ?? 0;
+
+  // Fork "Game rating & scores": Metacritic score ships inside Steam's
+  // appdetails, so no extra request — just gate on the toggles and presence.
+  const criticScoresEnabled = userPreferences?.criticScoresEnabled ?? true;
+  const metacriticEnabled =
+    userPreferences?.criticScoresMetacriticEnabled ?? true;
+  const metacritic = shopDetails?.metacritic;
+  const shouldShowCriticScores =
+    criticScoresEnabled && metacriticEnabled && !!metacritic;
+
   const shouldRenderAchievementsSection =
     (!!userDetails && achievementsCount > 0) ||
     (shop === "launchbox" &&
@@ -333,6 +344,13 @@ export function Sidebar() {
           platform={shopDetails?.platform}
           genres={shopDetails?.genres?.map((g) => g.name)}
           skus={shopDetails?.skus}
+        />
+      )}
+
+      {shouldShowCriticScores && metacritic && (
+        <CriticScoresSection
+          metacriticScore={metacritic.score}
+          metacriticUrl={metacritic.url}
         />
       )}
 

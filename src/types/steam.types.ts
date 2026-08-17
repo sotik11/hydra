@@ -64,6 +64,12 @@ export interface SteamAppDetails {
   content_descriptors: {
     ids: number[];
   };
+  // Steam already returns this for titles that have a Metacritic score; it just
+  // wasn't typed before. Used by the fork "Game rating & scores" feature.
+  metacritic?: {
+    score: number;
+    url: string;
+  };
 }
 
 export interface SteamShortcut {

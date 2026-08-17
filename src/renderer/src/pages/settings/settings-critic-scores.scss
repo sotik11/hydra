@@ -1,0 +1,58 @@
+@use "../../scss/globals.scss";
+
+.settings-critic-scores {
+  &__sources {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit);
+  }
+
+  &__source {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit);
+
+    &--disabled {
+      opacity: 0.5;
+    }
+  }
+
+  // Small round switch shown BEFORE the source name.
+  &__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    background: none;
+    border-radius: 50%;
+    color: globals.$muted-color;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color ease 0.2s;
+
+    &:disabled {
+      cursor: default;
+    }
+
+    &--on {
+      color: #66cc33;
+    }
+  }
+
+  &__source-name {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit / 2);
+    font-weight: 500;
+  }
+
+  &__source-soon {
+    font-size: 12px;
+    font-weight: 400;
+    color: globals.$muted-color;
+  }
+}
