@@ -204,6 +204,10 @@ export interface UserPreferences {
   autoRunGamemode?: boolean;
   hideClassicsBookmark?: boolean;
   classicsUseHeroLayout?: boolean;
+  // Fork: "Game rating & scores" integration. Master toggle + per-source flags.
+  criticScoresEnabled?: boolean;
+  criticScoresMetacriticEnabled?: boolean;
+  criticScoresOpenCriticEnabled?: boolean;
 }
 
 export interface NetworkInterface {
