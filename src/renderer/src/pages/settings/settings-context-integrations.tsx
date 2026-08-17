@@ -3,6 +3,7 @@ import { SettingsDebrid } from "./settings-debrid";
 import { SettingsRetroAchievements } from "./settings-retroachievements";
 import { SettingsWishlist } from "./settings-wishlist";
 import { SettingsMods } from "./settings-mods";
+import { SettingsCriticScores } from "./settings-critic-scores";
 import { SettingsLocalizationSources } from "./settings-localization-sources";
 
 export function SettingsContextIntegrations() {
@@ -21,6 +22,10 @@ export function SettingsContextIntegrations() {
       <hr className="settings-context-panel__divider" />
 
       <SettingsMods />
+
+      <hr className="settings-context-panel__divider" />
+
+      <SettingsCriticScores />
 
       <hr className="settings-context-panel__divider" />
 
