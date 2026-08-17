@@ -1,0 +1,94 @@
+@use "../../../scss/globals.scss";
+
+// Cards match the HowLongToBeat look: subtle gradient, thin border, radius 4px.
+.critic-scores {
+  margin: 0;
+  padding: calc(globals.$spacing-unit * 2);
+  display: flex;
+  flex-direction: column;
+  gap: calc(globals.$spacing-unit * 2);
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 2);
+    width: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent 20%,
+      rgb(255 255 255 / 2%) 100%
+    );
+    border: solid 1px globals.$border-color;
+    border-radius: 4px;
+    padding: globals.$spacing-unit calc(globals.$spacing-unit * 2);
+    cursor: pointer;
+    text-align: left;
+    transition: all ease 0.1s;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+  }
+
+  &__score {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+
+    &--high {
+      background: #66cc33;
+    }
+
+    &--medium {
+      background: #ffcc33;
+      color: #0b0b0b;
+    }
+
+    &--low {
+      background: #f0281e;
+    }
+  }
+
+  &__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit / 2);
+  }
+
+  &__brand-logo {
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    display: block;
+    object-fit: contain;
+  }
+
+  &__brand-name {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1;
+  }
+
+  &__link {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit / 2);
+    font-size: 12px;
+    color: globals.$muted-color;
+  }
+}
