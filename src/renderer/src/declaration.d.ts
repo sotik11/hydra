@@ -268,6 +268,7 @@ declare global {
       objectId: string
     ) => Promise<boolean>;
     cancelDownloadShutdown: () => Promise<void>;
+    getShutdownCountdown: () => Promise<number | null>;
     onShutdownScheduled: (
       cb: (payload: { seconds: number }) => void
     ) => () => Electron.IpcRenderer;

@@ -23,26 +23,36 @@ export function DownloadShutdownNotification() {
   };
 
   useEffect(() => {
+    const startCountdown = (seconds: number) => {
+      clearTimer();
+      setRemaining(seconds);
+      intervalRef.current = window.setInterval(() => {
+        setRemaining((prev) => {
+          if (prev === null) return null;
+          if (prev <= 1) {
+            clearTimer();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    };
+
+    // Push: countdown started while this window was already open.
     const unsubscribeScheduled = window.electron.onShutdownScheduled(
-      ({ seconds }) => {
-        clearTimer();
-        setRemaining(seconds);
-        intervalRef.current = window.setInterval(() => {
-          setRemaining((prev) => {
-            if (prev === null) return null;
-            if (prev <= 1) {
-              clearTimer();
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }
+      ({ seconds }) => startCountdown(seconds)
     );
 
     const unsubscribeCancelled = window.electron.onShutdownCancelled(() => {
       clearTimer();
       setRemaining(null);
+    });
+
+    // Pull: closing to the tray destroys the window, so when a download finishes
+    // the window is recreated *after* the push already fired. Ask the main
+    // process for the remaining time on mount so the toast still shows up.
+    void window.electron.getShutdownCountdown().then((seconds) => {
+      if (seconds && seconds > 0) startCountdown(seconds);
     });
 
     return () => {

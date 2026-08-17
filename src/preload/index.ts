@@ -379,6 +379,7 @@ contextBridge.exposeInMainWorld("electron", {
   getShutdownOnComplete: (shop: GameShop, objectId: string) =>
     ipcRenderer.invoke("getShutdownOnComplete", shop, objectId),
   cancelDownloadShutdown: () => ipcRenderer.invoke("cancelDownloadShutdown"),
+  getShutdownCountdown: () => ipcRenderer.invoke("getShutdownCountdown"),
   onShutdownScheduled: (cb: (payload: { seconds: number }) => void) => {
     const listener = (
       _event: Electron.IpcRendererEvent,
