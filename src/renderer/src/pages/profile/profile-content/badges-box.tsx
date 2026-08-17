@@ -18,7 +18,6 @@ export function BadgesBox() {
   if (!userProfile?.badges.length) return null;
 
   const visibleBadges = userProfile.badges.slice(0, MAX_VISIBLE_BADGES);
-  const hasMoreBadges = userProfile.badges.length > MAX_VISIBLE_BADGES;
 
   const unlockDates = new Map(
     userProfile.badgesDetails?.map((b) => [b.badge, b.unlockedAt])
@@ -63,17 +62,15 @@ export function BadgesBox() {
             );
           })}
         </div>
-        {hasMoreBadges && (
-          <div className="badges-box__view-all-container">
-            <button
-              type="button"
-              className="badges-box__view-all"
-              onClick={() => setShowAllBadgesModal(true)}
-            >
-              {t("view_all")}
-            </button>
-          </div>
-        )}
+        <div className="badges-box__view-all-container">
+          <button
+            type="button"
+            className="badges-box__view-all"
+            onClick={() => setShowAllBadgesModal(true)}
+          >
+            {t("view_all")}
+          </button>
+        </div>
       </div>
 
       <Tooltip id={tooltipId} />

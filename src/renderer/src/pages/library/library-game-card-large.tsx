@@ -12,14 +12,17 @@ import {
   DatabaseIcon,
   FileZipIcon,
   CheckCircleFillIcon,
+  DownloadIcon,
 } from "@primer/octicons-react";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "./library-i18n";
 import { memo, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
-import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card-large.scss";
 
 interface LibraryGameCardLargeProps {
@@ -266,21 +269,6 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
           )}
 
           <div className="library-game-card-large__top-right">
-            {isInstalled && (
-              <div
-                className="library-game-card-large__installed-badge"
-                title={t("installed_tooltip")}
-              >
-                <CheckCircleFillIcon
-                  size={12}
-                  className="library-game-card-large__installed-icon"
-                />
-                <span className="library-game-card-large__installed-text">
-                  {t("installed")}
-                </span>
-              </div>
-            )}
-
             <div className="library-game-card-large__playtime">
               {game.hasManuallyUpdatedPlaytime ? (
                 <AlertFillIcon
@@ -308,13 +296,43 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
               </div>
             )}
 
-            {game.steamLibraryImport && (
-              <span
-                className="library-game-card-large__steam-badge"
-                title="Steam"
+            {/* Status pill: "Installed" once installed, else "Available"
+                (carried from the wishlist). Same stock pill style as playtime. */}
+            {isInstalled ? (
+              <div
+                className="library-game-card-large__installed-badge library-game-card-large__installed-badge--status"
+                title={t("installed_tooltip")}
               >
-                <img src={steamLogo} alt="Steam" />
-              </span>
+                <CheckCircleFillIcon
+                  size={12}
+                  className="library-game-card-large__installed-icon"
+                />
+                <span className="library-game-card-large__installed-text">
+                  {t("library_fork:installed_label")}
+                </span>
+              </div>
+            ) : (
+              game.availableToInstall && (
+                <div
+                  className="library-game-card-large__installed-badge library-game-card-large__installed-badge--status"
+                  title={t("wishlist:available_badge")}
+                >
+                  <DownloadIcon size={12} />
+                  <span className="library-game-card-large__installed-text">
+                    {t("library_fork:available_label")}
+                  </span>
+                </div>
+              )
+            )}
+
+            {/* Steam pill (same stock style, light-blue accent). */}
+            {game.steamLibraryImport && (
+              <div className="library-game-card-large__installed-badge library-game-card-large__installed-badge--steam">
+                <SteamIcon size={13} />
+                <span className="library-game-card-large__installed-text">
+                  Steam
+                </span>
+              </div>
             )}
           </div>
         </div>

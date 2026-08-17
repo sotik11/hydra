@@ -373,6 +373,26 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("on-download-progress", listener);
     return () => ipcRenderer.removeListener("on-download-progress", listener);
   },
+  /* Shutdown after download completes (fork) */
+  setShutdownOnComplete: (shop: GameShop, objectId: string, enabled: boolean) =>
+    ipcRenderer.invoke("setShutdownOnComplete", shop, objectId, enabled),
+  getShutdownOnComplete: (shop: GameShop, objectId: string) =>
+    ipcRenderer.invoke("getShutdownOnComplete", shop, objectId),
+  cancelDownloadShutdown: () => ipcRenderer.invoke("cancelDownloadShutdown"),
+  getShutdownCountdown: () => ipcRenderer.invoke("getShutdownCountdown"),
+  onShutdownScheduled: (cb: (payload: { seconds: number }) => void) => {
+    const listener = (
+      _event: Electron.IpcRendererEvent,
+      payload: { seconds: number }
+    ) => cb(payload);
+    ipcRenderer.on("on-shutdown-scheduled", listener);
+    return () => ipcRenderer.removeListener("on-shutdown-scheduled", listener);
+  },
+  onShutdownCancelled: (cb: () => void) => {
+    const listener = (_event: Electron.IpcRendererEvent) => cb();
+    ipcRenderer.on("on-shutdown-cancelled", listener);
+    return () => ipcRenderer.removeListener("on-shutdown-cancelled", listener);
+  },
   onHardDelete: (cb: () => void) => {
     const listener = (_event: Electron.IpcRendererEvent) => cb();
     ipcRenderer.on("on-hard-delete", listener);
@@ -915,6 +935,17 @@ contextBridge.exposeInMainWorld("electron", {
   },
   clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
+  /* Nexus mods */
+  connectNexusMods: (apiKey: string) =>
+    ipcRenderer.invoke("connectNexusMods", apiKey),
+  getNexusMods: () => ipcRenderer.invoke("getNexusMods"),
+  refreshNexusMods: () => ipcRenderer.invoke("refreshNexusMods"),
+  disconnectNexusMods: () => ipcRenderer.invoke("disconnectNexusMods"),
+  getNexusMatchForGame: (shop: GameShop, objectId: string) =>
+    ipcRenderer.invoke("getNexusMatchForGame", shop, objectId),
+  getNexusHighlights: (domain: string) =>
+    ipcRenderer.invoke("getNexusHighlights", domain),
+
   /* Library */
   toggleAutomaticCloudSync: (
     shop: GameShop,
@@ -946,8 +977,17 @@ contextBridge.exposeInMainWorld("electron", {
     shop: GameShop,
     objectId: string,
     title: string,
-    platform?: string | null
-  ) => ipcRenderer.invoke("addGameToLibrary", shop, objectId, title, platform),
+    platform?: string | null,
+    availableToInstall?: boolean
+  ) =>
+    ipcRenderer.invoke(
+      "addGameToLibrary",
+      shop,
+      objectId,
+      title,
+      platform,
+      availableToInstall
+    ),
   addCustomGameToLibrary: (
     title: string,
     executablePath: string,

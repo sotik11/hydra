@@ -225,6 +225,13 @@
     opacity: 0.85;
   }
 
+  // Installed marker: white filled circle with a knocked-out check (Hydra's
+  // installed badge glyph). Never shrinks, so the title ellipsizes to make room.
+  &__game-installed-icon {
+    flex-shrink: 0;
+    color: #ffffff;
+  }
+
   &__game-badge {
     background-color: rgba(34, 197, 94, 0.15);
     color: rgb(187, 247, 208);

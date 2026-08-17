@@ -16,12 +16,15 @@ import {
   AlertFillIcon,
   ImageIcon,
   CheckCircleFillIcon,
+  DownloadIcon,
 } from "@primer/octicons-react";
+import { SteamIcon } from "@renderer/pages/library/category-filter";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "./library-i18n";
 import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
-import steamLogo from "@renderer/assets/icons/steam.png";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -33,17 +36,26 @@ interface LibraryGameCardProps {
   ) => void;
   onShowTooltip?: (gameId: string) => void;
   onHideTooltip?: () => void;
+  viewMode?: string;
 }
 
 export const LibraryGameCard = memo(function LibraryGameCard({
   game,
   onContextMenu,
+  viewMode,
 }: Readonly<LibraryGameCardProps>) {
   const { t } = useTranslation("library");
   const { formatPlayTime, handleCardClick, handleContextMenuClick } =
     useGameCard(game, onContextMenu);
 
   const isInstalled = Boolean(game.executablePath);
+
+  // On a compact (small) cover with all three top badges (playtime + status +
+  // Steam) the row runs out of room, so drop the icons from the playtime and
+  // Steam pills and keep just their labels. The wider grid view keeps them.
+  const hasStatusPill = isInstalled || Boolean(game.availableToInstall);
+  const hideBadgeIcons =
+    viewMode === "compact" && hasStatusPill && Boolean(game.steamLibraryImport);
 
   const hasPickedCover = Boolean(game.selectedArtworkTypes?.includes("grid"));
 
@@ -195,14 +207,15 @@ export const LibraryGameCard = memo(function LibraryGameCard({
       >
         <div className="library-game-card__top-section">
           <div className="library-game-card__playtime">
-            {game.hasManuallyUpdatedPlaytime ? (
-              <AlertFillIcon
-                size={11}
-                className="library-game-card__manual-playtime"
-              />
-            ) : (
-              <ClockIcon size={11} />
-            )}
+            {!hideBadgeIcons &&
+              (game.hasManuallyUpdatedPlaytime ? (
+                <AlertFillIcon
+                  size={11}
+                  className="library-game-card__manual-playtime"
+                />
+              ) : (
+                <ClockIcon size={11} />
+              ))}
             <span className="library-game-card__playtime-long">
               {formatPlayTime(game.playTimeInMilliseconds)}
             </span>
@@ -211,39 +224,60 @@ export const LibraryGameCard = memo(function LibraryGameCard({
             </span>
           </div>
 
-          {classicsPlatformLabel && (
-            <div className="library-game-card__classics-badges">
-              <span className="library-game-card__platform-badge">
-                {classicsPlatformLabel}
-              </span>
-              {classicsEmulatorIcon && (
-                <span className="library-game-card__emulator-badge">
-                  <img src={classicsEmulatorIcon} alt="" />
+          <div className="library-game-card__top-right">
+            {classicsPlatformLabel && (
+              <div className="library-game-card__classics-badges">
+                <span className="library-game-card__platform-badge">
+                  {classicsPlatformLabel}
                 </span>
-              )}
-            </div>
-          )}
+                {classicsEmulatorIcon && (
+                  <span className="library-game-card__emulator-badge">
+                    <img src={classicsEmulatorIcon} alt="" />
+                  </span>
+                )}
+              </div>
+            )}
 
-          {game.steamLibraryImport && (
-            <span className="library-game-card__steam-badge" title="Steam">
-              <img src={steamLogo} alt="Steam" />
-            </span>
-          )}
+            {/* Status pill: "Installed" once installed, otherwise "Available"
+                (carried from the wishlist). Same slot, mutually exclusive.
+                Same stock pill style as the playtime badge. */}
+            {isInstalled ? (
+              <div
+                className="library-game-card__installed-badge library-game-card__installed-badge--status"
+                title={t("installed_tooltip")}
+              >
+                {!hideBadgeIcons && (
+                  <CheckCircleFillIcon
+                    size={11}
+                    className="library-game-card__installed-icon"
+                  />
+                )}
+                <span className="library-game-card__installed-text">
+                  {t("library_fork:installed_label")}
+                </span>
+              </div>
+            ) : (
+              game.availableToInstall && (
+                <div
+                  className="library-game-card__installed-badge library-game-card__installed-badge--status"
+                  title={t("wishlist:available_badge")}
+                >
+                  {!hideBadgeIcons && <DownloadIcon size={11} />}
+                  <span className="library-game-card__installed-text">
+                    {t("library_fork:available_label")}
+                  </span>
+                </div>
+              )
+            )}
 
-          {isInstalled && (
-            <div
-              className="library-game-card__installed-badge"
-              title={t("installed_tooltip")}
-            >
-              <CheckCircleFillIcon
-                size={11}
-                className="library-game-card__installed-icon"
-              />
-              <span className="library-game-card__installed-text">
-                {t("installed")}
-              </span>
-            </div>
-          )}
+            {/* Steam pill (same stock style, light-blue accent). */}
+            {game.steamLibraryImport && (
+              <div className="library-game-card__installed-badge library-game-card__installed-badge--steam">
+                {!hideBadgeIcons && <SteamIcon size={12} />}
+                <span className="library-game-card__installed-text">Steam</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {(game.achievementCount ?? 0) > 0 && (

@@ -4,6 +4,7 @@ import { Tooltip } from "react-tooltip";
 import { Modal } from "@renderer/components";
 import { userProfileContext } from "@renderer/context";
 import { useDate } from "@renderer/hooks";
+import type { Badge } from "@types";
 import "./all-badges-modal.scss";
 
 interface AllBadgesModalProps {
@@ -24,15 +25,25 @@ export function AllBadgesModal({
     userProfile?.badgesDetails?.map((b) => [b.badge, b.unlockedAt])
   );
 
-  const userBadges = userProfile?.badges
+  // Fork: show the whole catalogue — earned badges first (full colour), then the
+  // not-yet-earned ones dimmed, so the profile owner sees what's left to unlock.
+  const earnedNames = new Set(userProfile?.badges ?? []);
+
+  const earnedBadges = (userProfile?.badges ?? [])
     .map((badgeName) => badges.find((b) => b.name === badgeName))
-    .filter((badge) => badge !== undefined);
+    .filter((badge): badge is Badge => badge !== undefined);
+
+  const lockedBadges = badges.filter((badge) => !earnedNames.has(badge.name));
+
+  const allBadges = [...earnedBadges, ...lockedBadges];
 
   const modalTitle = (
     <div className="all-badges-modal__title">
       {t("badges")}
-      {userBadges && userBadges.length > 0 && (
-        <span className="all-badges-modal__count">{userBadges.length}</span>
+      {badges.length > 0 && (
+        <span className="all-badges-modal__count">
+          {earnedBadges.length} / {badges.length}
+        </span>
       )}
     </div>
   );
@@ -41,14 +52,21 @@ export function AllBadgesModal({
     <Modal visible={visible} title={modalTitle} onClose={onClose}>
       <div className="all-badges-modal">
         <div className="all-badges-modal__list">
-          {userBadges?.map((badge) => {
+          {allBadges.map((badge) => {
+            const isEarned = earnedNames.has(badge.name);
             const unlockedAt = unlockDates.get(badge.name);
-            const tooltipContent = unlockedAt
-              ? t("badge_unlocked_on", { date: formatDate(unlockedAt) })
-              : undefined;
+            const tooltipContent =
+              isEarned && unlockedAt
+                ? t("badge_unlocked_on", { date: formatDate(unlockedAt) })
+                : undefined;
 
             return (
-              <div key={badge.name} className="all-badges-modal__item">
+              <div
+                key={badge.name}
+                className={`all-badges-modal__item ${
+                  isEarned ? "" : "all-badges-modal__item--locked"
+                }`}
+              >
                 <div
                   className="all-badges-modal__item-icon"
                   data-tooltip-id={tooltipId}

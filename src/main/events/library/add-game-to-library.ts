@@ -9,6 +9,7 @@ import {
 } from "@main/level";
 import { clearFinishedDownload } from "@main/helpers";
 import { AchievementWatcherManager } from "@main/services/achievements/achievement-watcher-manager";
+import { updateNexusMatchForGame } from "@main/services/nexus-mods";
 
 const lookupCachedPlatform = async (
   shop: GameShop,
@@ -37,7 +38,8 @@ const addGameToLibrary = async (
   shop: GameShop,
   objectId: string,
   title: string,
-  platform?: string | null
+  platform?: string | null,
+  availableToInstall?: boolean
 ) => {
   const gameKey = levelKeys.game(shop, objectId);
   let game = await gamesSublevel.get(gameKey);
@@ -54,6 +56,10 @@ const addGameToLibrary = async (
     game.isDeleted = false;
     game.addedToLibraryAt ??= new Date();
     if (resolvedPlatform && !game.platform) game.platform = resolvedPlatform;
+    // Fork: mark "available to install" (carried from the wishlist) until the
+    // game is actually installed; the executable path clears it below.
+    if (availableToInstall) game.availableToInstall = true;
+    if (game.executablePath) game.availableToInstall = false;
 
     await gamesSublevel.put(gameKey, game);
   } else {
@@ -70,6 +76,7 @@ const addGameToLibrary = async (
       lastTimePlayed: null,
       addedToLibraryAt: new Date(),
       platform: resolvedPlatform ?? null,
+      availableToInstall: Boolean(availableToInstall),
     };
 
     await gamesSublevel.put(gameKey, game);
@@ -82,6 +89,10 @@ const addGameToLibrary = async (
       game.shop,
       game.objectId
     );
+
+    // Keep the Nexus match map fresh for this game (no-op when Nexus isn't
+    // connected / has no cached catalogue). Fire-and-forget.
+    void updateNexusMatchForGame(game);
   }
 };
 

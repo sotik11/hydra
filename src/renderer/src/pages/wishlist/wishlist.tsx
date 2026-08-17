@@ -9,7 +9,8 @@ import {
 } from "@primer/octicons-react";
 
 import { Button, CheckboxField, ConfirmationModal } from "@renderer/components";
-import { useAppSelector, useLibrary } from "@renderer/hooks";
+import { useAppDispatch, useAppSelector, useLibrary } from "@renderer/hooks";
+import { setWishlistSearchQuery } from "@renderer/features";
 import type { WishlistGame } from "@types";
 
 import { WishlistCard } from "./wishlist-card";
@@ -39,9 +40,19 @@ export default function Wishlist() {
     localStorage.setItem("wishlist-sort", next);
   };
 
+  const dispatch = useAppDispatch();
+
   const searchTerm = useAppSelector(
     (state) => state.wishlistSearch.searchQuery
   );
+
+  // Reset the in-place search when leaving the wishlist so it doesn't linger
+  // when you come back (the slice is global, like the catalogue/library ones).
+  useEffect(() => {
+    return () => {
+      dispatch(setWishlistSearchQuery(""));
+    };
+  }, [dispatch]);
 
   const { library } = useLibrary();
   const libraryAppIds = useMemo(

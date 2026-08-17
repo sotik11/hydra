@@ -14,6 +14,7 @@ export * from "./local-notifications";
 export * from "./emulators";
 export * from "./retroarch";
 export * from "./steam-wishlist";
+export * from "./nexus-mods";
 export * from "./wishlist-games";
 export * from "./ps2-memory-card-saves";
 export * from "./ps1-memory-card-saves";

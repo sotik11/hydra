@@ -13,7 +13,9 @@ import {
   XIcon,
 } from "@primer/octicons-react";
 import { Button, ConfirmationModal } from "@renderer/components";
-import { XCircle } from "lucide-react";
+import { XCircle, Puzzle } from "lucide-react";
+import type { NexusMatch } from "@types";
+import { ModsModal } from "../modals/mods-modal";
 import {
   useAppSelector,
   useDownload,
@@ -33,12 +35,15 @@ import "./hero-panel-actions.scss";
 import { useEffect } from "react";
 import "../modals/localization-i18n";
 import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "@renderer/pages/settings/mods-i18n";
 
 export function HeroPanelActions() {
   const [toggleLibraryGameDisabled, setToggleLibraryGameDisabled] =
     useState(false);
   const [addedToWishlist, setAddedToWishlist] = useState(false);
   const [showRemoveFromLibrary, setShowRemoveFromLibrary] = useState(false);
+  const [nexusMatch, setNexusMatch] = useState<NexusMatch | null>(null);
+  const [showModsModal, setShowModsModal] = useState(false);
 
   const { isGameDeleting, removeGameFromLibrary, cancelDownload } =
     useDownload();
@@ -345,6 +350,38 @@ export function HeroPanelActions() {
     </Button>
   ) : null;
 
+  // Fork: "Mods" button — only when the game matched a Nexus game with mods.
+  const modsButton = nexusMatch ? (
+    <Button
+      onClick={() => setShowModsModal(true)}
+      theme="outline"
+      disabled={deleting}
+      className="hero-panel-actions__action"
+    >
+      <Puzzle size={16} />
+      {t("mods:mods_button")}
+    </Button>
+  ) : null;
+
+  useEffect(() => {
+    if (!objectId) {
+      setNexusMatch(null);
+      return;
+    }
+    let active = true;
+    window.electron
+      .getNexusMatchForGame(shop, objectId)
+      .then((match) => {
+        if (active) setNexusMatch(match);
+      })
+      .catch(() => {
+        if (active) setNexusMatch(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [shop, objectId]);
+
   useEffect(() => {
     if (!objectId) return;
     let active = true;
@@ -513,6 +550,7 @@ export function HeroPanelActions() {
   if (game) {
     return (
       <div className="hero-panel-actions__container">
+        {modsButton}
         {localizationButton}
         {gameActionButton()}
         <div className="hero-panel-actions__separator" />
@@ -592,6 +630,12 @@ export function HeroPanelActions() {
             setShowRemoveFromLibrary(false);
             await handleRemoveFromLibrary();
           }}
+        />
+
+        <ModsModal
+          visible={showModsModal}
+          onClose={() => setShowModsModal(false)}
+          match={nexusMatch}
         />
       </div>
     );

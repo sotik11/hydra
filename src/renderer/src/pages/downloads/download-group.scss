@@ -350,6 +350,24 @@
     width: 100%;
   }
 
+  &__shutdown-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.85);
+    user-select: none;
+
+    input {
+      width: 14px;
+      height: 14px;
+      accent-color: #22c55e;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  }
+
   &__stat-label {
     font-weight: 600;
     text-transform: uppercase;

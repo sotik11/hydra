@@ -644,6 +644,7 @@ export default function Library() {
                         key={`${game.shop}-${game.objectId}`}
                         game={game}
                         onContextMenu={handleOpenContextMenu}
+                        viewMode={viewMode}
                       />
                     )
                   )}

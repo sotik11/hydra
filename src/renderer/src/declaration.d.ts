@@ -7,6 +7,9 @@ import type {
   SeedingStatus,
   UserPreferences,
   SteamWishlistState,
+  NexusModsState,
+  NexusMatch,
+  NexusHighlights,
   WishlistGame,
   WishlistGameMetaCache,
   StartGameDownloadPayload,
@@ -255,6 +258,21 @@ declare global {
     onDownloadProgress: (
       cb: (value: DownloadProgress | null) => void
     ) => () => Electron.IpcRenderer;
+    setShutdownOnComplete: (
+      shop: GameShop,
+      objectId: string,
+      enabled: boolean
+    ) => Promise<void>;
+    getShutdownOnComplete: (
+      shop: GameShop,
+      objectId: string
+    ) => Promise<boolean>;
+    cancelDownloadShutdown: () => Promise<void>;
+    getShutdownCountdown: () => Promise<number | null>;
+    onShutdownScheduled: (
+      cb: (payload: { seconds: number }) => void
+    ) => () => Electron.IpcRenderer;
+    onShutdownCancelled: (cb: () => void) => () => Electron.IpcRenderer;
     onSeedingStatus: (
       cb: (value: SeedingStatus[]) => void
     ) => () => Electron.IpcRenderer;
@@ -307,7 +325,8 @@ declare global {
       shop: GameShop,
       objectId: string,
       title: string,
-      platform?: string | null
+      platform?: string | null,
+      availableToInstall?: boolean
     ) => Promise<void>;
     addCustomGameToLibrary: (
       title: string,
@@ -953,6 +972,17 @@ declare global {
       cb: (payload: { appId: string; title: string }) => void
     ) => () => void;
     clearWishlist: () => Promise<void>;
+
+    /* Nexus mods */
+    connectNexusMods: (apiKey: string) => Promise<NexusModsState>;
+    getNexusMods: () => Promise<NexusModsState>;
+    refreshNexusMods: () => Promise<NexusModsState>;
+    disconnectNexusMods: () => Promise<void>;
+    getNexusMatchForGame: (
+      shop: GameShop,
+      objectId: string
+    ) => Promise<NexusMatch | null>;
+    getNexusHighlights: (domain: string) => Promise<NexusHighlights>;
 
     /* Hardware */
     getDiskFreeSpace: (path: string) => Promise<DiskUsage | null>;

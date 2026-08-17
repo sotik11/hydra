@@ -80,6 +80,17 @@
     width: 100%;
   }
 
+  // Right-side badges (classics / steam / installed) stay grouped at the right
+  // with a fixed gap instead of being spread apart by the top-section's
+  // space-between when more than one appears.
+  &__top-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: auto;
+    min-width: 0;
+  }
+
   &__playtime {
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
@@ -179,31 +190,11 @@
     }
   }
 
-  // Steam library import marker: round badge with the cyan-aquamarine-violet
-  // ring (matches the wishlist Steam badge).
-  &__steam-badge {
-    flex-shrink: 0;
-    border: 1px solid transparent;
-    border-radius: 50%;
-    background:
-      linear-gradient(#1c1c1c, #1c1c1c) padding-box,
-      linear-gradient(135deg, #2a6df4, #22d3ee, #2af5c8, #a855f7) border-box;
-    width: 24px;
-    height: 24px;
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
-
-    img {
-      width: 14px;
-      height: 14px;
-      object-fit: contain;
-    }
-  }
-
+  // Status / Steam pills reuse the stock installed-badge look and match the
+  // playtime badge's height; only the accent colour changes per state. Smaller
+  // font than the banner so three of them fit on a medium (grid) cover.
   &__installed-badge {
+    flex-shrink: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -212,19 +203,30 @@
     border-radius: 4px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px;
+    gap: 3px;
+    padding: 0 5px;
+    height: 24px;
+    box-sizing: border-box;
+    line-height: 1;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     transition: all ease 0.2s;
+
+    &--status {
+      color: #22c55e;
+    }
+
+    &--steam {
+      color: #7dd3fc;
+    }
   }
 
   &__installed-icon {
-    color: #fff;
+    color: inherit;
     flex-shrink: 0;
   }
 
   &__installed-text {
-    font-size: 12px;
+    font-size: 11px;
     display: inline;
 
     // Hide label on narrow cards, keep the icon as the indicator
