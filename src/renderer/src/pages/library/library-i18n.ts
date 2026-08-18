@@ -7,16 +7,19 @@ import i18n from "i18next";
 const en = {
   installed_label: "Installed",
   available_label: "Available",
+  library_total_label: "In library",
 };
 
 const ru: typeof en = {
   installed_label: "Установлено",
   available_label: "Доступно",
+  library_total_label: "В библиотеке",
 };
 
 const uk: typeof en = {
   installed_label: "Встановлено",
   available_label: "Доступно",
+  library_total_label: "У бібліотеці",
 };
 
 const bundles: Record<string, typeof en> = { en, ru, uk };

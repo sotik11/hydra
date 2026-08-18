@@ -111,6 +111,31 @@
     flex-shrink: 0;
   }
 
+  &__counter {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit);
+    color: globals.$muted-color;
+    font-size: 13px;
+    white-space: nowrap;
+    padding-left: calc(globals.$spacing-unit / 2);
+  }
+
+  &__counter-item {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit / 2);
+
+    strong {
+      color: globals.$body-color;
+      font-weight: 600;
+    }
+  }
+
+  &__counter-divider {
+    opacity: 0.5;
+  }
+
   &__quick-actions {
     display: flex;
     align-items: center;
