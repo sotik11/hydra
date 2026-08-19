@@ -22,6 +22,8 @@ import {
   SearchIcon,
   SyncIcon,
   TrashIcon,
+  StackIcon,
+  CheckCircleFillIcon,
 } from "@primer/octicons-react";
 import { useTranslation } from "react-i18next";
 import { AuthPage, removeDiacritics } from "@shared";
@@ -33,6 +35,7 @@ import {
   GameContextMenu,
 } from "@renderer/components";
 import "./library-clear-i18n";
+import "./library-i18n";
 import { useCollectionContextMenu } from "@renderer/context";
 import { getGameCollectionIds, sortLibraryGames } from "@renderer/helpers";
 import { useSearchParams } from "react-router-dom";
@@ -212,7 +215,7 @@ export default function Library() {
   const searchQuery = useAppSelector((state) => state.library.searchQuery);
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const dispatch = useAppDispatch();
-  const { t } = useTranslation(["library", "sidebar"]);
+  const { t } = useTranslation(["library", "sidebar", "library_fork"]);
 
   const selectedCollectionId = searchParams.get("collection");
 
@@ -479,6 +482,12 @@ export default function Library() {
 
   const hasGames = library.length > 0;
   const hasNoFilteredGames = filteredLibrary.length === 0;
+
+  // Fork: library counter (respects the active filter/category/collection).
+  const installedCount = useMemo(
+    () => filteredLibrary.filter((game) => game.executablePath).length,
+    [filteredLibrary]
+  );
   const isFavoritesCollectionSelected =
     selectedCollectionId === FAVORITES_COLLECTION_ID;
   const shouldShowFavoritesEmptyState =
@@ -522,6 +531,22 @@ export default function Library() {
                 onCreate={handleCreateCollectionButtonClick}
                 onCollectionContextMenu={openCollectionContextMenu}
               />
+
+              <div className="library__counter" aria-live="polite">
+                <span className="library__counter-item">
+                  <StackIcon size={14} />
+                  {t("library_total_label", { ns: "library_fork" })}:{" "}
+                  <strong>{filteredLibrary.length}</strong>
+                </span>
+                <span className="library__counter-divider" aria-hidden="true">
+                  ·
+                </span>
+                <span className="library__counter-item">
+                  <CheckCircleFillIcon size={14} />
+                  {t("installed_label", { ns: "library_fork" })}:{" "}
+                  <strong>{installedCount}</strong>
+                </span>
+              </div>
             </div>
 
             <div className="library__controls-right">
