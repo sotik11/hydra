@@ -4,11 +4,10 @@ import { Button, ConfirmationModal } from "@renderer/components";
 import { createPortal } from "react-dom";
 import { useContext, useEffect, useRef, useState } from "react";
 import { userProfileContext } from "@renderer/context";
-import { useToast, useUserDetails } from "@renderer/hooks";
+import { useToast, useUserDetails, useAppSelector } from "@renderer/hooks";
 import { useTranslation } from "react-i18next";
 import { getProfileImageMetadata } from "../profile-image-metadata";
 import { ProfileImageCropModal } from "../profile-image-crop-modal/profile-image-crop-modal";
-import { useSubscription } from "@renderer/hooks/use-subscription";
 import "./upload-background-image-button.scss";
 
 export function UploadBackgroundImageButton() {
@@ -17,7 +16,6 @@ export function UploadBackgroundImageButton() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isMenuClosing, setIsMenuClosing] = useState(false);
   const [showRemoveBannerModal, setShowRemoveBannerModal] = useState(false);
-  const { showHydraCloudModal } = useSubscription();
   const [bannerImageToCrop, setBannerImageToCrop] = useState<string | null>(
     null
   );
@@ -34,7 +32,18 @@ export function UploadBackgroundImageButton() {
 
   const { showSuccessToast, showErrorToast } = useToast();
 
-  const hasBanner = !!userProfile?.backgroundImageUrl;
+  const userPreferences = useAppSelector(
+    (state) => state.userPreferences.value
+  );
+
+  // Fork: subscribers get the Hydra Cloud banner (uploaded via patchUser);
+  // everyone else gets a local banner stored on this machine.
+  const isSubscriber = hasActiveSubscription;
+  const localBannerPath = userPreferences?.localProfileBannerPath ?? null;
+
+  const hasBanner = isSubscriber
+    ? !!userProfile?.backgroundImageUrl
+    : !!localBannerPath;
 
   const closeMenu = () => {
     setIsMenuClosing(true);
@@ -49,7 +58,17 @@ export function UploadBackgroundImageButton() {
       setSelectedBackgroundImage(path);
       setIsUploadingBackgorundImage(true);
 
-      await patchUser({ backgroundImageUrl: path });
+      if (isSubscriber) {
+        await patchUser({ backgroundImageUrl: path });
+      } else {
+        // Local banner: the crop output is a temp file, so copy it into
+        // userData and remember the stable path (no Hydra Cloud upload).
+        const storedPath = await window.electron.saveLocalProfileBanner(path);
+        await window.electron.updateUserPreferences({
+          localProfileBannerPath: storedPath,
+        });
+        setSelectedBackgroundImage(storedPath);
+      }
 
       showSuccessToast(t("background_image_updated"));
       await fetchUserDetails();
@@ -100,7 +119,13 @@ export function UploadBackgroundImageButton() {
     try {
       setIsUploadingBackgorundImage(true);
       setSelectedBackgroundImage("");
-      await patchUser({ backgroundImageUrl: null });
+      if (isSubscriber) {
+        await patchUser({ backgroundImageUrl: null });
+      } else {
+        await window.electron.updateUserPreferences({
+          localProfileBannerPath: null,
+        });
+      }
       showSuccessToast(t("background_image_updated"));
       await fetchUserDetails();
       await getUserProfile();
@@ -147,23 +172,6 @@ export function UploadBackgroundImageButton() {
   }, [isMenuOpen]);
 
   if (!isMe) return null;
-
-  // Non-subscribers always see the button, but clicking it presents the Hydra
-  // Cloud promo (highlighting profile customization) instead of the file picker.
-  if (!hasActiveSubscription) {
-    return (
-      <div className="upload-background-image-button__wrapper">
-        <Button
-          theme="outline"
-          className="upload-background-image-button"
-          onClick={() => showHydraCloudModal("customization")}
-        >
-          <UploadIcon />
-          {t("upload_banner")}
-        </Button>
-      </div>
-    );
-  }
 
   const cropModal = (
     <ProfileImageCropModal
