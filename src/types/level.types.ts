@@ -208,6 +208,8 @@ export interface UserPreferences {
   criticScoresEnabled?: boolean;
   criticScoresMetacriticEnabled?: boolean;
   criticScoresOpenCriticEnabled?: boolean;
+  // Fork: local profile banner (stored on this machine, not Hydra Cloud).
+  localProfileBannerPath?: string | null;
 }
 
 export interface NetworkInterface {

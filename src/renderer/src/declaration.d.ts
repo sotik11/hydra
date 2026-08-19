@@ -1191,6 +1191,7 @@ declare global {
         rotation?: number;
       }
     ) => Promise<{ imagePath: string }>;
+    saveLocalProfileBanner: (sourcePath: string) => Promise<string>;
     onSyncFriendRequests: (
       cb: (friendRequests: FriendRequestSync) => void
     ) => () => Electron.IpcRenderer;
