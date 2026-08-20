@@ -428,6 +428,15 @@ export interface GameStats {
   reviewCount: number;
 }
 
+// Fork "Game rating & scores": external ratings pulled from the Augmented Steam
+// API (api.augmentedsteam.com/app/<appid>/v2) by Steam appid. Metacritic critic
+// score is NOT here (Metacritic doesn't license it) — that comes from Steam
+// appdetails; here we get the Metacritic *user* score and OpenCritic.
+export interface ExternalCriticScores {
+  metacriticUser: { score: number; url: string } | null;
+  openCritic: { score: number; verdict: string; url: string } | null;
+}
+
 export interface GameReviewAnswer {
   id: string;
   answerHtml: string;

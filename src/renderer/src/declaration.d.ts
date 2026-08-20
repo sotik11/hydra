@@ -19,6 +19,7 @@ import type {
   UserProfile,
   UpdateProfileRequest,
   GameStats,
+  ExternalCriticScores,
   UserDetails,
   FriendRequestSync,
   FriendPresenceSync,
@@ -290,6 +291,10 @@ declare global {
     ) => Promise<ShopDetailsWithAssets | null>;
     getRandomGame: () => Promise<Steam250Game>;
     getGameStats: (objectId: string, shop: GameShop) => Promise<GameStats>;
+    getCriticScores: (
+      shop: GameShop,
+      objectId: string
+    ) => Promise<ExternalCriticScores>;
     getGameAssets: (
       objectId: string,
       shop: GameShop,

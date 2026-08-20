@@ -1,0 +1,1 @@
+import "./get-critic-scores";

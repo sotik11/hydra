@@ -29,8 +29,35 @@ export function SettingsCriticScores() {
   const enabled = userPreferences?.criticScoresEnabled ?? true;
   const metacriticEnabled =
     userPreferences?.criticScoresMetacriticEnabled ?? true;
+  const metacriticUserEnabled =
+    userPreferences?.criticScoresMetacriticUserEnabled ?? true;
+  const openCriticEnabled =
+    userPreferences?.criticScoresOpenCriticEnabled ?? true;
 
-  const [isCollapsed, setIsCollapsed] = useState(true);
+  // Expanded by default (like RetroAchievements / Steam), unlike Localization.
+  const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const renderSource = (
+    checked: boolean,
+    onToggle: () => void,
+    label: string
+  ) => (
+    <li className="settings-critic-scores__source">
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        aria-label={label}
+        className={`settings-critic-scores__toggle ${
+          checked ? "settings-critic-scores__toggle--on" : ""
+        }`}
+        onClick={onToggle}
+      >
+        {checked ? <CheckCircleFillIcon size={14} /> : <CircleIcon size={14} />}
+      </button>
+      <span className="settings-critic-scores__source-name">{label}</span>
+    </li>
+  );
 
   return (
     <div
@@ -87,52 +114,30 @@ export function SettingsCriticScores() {
           <p>{t("critic_scores_description")}</p>
 
           <ul className="settings-critic-scores__sources">
-            <li className="settings-critic-scores__source">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={metacriticEnabled}
-                aria-label={t("critic_scores_source_metacritic")}
-                className={`settings-critic-scores__toggle ${
-                  metacriticEnabled ? "settings-critic-scores__toggle--on" : ""
-                }`}
-                onClick={() =>
-                  updateUserPreferences({
-                    criticScoresMetacriticEnabled: !metacriticEnabled,
-                  })
-                }
-              >
-                {metacriticEnabled ? (
-                  <CheckCircleFillIcon size={14} />
-                ) : (
-                  <CircleIcon size={14} />
-                )}
-              </button>
-              <span className="settings-critic-scores__source-name">
-                {t("critic_scores_source_metacritic")}
-              </span>
-            </li>
-
-            {/* OpenCritic is stage 2 — shown disabled so the layout matches the
-                target design and signals what's coming. */}
-            <li className="settings-critic-scores__source settings-critic-scores__source--disabled">
-              <button
-                type="button"
-                role="switch"
-                aria-checked={false}
-                aria-label={t("critic_scores_source_opencritic")}
-                className="settings-critic-scores__toggle"
-                disabled
-              >
-                <CircleIcon size={14} />
-              </button>
-              <span className="settings-critic-scores__source-name">
-                {t("critic_scores_source_opencritic")}
-                <span className="settings-critic-scores__source-soon">
-                  ({t("critic_scores_soon")})
-                </span>
-              </span>
-            </li>
+            {renderSource(
+              metacriticEnabled,
+              () =>
+                updateUserPreferences({
+                  criticScoresMetacriticEnabled: !metacriticEnabled,
+                }),
+              t("critic_scores_source_metacritic")
+            )}
+            {renderSource(
+              metacriticUserEnabled,
+              () =>
+                updateUserPreferences({
+                  criticScoresMetacriticUserEnabled: !metacriticUserEnabled,
+                }),
+              t("critic_scores_source_metacritic_user")
+            )}
+            {renderSource(
+              openCriticEnabled,
+              () =>
+                updateUserPreferences({
+                  criticScoresOpenCriticEnabled: !openCriticEnabled,
+                }),
+              t("critic_scores_source_opencritic")
+            )}
           </ul>
         </div>
       )}
