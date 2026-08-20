@@ -20,6 +20,7 @@ import "./profile";
 import "./steam-wishlist";
 import "./nexus-mods";
 import "./shutdown-on-complete";
+import "./critic-scores";
 import "./themes";
 import "./torrenting";
 import "./user";

@@ -7,6 +7,7 @@ const en = {
   critic_scores_description:
     "Show critic scores on each game page. Pick which sources to pull from.",
   critic_scores_source_metacritic: "Metacritic",
+  critic_scores_source_metacritic_user: "Metacritic (user)",
   critic_scores_source_opencritic: "OpenCritic",
   critic_scores_soon: "soon",
   critic_scores_expand: "Expand Game rating & scores section",
@@ -14,6 +15,9 @@ const en = {
   // Game-page panel
   critic_scores_panel_title: "Critic scores",
   critic_scores_metacritic_link: "Read critic reviews",
+  critic_scores_metacritic_user_name: "User score",
+  critic_scores_metacritic_user_link: "Read user reviews",
+  critic_scores_opencritic_link: "View reviews",
 };
 
 const ru: typeof en = {
@@ -21,12 +25,16 @@ const ru: typeof en = {
   critic_scores_description:
     "Показывать оценки критиков на странице каждой игры. Выбери, из каких источников их брать.",
   critic_scores_source_metacritic: "Metacritic",
+  critic_scores_source_metacritic_user: "Metacritic (пользователи)",
   critic_scores_source_opencritic: "OpenCritic",
   critic_scores_soon: "скоро",
   critic_scores_expand: "Развернуть раздел «Игровой рейтинг и оценки»",
   critic_scores_collapse: "Свернуть раздел «Игровой рейтинг и оценки»",
   critic_scores_panel_title: "Оценки критиков",
   critic_scores_metacritic_link: "Читать рецензии критиков",
+  critic_scores_metacritic_user_name: "Оценка пользователей",
+  critic_scores_metacritic_user_link: "Читать отзывы пользователей",
+  critic_scores_opencritic_link: "Смотреть рецензии",
 };
 
 const uk: typeof en = {
@@ -34,12 +42,16 @@ const uk: typeof en = {
   critic_scores_description:
     "Показувати оцінки критиків на сторінці кожної гри. Обери, з яких джерел їх брати.",
   critic_scores_source_metacritic: "Metacritic",
+  critic_scores_source_metacritic_user: "Metacritic (користувачі)",
   critic_scores_source_opencritic: "OpenCritic",
   critic_scores_soon: "скоро",
   critic_scores_expand: "Розгорнути розділ «Ігровий рейтинг та оцінки»",
   critic_scores_collapse: "Згорнути розділ «Ігровий рейтинг та оцінки»",
   critic_scores_panel_title: "Оцінки критиків",
   critic_scores_metacritic_link: "Читати рецензії критиків",
+  critic_scores_metacritic_user_name: "Оцінка користувачів",
+  critic_scores_metacritic_user_link: "Читати відгуки користувачів",
+  critic_scores_opencritic_link: "Переглянути рецензії",
 };
 
 const bundles: Record<string, typeof en> = { en, ru, uk };

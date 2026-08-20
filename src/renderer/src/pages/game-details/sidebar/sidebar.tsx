@@ -136,14 +136,19 @@ export function Sidebar() {
   const { numberFormatter } = useFormat();
   const achievementsCount = achievements?.length ?? 0;
 
-  // Fork "Game rating & scores": Metacritic score ships inside Steam's
-  // appdetails, so no extra request — just gate on the toggles and presence.
+  // Fork "Game rating & scores": Metacritic *critic* score ships inside Steam's
+  // appdetails; the Metacritic *user* score + OpenCritic come from the Augmented
+  // Steam API (by appid, fetched inside the section). Gate on the feature + a
+  // Steam game; the section itself renders nothing if no enabled source has data.
   const criticScoresEnabled = userPreferences?.criticScoresEnabled ?? true;
   const metacriticEnabled =
     userPreferences?.criticScoresMetacriticEnabled ?? true;
-  const metacritic = shopDetails?.metacritic;
-  const shouldShowCriticScores =
-    criticScoresEnabled && metacriticEnabled && !!metacritic;
+  const metacriticUserEnabled =
+    userPreferences?.criticScoresMetacriticUserEnabled ?? true;
+  const openCriticEnabled =
+    userPreferences?.criticScoresOpenCriticEnabled ?? true;
+  const steamMetacritic = shopDetails?.metacritic ?? null;
+  const shouldShowCriticScores = criticScoresEnabled && shop === "steam";
 
   const shouldRenderAchievementsSection =
     (!!userDetails && achievementsCount > 0) ||
@@ -347,10 +352,14 @@ export function Sidebar() {
         />
       )}
 
-      {shouldShowCriticScores && metacritic && (
+      {shouldShowCriticScores && (
         <CriticScoresSection
-          metacriticScore={metacritic.score}
-          metacriticUrl={metacritic.url}
+          shop={shop}
+          objectId={objectId ?? ""}
+          steamMetacritic={steamMetacritic}
+          showMetacritic={metacriticEnabled}
+          showMetacriticUser={metacriticUserEnabled}
+          showOpenCritic={openCriticEnabled}
         />
       )}
 
