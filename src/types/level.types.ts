@@ -211,6 +211,8 @@ export interface UserPreferences {
   criticScoresOpenCriticEnabled?: boolean;
   // Fork: local profile banner (stored on this machine, not Hydra Cloud).
   localProfileBannerPath?: string | null;
+  // Fork: local free-text tagline shown under the profile name (local only).
+  localProfileTagline?: string | null;
 }
 
 export interface NetworkInterface {

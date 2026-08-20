@@ -32,6 +32,7 @@ import type { FriendRequestAction } from "@types";
 import { EditProfileModal } from "../edit-profile-modal/edit-profile-modal";
 import Skeleton from "react-loading-skeleton";
 import { UploadBackgroundImageButton } from "../upload-background-image-button/upload-background-image-button";
+import { ProfileTagline } from "./profile-tagline";
 import "./profile-hero.scss";
 
 type FriendAction =
@@ -383,6 +384,8 @@ export function ProfileHero() {
               ) : (
                 <Skeleton width={150} height={28} />
               )}
+
+              <ProfileTagline isMe={isMe} />
 
               {currentGame && (
                 <div className="profile-hero__current-game-wrapper">
