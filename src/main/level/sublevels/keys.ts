@@ -27,6 +27,11 @@ export const levelKeys = {
   commonRedistPassed: "commonRedistPassed", // Whether common redistributables preflight has passed
   emulators: "emulators",
   retroarch: "retroarch",
+  retroArchSouvenirConfigBackups: "retroarch-souvenir-config-backups",
+  duckStationSouvenirConfigBackups: "duckstation-souvenir-config-backups",
+  pendingAchievementSouvenirs: "pending-achievement-souvenirs",
+  pendingGroupedAchievementSouvenirs: "pending-grouped-achievement-souvenirs",
+  localSouvenirAssets: "local-souvenir-assets",
   steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
   wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
   wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)

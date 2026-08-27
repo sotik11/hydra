@@ -13,6 +13,8 @@ export * from "./download-sources-check-timestamp";
 export * from "./local-notifications";
 export * from "./emulators";
 export * from "./retroarch";
+export * from "./pending-achievement-souvenirs";
+export * from "./grouped-achievement-souvenirs";
 export * from "./steam-wishlist";
 export * from "./nexus-mods";
 export * from "./wishlist-games";

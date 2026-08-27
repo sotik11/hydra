@@ -27,6 +27,7 @@ import {
   WindowManager,
   logger,
   migrateCloudSaveAutomaticSyncDefaults,
+  groupedSouvenirWorker,
 } from "@main/services";
 import { checkWishlistReminders } from "@main/services/steam-wishlist";
 import { migrateDownloadSources } from "./helpers/migrate-download-sources";
@@ -135,6 +136,7 @@ export const loadState = async () => {
 
     if (HydraApi.isLoggedIn()) {
       SSEClient.connect();
+      void groupedSouvenirWorker.trigger();
     }
   });
 

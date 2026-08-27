@@ -53,6 +53,7 @@ const signOut = async (_event: Electron.IpcMainInvokeEvent) => {
         downloadsSublevel.clear(),
         downloadLayoutStateSublevel.clear(),
         emulators.resetEmulatorScanData(),
+        retroarch.resetRetroArchScanData(),
       ]);
     });
 
