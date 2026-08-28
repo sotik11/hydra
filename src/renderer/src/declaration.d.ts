@@ -1234,6 +1234,7 @@ declare global {
       }
     ) => Promise<{ imagePath: string }>;
     saveLocalProfileBanner: (sourcePath: string) => Promise<string>;
+    saveLocalProfileAvatar: (sourcePath: string) => Promise<string>;
     onSyncFriendRequests: (
       cb: (friendRequests: FriendRequestSync) => void
     ) => () => Electron.IpcRenderer;

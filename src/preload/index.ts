@@ -1660,6 +1660,8 @@ contextBridge.exposeInMainWorld("electron", {
   ) => ipcRenderer.invoke("cropProfileImage", imagePath, params),
   saveLocalProfileBanner: (sourcePath: string) =>
     ipcRenderer.invoke("saveLocalProfileBanner", sourcePath),
+  saveLocalProfileAvatar: (sourcePath: string) =>
+    ipcRenderer.invoke("saveLocalProfileAvatar", sourcePath),
   onSyncFriendRequests: (cb: (friendRequests: FriendRequestSync) => void) => {
     const listener = (
       _event: Electron.IpcRendererEvent,

@@ -221,6 +221,9 @@ export interface UserPreferences {
   localProfileBannerPath?: string | null;
   // Fork: local free-text tagline shown under the profile name (local only).
   localProfileTagline?: string | null;
+  // Fork: local animated profile avatar (stored on this machine, not Hydra
+  // Cloud, which downscales GIF avatars to a static frame for non-subscribers).
+  localProfileAvatarPath?: string | null;
 }
 
 export interface NetworkInterface {
