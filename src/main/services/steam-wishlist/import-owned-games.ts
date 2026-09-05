@@ -2,6 +2,7 @@ import { createGame } from "@main/services/library-sync";
 import { gamesShopAssetsSublevel, gamesSublevel, levelKeys } from "@main/level";
 import { logger } from "@main/services";
 import type { Game, SteamOwnedGame } from "@types";
+import { recordImportedAppIds } from "./restamp-library-import";
 
 /**
  * Add owned Steam games to the Hydra library as regular entries. Behaviour per
@@ -67,6 +68,10 @@ export async function importOwnedGamesToLibrary(
     toSync.push(entry);
     inLibrary += 1;
   }
+
+  // Remember which appIds are ours in a durable sublevel so the flag can be
+  // re-applied after cloud sync / relogin wipes it from the game records.
+  await recordImportedAppIds(owned.map((game) => game.appId));
 
   if (toSync.length > 0) {
     void (async () => {

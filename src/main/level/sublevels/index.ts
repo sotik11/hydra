@@ -18,6 +18,7 @@ export * from "./grouped-achievement-souvenirs";
 export * from "./steam-wishlist";
 export * from "./nexus-mods";
 export * from "./wishlist-games";
+export * from "./steam-library-import";
 export * from "./ps2-memory-card-saves";
 export * from "./ps1-memory-card-saves";
 export * from "./cloud-save-local-hash-cache";

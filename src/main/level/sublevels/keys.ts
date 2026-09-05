@@ -35,6 +35,7 @@ export const levelKeys = {
   steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
   wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
   wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)
+  steamLibraryImportAppIds: "steamLibraryImportAppIds", // durable set of imported Steam appIds (fork; survives cloud sync/logout)
   nexusMods: "nexusMods", // Nexus games catalogue cache + match map (fork feature)
   globalTrackersUrlCache: "globalTrackersUrlCache",
   ps2MemoryCardSaves: "ps2MemoryCardSaves",
