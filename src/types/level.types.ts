@@ -224,6 +224,12 @@ export interface UserPreferences {
   // Fork: local animated profile avatar (stored on this machine, not Hydra
   // Cloud, which downscales GIF avatars to a static frame for non-subscribers).
   localProfileAvatarPath?: string | null;
+  // Fork: subscription-transition migration markers. While subscribed we mirror
+  // the Cloud banner/avatar into userData so the local fallback stays fresh for
+  // when the subscription lapses; these hold the Cloud URL last mirrored, so we
+  // only re-download when it actually changes.
+  localProfileBannerMirroredUrl?: string | null;
+  localProfileAvatarMirroredUrl?: string | null;
 }
 
 export interface NetworkInterface {

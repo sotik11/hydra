@@ -1235,6 +1235,10 @@ declare global {
     ) => Promise<{ imagePath: string }>;
     saveLocalProfileBanner: (sourcePath: string) => Promise<string>;
     saveLocalProfileAvatar: (sourcePath: string) => Promise<string>;
+    mirrorRemoteProfileImage: (
+      kind: "banner" | "avatar",
+      url: string
+    ) => Promise<string | null>;
     onSyncFriendRequests: (
       cb: (friendRequests: FriendRequestSync) => void
     ) => () => Electron.IpcRenderer;

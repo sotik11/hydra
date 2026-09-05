@@ -13,6 +13,7 @@ import {
   useLibrary,
   useToast,
   useUserDetails,
+  useProfileImageMigration,
 } from "@renderer/hooks";
 import { useDownloadOptionsListener } from "@renderer/hooks/use-download-options-listener";
 import i18n from "i18next";
@@ -91,6 +92,10 @@ export function App() {
 
   const { hideHydraCloudModal, isHydraCloudModalVisible, hydraCloudFeature } =
     useSubscription();
+
+  // Fork: mirror the Cloud banner/avatar to a local fallback while subscribed and
+  // seed an empty Cloud slot on becoming a subscriber (subscription-guard rule).
+  useProfileImageMigration();
 
   const dispatch = useAppDispatch();
 
