@@ -9,7 +9,12 @@ import {
 } from "@primer/octicons-react";
 
 import { Button, CheckboxField, ConfirmationModal } from "@renderer/components";
-import { useAppDispatch, useAppSelector, useLibrary } from "@renderer/hooks";
+import {
+  useAppDispatch,
+  useAppSelector,
+  useLibrary,
+  useUserDetails,
+} from "@renderer/hooks";
 import { setWishlistSearchQuery } from "@renderer/features";
 import type { WishlistGame } from "@types";
 
@@ -67,12 +72,22 @@ export default function Wishlist() {
 
   const { metaById } = useWishlistMetadata(games ?? [], refreshKey);
 
+  const { userDetails } = useUserDetails();
+
+  // Account-scoped like the Library: show the wishlist only while signed in.
+  // The data itself lives in our sublevel (untouched by sign-out), so on the
+  // next login it comes back in full — it survives relogin, just isn't shown
+  // while logged out.
   const loadGames = useCallback(() => {
+    if (!userDetails) {
+      setGames([]);
+      return;
+    }
     window.electron
       .getWishlistGames()
       .then((list) => setGames(list))
       .catch(() => setGames([]));
-  }, []);
+  }, [userDetails]);
 
   useEffect(() => {
     loadGames();
