@@ -25,7 +25,7 @@
       display: flex;
       align-items: center;
       z-index: 1;
-      background: linear-gradient(135deg, rgb(0 0 0 / 40%), rgb(0 0 0 / 30%));
+      background: transparent;
 
       &--transparent {
         background: transparent;
@@ -69,6 +69,17 @@
     padding: 0 calc(globals.$spacing-unit * 3);
     align-items: center;
     gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__gift-action {
+    position: absolute;
+    top: calc(globals.$spacing-unit * 2);
+    right: calc(globals.$spacing-unit * 3);
+    z-index: 2;
+  }
+
+  &__gift-icon {
+    color: #ffffff;
   }
 
   &__avatar-button {
