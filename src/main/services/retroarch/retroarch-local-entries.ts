@@ -18,7 +18,6 @@ import type {
 } from "@types";
 
 import { logger } from "../logger";
-import { readPspDiscInfo } from "../emulators/psp-disc-info";
 import { PLATFORM_TO_LAUNCHBOX_NAME } from "./retroarch-cores";
 import {
   ensureLocalBoxart,
@@ -154,12 +153,6 @@ const PLACEHOLDER_BRANDS: Partial<Record<RetroArchPlatform, PlaceholderBrand>> =
       bigSvgAttrs:
         'font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" font-style="italic" fill="#1f6feb" letter-spacing="-3"',
       smallText: "GENESIS",
-    },
-    psp: {
-      bigText: "PSP",
-      bigSvgAttrs:
-        'font-family="Arial Black, Arial, sans-serif" font-size="72" font-weight="900" fill="#dfe3e8" letter-spacing="4"',
-      smallText: "PLAYSTATION PORTABLE",
     },
   };
 
@@ -454,11 +447,7 @@ export const persistUnmatchedRetroArchRoms = async (
     // PSP: read the official TITLE from the image's PARAM.SFO so the name (and
     // therefore the box art / metadata match) doesn't depend on the file name.
     // Falls back to the file/folder name when the image can't be read.
-    let title = deriveRomTitle(rom.name, rom.primaryPath);
-    if (rom.platform === "psp") {
-      const discInfo = await readPspDiscInfo(rom.primaryPath);
-      if (discInfo?.title) title = discInfo.title;
-    }
+    const title = deriveRomTitle(rom.name, rom.primaryPath);
     const placeholderIcon = buildPlaceholderIcon(rom.platform, title);
     const disc: ClassicsDisc = {
       path: rom.primaryPath,

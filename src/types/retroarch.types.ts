@@ -7,8 +7,7 @@ export type RetroArchPlatform =
   | "gb"
   | "gbc"
   | "gba"
-  | "genesis"
-  | "psp";
+  | "genesis";
 
 export type RetroArchCoreName =
   | "fceumm"
@@ -16,8 +15,7 @@ export type RetroArchCoreName =
   | "mupen64plus_next"
   | "gambatte"
   | "mgba"
-  | "genesis_plus_gx"
-  | "ppsspp";
+  | "genesis_plus_gx";
 
 export interface RetroArchCore {
   name: RetroArchCoreName;

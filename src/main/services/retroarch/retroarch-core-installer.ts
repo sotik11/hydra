@@ -19,7 +19,6 @@ import { SystemPath } from "../system-path";
 import { WindowManager } from "../window-manager";
 import { downloadToFile, removeFileQuietly } from "../download-to-file";
 import { getRetroArchVersion } from "./detect-retroarch";
-import { ensurePpssppAssets } from "./ppsspp-assets";
 import { swapCoreLibrary } from "./swap-core-library";
 import { removeDirectoryQuietly, swapDirectory } from "./swap-directory";
 import { RETROARCH_CORE_NAMES, isRetroArchCoreName } from "./retroarch-cores";
@@ -183,12 +182,6 @@ export const downloadAndInstallCore = async (
     });
 
     await removeDirectoryQuietly(stagingDir);
-
-    // PPSSPP needs its asset bundle alongside the core, or it warns about
-    // missing system files. Fetch it into the system dir right after install.
-    if (core === "ppsspp" && currentConfig.executablePath) {
-      await ensurePpssppAssets(currentConfig.executablePath);
-    }
 
     sendCoreProgress({ core, phase: "done", path: libraryPath });
     return { ok: true, core, path: libraryPath };

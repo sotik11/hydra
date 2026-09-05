@@ -16,7 +16,6 @@ const removeRetroArch = async (_event: Electron.IpcMainInvokeEvent) => {
       gbc: 0,
       gba: 0,
       genesis: 0,
-      psp: 0,
     },
     lastScanAt: null,
     totalFiles: 0,

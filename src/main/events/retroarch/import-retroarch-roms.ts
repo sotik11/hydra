@@ -230,7 +230,6 @@ export const recomputeRetroArchPlatformCounts = async (): Promise<void> => {
     gbc: 0,
     gba: 0,
     genesis: 0,
-    psp: 0,
   };
 
   if (folderPaths.length > 0) {
