@@ -336,6 +336,13 @@ export const mergeWithRemoteGames = async () => {
   await import("../steam-wishlist/restamp-library-import")
     .then((m) => m.restampSteamLibraryImport())
     .catch(() => {});
+
+  // Fork: Nexus match map is rebuilt from the library; cloud sync repopulates
+  // the library after relogin, so re-match once it's populated (a startup-only
+  // match would run on the still-empty library and wipe the map to 0).
+  await import("../nexus-mods/match-library")
+    .then((m) => m.matchLibraryFromCache())
+    .catch(() => {});
 };
 
 // Emulator imports already have catalogue assets and ROM metadata locally.
