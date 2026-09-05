@@ -155,11 +155,17 @@ export function UserProfileContextProvider({
   const getBackgroundImageUrl = () => {
     if (selectedBackgroundImage && isMe)
       return `local:${selectedBackgroundImage}`;
-    // Fork: for the signed-in user the local banner wins over the server one
-    // (which may be a stale/expired Hydra Cloud URL). Read straight from Redux
-    // each render so it survives navigating away and back (the selected-image
-    // state resets on remount, this doesn't).
-    if (isMe && userPreferences?.localProfileBannerPath)
+    // Fork: for a NON-subscriber the local banner wins over the server one
+    // (there is no Cloud banner for them). A subscriber's real Cloud banner must
+    // NOT be shadowed by a leftover local path, so gate on subscription being
+    // inactive. Read from Redux each render so it survives navigating away/back.
+    const hasActiveSubscription =
+      new Date(userDetails?.subscription?.expiresAt ?? 0) > new Date();
+    if (
+      isMe &&
+      !hasActiveSubscription &&
+      userPreferences?.localProfileBannerPath
+    )
       return `local:${userPreferences.localProfileBannerPath}`;
     if (userProfile?.backgroundImageUrl) return userProfile.backgroundImageUrl;
 
