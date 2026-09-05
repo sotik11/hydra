@@ -108,7 +108,7 @@ export function SidebarProfile() {
 
   const { t } = useTranslation(["sidebar", "user_profile"]);
 
-  const { userDetails, signOut } = useUserDetails();
+  const { userDetails, signOut, hasActiveSubscription } = useUserDetails();
   const { showSuccessToast } = useToast();
 
   const { gameRunning } = useAppSelector((state) => state.gameRunning);
@@ -116,8 +116,13 @@ export function SidebarProfile() {
   const userPreferences = useAppSelector(
     (state) => state.userPreferences.value
   );
-  // Fork: local animated avatar wins over the (static) server one for yourself.
-  const localAvatarPath = userPreferences?.localProfileAvatarPath ?? null;
+  // Fork: local animated avatar wins over the (static) server one for yourself,
+  // but only while you're NOT a subscriber — a subscriber's real Cloud avatar
+  // always wins (see the subscription-guard rule).
+  const localAvatarPath =
+    !hasActiveSubscription && userPreferences?.localProfileAvatarPath
+      ? userPreferences.localProfileAvatarPath
+      : null;
 
   const isPlayStationGameRunning = useMemo(() => {
     if (gameRunning?.shop !== "launchbox") return false;

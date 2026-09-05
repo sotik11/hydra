@@ -150,8 +150,11 @@ export function EditProfileModal(
 
               const getImageUrl = () => {
                 if (value) return `local:${value}`;
-                // Fork: local animated avatar wins over the (static) server one.
-                if (localAvatarPath) return `local:${localAvatarPath}`;
+                // Fork: local animated avatar wins over the (static) server one,
+                // but only while you're NOT a subscriber — a subscriber's real
+                // Cloud avatar always wins (subscription-guard rule).
+                if (!hasActiveSubscription && localAvatarPath)
+                  return `local:${localAvatarPath}`;
                 if (userDetails?.profileImageUrl)
                   return userDetails.profileImageUrl;
 
