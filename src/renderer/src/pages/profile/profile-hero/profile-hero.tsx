@@ -57,9 +57,22 @@ export function ProfileHero() {
     undoFriendship,
     blockUser,
     userDetails,
+    hasActiveSubscription,
   } = useUserDetails();
 
   const { gameRunning } = useAppSelector((state) => state.gameRunning);
+  const userPreferences = useAppSelector(
+    (state) => state.userPreferences.value
+  );
+  // Fork: show the local animated avatar on your own profile only while you're
+  // NOT a subscriber (the server downscales GIF avatars to a static frame for
+  // non-subscribers). A subscriber's real Hydra Cloud avatar always wins, so the
+  // stale local one from non-subscriber days never shadows it.
+  const localAvatarPath = userPreferences?.localProfileAvatarPath ?? null;
+  const avatarSrc =
+    isMe && !hasActiveSubscription && localAvatarPath
+      ? `local:${localAvatarPath}`
+      : userProfile?.profileImageUrl;
 
   const { t } = useTranslation("user_profile");
   const { formatDistance } = useDate();
@@ -338,7 +351,7 @@ export function ProfileHero() {
       <FullscreenMediaModal
         visible={showFullscreenAvatar}
         onClose={() => setShowFullscreenAvatar(false)}
-        src={userProfile?.profileImageUrl}
+        src={avatarSrc}
         alt={userProfile?.displayName}
       />
 
@@ -374,7 +387,7 @@ export function ProfileHero() {
               <Avatar
                 size={96}
                 alt={userProfile?.displayName}
-                src={userProfile?.profileImageUrl}
+                src={avatarSrc}
               />
             </button>
 

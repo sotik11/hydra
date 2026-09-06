@@ -11,7 +11,7 @@ import {
   ModalProps,
   TextField,
 } from "@renderer/components";
-import { useToast, useUserDetails } from "@renderer/hooks";
+import { useToast, useUserDetails, useAppSelector } from "@renderer/hooks";
 
 import { yupResolver } from "@hookform/resolvers/yup";
 
@@ -59,6 +59,11 @@ export function EditProfileModal(
   const { userDetails, fetchUserDetails, hasActiveSubscription } =
     useUserDetails();
 
+  const userPreferences = useAppSelector(
+    (state) => state.userPreferences.value
+  );
+  const localAvatarPath = userPreferences?.localProfileAvatarPath ?? null;
+
   useEffect(() => {
     if (userDetails) {
       setValue("displayName", userDetails.displayName);
@@ -81,6 +86,24 @@ export function EditProfileModal(
       });
   };
 
+  // Fork: non-subscriber animated avatar → store locally (the server statically
+  // downscales it). Save the prefs via the IPC directly (this modal is rendered
+  // outside SettingsContext, where updateUserPreferences is a no-op), then let
+  // the global listener refresh Redux so the avatar shows everywhere.
+  const saveLocalAvatar = async (croppedImagePath: string) => {
+    try {
+      const storedPath =
+        await window.electron.saveLocalProfileAvatar(croppedImagePath);
+      await window.electron.updateUserPreferences({
+        localProfileAvatarPath: storedPath,
+      });
+      await Promise.allSettled([fetchUserDetails(), getUserProfile()]);
+      showSuccessToast(t("saved_successfully"));
+    } catch {
+      showErrorToast(t("try_again"));
+    }
+  };
+
   return (
     <Modal {...props} title={t("edit_profile")} clickOutsideToClose={false}>
       <form
@@ -95,26 +118,13 @@ export function EditProfileModal(
               const handleProfileImagePath = async (path: string) => {
                 const metadata = await getProfileImageMetadata(path);
 
-                if (metadata.isAnimated && hasActiveSubscription) {
-                  // Crop while preserving animation (handled in main/sharp).
+                if (metadata.isAnimated) {
+                  // Fork: allow animated (GIF/APNG) avatars for everyone. Crop
+                  // preserves animation; on apply, subscribers upload to Hydra
+                  // Cloud as before, non-subscribers keep it locally (the server
+                  // would otherwise downscale it to a static frame).
                   setCropIsAnimated(true);
                   setProfileImageToCrop(path);
-                  return;
-                }
-
-                if (metadata.isAnimated && !hasActiveSubscription) {
-                  const { imagePath } = await window.electron
-                    .processProfileImage(path)
-                    .catch(() => {
-                      showErrorToast(t("image_process_failure"));
-                      return { imagePath: null };
-                    });
-
-                  if (imagePath) {
-                    setCropIsAnimated(false);
-                    setProfileImageToCrop(imagePath);
-                  }
-
                   return;
                 }
 
@@ -140,6 +150,11 @@ export function EditProfileModal(
 
               const getImageUrl = () => {
                 if (value) return `local:${value}`;
+                // Fork: local animated avatar wins over the (static) server one,
+                // but only while you're NOT a subscriber — a subscriber's real
+                // Cloud avatar always wins (subscription-guard rule).
+                if (!hasActiveSubscription && localAvatarPath)
+                  return `local:${localAvatarPath}`;
                 if (userDetails?.profileImageUrl)
                   return userDetails.profileImageUrl;
 
@@ -174,8 +189,13 @@ export function EditProfileModal(
                     isAnimated={cropIsAnimated}
                     onClose={() => setProfileImageToCrop(null)}
                     onApply={(croppedImagePath) => {
-                      onChange(croppedImagePath);
                       setProfileImageToCrop(null);
+                      if (cropIsAnimated && !hasActiveSubscription) {
+                        // Non-subscriber animated avatar → keep it local.
+                        void saveLocalAvatar(croppedImagePath);
+                      } else {
+                        onChange(croppedImagePath);
+                      }
                     }}
                   />
                 </>
