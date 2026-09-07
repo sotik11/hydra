@@ -1,6 +1,8 @@
 @use "../../scss/globals.scss";
 
-$hero-height: 350px;
+// Runtime-overridable banner height (Settings → Appearance). Falls back to the
+// shared default; app.tsx sets --hero-height from userPreferences.heroBannerHeight.
+$hero-height: var(--hero-height, #{globals.$hero-height});
 
 @keyframes slide-in {
   0% {
@@ -29,17 +31,17 @@ $hero-height: 350px;
     transition: all ease 0.2s;
 
     @media (min-width: 1250px) {
-      height: 350px;
-      min-height: 350px;
+      height: $hero-height;
+      min-height: $hero-height;
     }
 
     &--classics-wrapper {
-      height: 400px;
-      min-height: 400px;
+      height: $hero-height;
+      min-height: $hero-height;
 
       @media (min-width: 1250px) {
-        height: 400px;
-        min-height: 400px;
+        height: $hero-height;
+        min-height: $hero-height;
       }
     }
   }
@@ -354,8 +356,8 @@ $hero-height: 350px;
   &__hero-image-wrapper {
     position: absolute;
     width: 100%;
-    height: 384px;
-    max-height: 384px;
+    height: calc(#{$hero-height} + 34px);
+    max-height: calc(#{$hero-height} + 34px);
     overflow: hidden;
     border-radius: 0px 0px 8px 8px;
     z-index: 0;
@@ -378,8 +380,8 @@ $hero-height: 350px;
     }
 
     @media (min-width: 1250px) {
-      height: calc(350px + 82px);
-      min-height: calc(350px + 84px);
+      height: calc(#{$hero-height} + 82px);
+      min-height: calc(#{$hero-height} + 84px);
     }
   }
 
@@ -388,14 +390,16 @@ $hero-height: 350px;
     height: $hero-height;
     min-height: $hero-height;
     object-fit: cover;
-    object-position: top;
+    // Crop anchor is user-configurable (Settings → Appearance). Default "top"
+    // keeps the banner's top and crops the bottom overflow (upstream centred it).
+    object-position: var(--hero-object-position, top);
     transition: all ease 0.2s;
     position: absolute;
     z-index: 0;
     border-radius: 0px 0px 8px 8px;
 
     @media (min-width: 1250px) {
-      object-position: center;
+      object-position: var(--hero-object-position, top);
       height: $hero-height;
       min-height: $hero-height;
     }

@@ -5,8 +5,9 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    // Match the game-page hero height so the profile banner is the same size.
-    min-height: 350px;
+    // Match the game-page hero banner. Both read the runtime --hero-height
+    // (Settings → Appearance), falling back to the shared globals.$hero-height.
+    min-height: var(--hero-height, #{globals.$hero-height});
   }
 
   &__background {
@@ -15,15 +16,18 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      // Crop anchor is user-configurable (Settings → Appearance); default "top".
+      object-position: var(--hero-object-position, top);
     }
 
     &-overlay {
       width: 100%;
-      // Fill the space above the bottom action bar and vertically centre the
-      // avatar + name within the taller banner.
+      // Fill the space above the bottom action bar; the avatar + name block sits
+      // at the vertical position the user picks (Settings → Appearance), default
+      // centred within the taller banner.
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: var(--hero-avatar-align, center);
       z-index: 1;
       background: transparent;
 
@@ -65,8 +69,10 @@
   &__user-information {
     display: flex;
     width: 100%;
-    // Horizontal padding only — the overlay handles vertical centring now.
-    padding: 0 calc(globals.$spacing-unit * 3);
+    // Inset the avatar/name block from the banner edges to match the "change
+    // banner" button (16px). Vertical padding also keeps the block off the top
+    // edge when it's top-aligned; it stays centred when centre-aligned.
+    padding: calc(globals.$spacing-unit * 2);
     align-items: center;
     gap: calc(globals.$spacing-unit * 2);
   }

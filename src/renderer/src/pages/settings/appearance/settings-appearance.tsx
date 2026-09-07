@@ -3,6 +3,7 @@ import "./settings-appearance.scss";
 import { ThemeActions, ThemeCard, ThemePlaceholder } from "./index";
 import type { Theme } from "@types";
 import { ImportThemeModal } from "./modals/import-theme-modal";
+import { BannerHeightSetting } from "./banner-height-setting";
 import { settingsContext } from "@renderer/context";
 import { useNavigate } from "react-router-dom";
 import { levelDBService } from "@renderer/services/leveldb.service";
@@ -83,6 +84,8 @@ export function SettingsAppearance({
 
   return (
     <div className="settings-appearance">
+      <BannerHeightSetting />
+
       <ThemeActions onListUpdated={loadThemes} themesCount={themes.length} />
 
       <div className="settings-appearance__themes">

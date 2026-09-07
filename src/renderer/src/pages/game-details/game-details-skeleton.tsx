@@ -7,7 +7,7 @@ export function GameDetailsSkeleton() {
       <section className="game-details__container">
         <div className="game-details__hero">
           <Skeleton
-            height={350}
+            height="100%"
             style={{
               borderRadius: "0px 0px 8px 8px",
               position: "absolute",

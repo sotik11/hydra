@@ -230,6 +230,16 @@ export interface UserPreferences {
   // only re-download when it actually changes.
   localProfileBannerMirroredUrl?: string | null;
   localProfileAvatarMirroredUrl?: string | null;
+  // Fork: user-configurable height (px) of the game-details hero banner and the
+  // profile banner. Applied at runtime via the --hero-height CSS variable; unset
+  // falls back to the default in globals.scss ($hero-height).
+  heroBannerHeight?: number | null;
+  // Fork: vertical crop anchor for those banners (--hero-object-position); unset
+  // falls back to "top".
+  heroBannerAlignment?: "top" | "center" | "bottom" | null;
+  // Fork: vertical position of the profile avatar + name block within the banner
+  // (--hero-avatar-align); unset → "center".
+  heroAvatarAlignment?: "top" | "center" | null;
 }
 
 export interface NetworkInterface {
