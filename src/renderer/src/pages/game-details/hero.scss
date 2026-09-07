@@ -393,7 +393,9 @@
     border-radius: 0px 0px 8px 8px;
 
     @media (min-width: 1250px) {
-      object-position: center;
+      // Anchor to the top so a banner taller than the window keeps its top and
+      // only the bottom overflow is cropped (upstream centred it → cut the top).
+      object-position: top;
       height: globals.$hero-height;
       min-height: globals.$hero-height;
     }
