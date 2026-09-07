@@ -5,11 +5,11 @@ import { useAppSelector } from "./redux";
  * Fork: apply the user's banner appearance preferences at runtime via CSS
  * variables that the game-details hero and the profile banner read:
  *   - `--hero-height`          — banner height in px (unset → SCSS default)
- *   - `--hero-object-position` — vertical crop anchor (unset → "top")
+ *   - `--hero-object-position` — banner crop anchor (unset → "top")
+ *   - `--hero-avatar-align`    — vertical position of the profile avatar + name
+ *                                block within the banner (unset → "center")
  *
  * Reacting to preference changes makes them take effect live, without a restart.
- * (The avatar crop anchor is applied per-instance in profile-hero, so it only
- * affects your own avatar, not every avatar on screen.)
  */
 export function useHeroBannerStyle() {
   const height = useAppSelector(
@@ -17,6 +17,9 @@ export function useHeroBannerStyle() {
   );
   const alignment = useAppSelector(
     (state) => state.userPreferences.value?.heroBannerAlignment ?? null
+  );
+  const avatarAlignment = useAppSelector(
+    (state) => state.userPreferences.value?.heroAvatarAlignment ?? null
   );
 
   useEffect(() => {
@@ -38,4 +41,19 @@ export function useHeroBannerStyle() {
       root.style.removeProperty("--hero-object-position");
     }
   }, [alignment]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+
+    if (avatarAlignment) {
+      // Map to a flexbox alignment: "top" pins the block to the banner top,
+      // "center" centres it (see profile-hero __background-overlay).
+      root.style.setProperty(
+        "--hero-avatar-align",
+        avatarAlignment === "top" ? "flex-start" : "center"
+      );
+    } else {
+      root.style.removeProperty("--hero-avatar-align");
+    }
+  }, [avatarAlignment]);
 }

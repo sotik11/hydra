@@ -22,11 +22,12 @@
 
     &-overlay {
       width: 100%;
-      // Fill the space above the bottom action bar and vertically centre the
-      // avatar + name within the taller banner.
+      // Fill the space above the bottom action bar; the avatar + name block sits
+      // at the vertical position the user picks (Settings → Appearance), default
+      // centred within the taller banner.
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: var(--hero-avatar-align, center);
       z-index: 1;
       background: transparent;
 

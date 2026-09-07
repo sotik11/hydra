@@ -37,9 +37,8 @@
   }
 
   &__slider {
-    flex: 0 0 auto;
-    width: 220px;
-    max-width: 100%;
+    flex: 1;
+    min-width: 200px;
     accent-color: globals.$brand-teal;
     cursor: pointer;
   }
@@ -88,11 +87,15 @@
 
   &__alignments {
     display: flex;
+    justify-content: flex-start;
     gap: calc(globals.$spacing-unit * 2);
     flex-wrap: wrap;
 
+    // Pack the dropdowns to the left (SelectField's container is flex:1 by
+    // default, which would stretch them across the row).
     .select-field__container {
-      min-width: 180px;
+      flex: 0 0 auto;
+      width: 170px;
     }
   }
 
@@ -102,6 +105,11 @@
 
   &__preview-bar {
     position: relative;
+    display: flex;
+    justify-content: flex-start;
+    // align-items (avatar vertical position) is set inline from the setting.
+    padding: globals.$spacing-unit;
+    box-sizing: border-box;
     width: 100%;
     border-radius: 6px;
     background: linear-gradient(
@@ -116,15 +124,15 @@
   &__preview-banner {
     position: absolute;
     inset: 0;
+    z-index: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
 
   &__preview-avatar {
-    position: absolute;
-    left: globals.$spacing-unit;
-    bottom: globals.$spacing-unit;
+    position: relative;
+    flex: 0 0 auto;
     z-index: 2;
     width: 56px;
     height: 56px;

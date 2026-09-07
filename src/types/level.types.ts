@@ -237,7 +237,8 @@ export interface UserPreferences {
   // Fork: vertical crop anchor for those banners (--hero-object-position); unset
   // falls back to "top".
   heroBannerAlignment?: "top" | "center" | "bottom" | null;
-  // Fork: vertical crop anchor for your own profile avatar; unset → "center".
+  // Fork: vertical position of the profile avatar + name block within the banner
+  // (--hero-avatar-align); unset → "center".
   heroAvatarAlignment?: "top" | "center" | null;
 }
 

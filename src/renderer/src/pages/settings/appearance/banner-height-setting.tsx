@@ -181,7 +181,11 @@ export function BannerHeightSetting() {
       <div className="banner-height-setting__preview" aria-hidden="true">
         <div
           className="banner-height-setting__preview-bar"
-          style={{ height: `${Math.round(value * PREVIEW_SCALE)}px` }}
+          style={{
+            height: `${Math.round(value * PREVIEW_SCALE)}px`,
+            alignItems:
+              storedAvatarAlignment === "top" ? "flex-start" : "center",
+          }}
         >
           {bannerUrl && (
             <img
@@ -193,15 +197,7 @@ export function BannerHeightSetting() {
           )}
 
           <div className="banner-height-setting__preview-avatar">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt=""
-                style={{ objectPosition: storedAvatarAlignment }}
-              />
-            ) : (
-              <PersonIcon size={20} />
-            )}
+            {avatarUrl ? <img src={avatarUrl} alt="" /> : <PersonIcon size={20} />}
           </div>
 
           <span className="banner-height-setting__preview-label">
