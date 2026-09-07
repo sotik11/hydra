@@ -5,8 +5,9 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    // Match the game-page hero height so the profile banner is the same size.
-    min-height: 350px;
+    // Match the game-page hero height ($hero-height in hero.scss) so the profile
+    // banner is the same size.
+    min-height: 420px;
   }
 
   &__background {
