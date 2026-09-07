@@ -73,6 +73,11 @@ export function ProfileHero() {
     isMe && !hasActiveSubscription && localAvatarPath
       ? `local:${localAvatarPath}`
       : userProfile?.profileImageUrl;
+  // Fork: crop anchor for your own avatar (Settings → Appearance). Applied only
+  // to your own hero avatar, so other users' avatars keep the default centring.
+  const avatarObjectPosition = isMe
+    ? (userPreferences?.heroAvatarAlignment ?? "center")
+    : undefined;
 
   const { t } = useTranslation("user_profile");
   const { formatDistance } = useDate();
@@ -388,6 +393,7 @@ export function ProfileHero() {
                 size={96}
                 alt={userProfile?.displayName}
                 src={avatarSrc}
+                style={{ objectPosition: avatarObjectPosition }}
               />
             </button>
 

@@ -390,16 +390,16 @@ $hero-height: var(--hero-height, #{globals.$hero-height});
     height: $hero-height;
     min-height: $hero-height;
     object-fit: cover;
-    object-position: top;
+    // Crop anchor is user-configurable (Settings → Appearance). Default "top"
+    // keeps the banner's top and crops the bottom overflow (upstream centred it).
+    object-position: var(--hero-object-position, top);
     transition: all ease 0.2s;
     position: absolute;
     z-index: 0;
     border-radius: 0px 0px 8px 8px;
 
     @media (min-width: 1250px) {
-      // Anchor to the top so a banner taller than the window keeps its top and
-      // only the bottom overflow is cropped (upstream centred it → cut the top).
-      object-position: top;
+      object-position: var(--hero-object-position, top);
       height: $hero-height;
       min-height: $hero-height;
     }

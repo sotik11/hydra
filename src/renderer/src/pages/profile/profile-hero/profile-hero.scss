@@ -16,8 +16,8 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      // Anchor to the top so a tall banner keeps its top; crop only the bottom.
-      object-position: top;
+      // Crop anchor is user-configurable (Settings → Appearance); default "top".
+      object-position: var(--hero-object-position, top);
     }
 
     &-overlay {

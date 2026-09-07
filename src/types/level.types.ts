@@ -234,6 +234,11 @@ export interface UserPreferences {
   // profile banner. Applied at runtime via the --hero-height CSS variable; unset
   // falls back to the default in globals.scss ($hero-height).
   heroBannerHeight?: number | null;
+  // Fork: vertical crop anchor for those banners (--hero-object-position); unset
+  // falls back to "top".
+  heroBannerAlignment?: "top" | "center" | "bottom" | null;
+  // Fork: vertical crop anchor for your own profile avatar; unset → "center".
+  heroAvatarAlignment?: "top" | "center" | null;
 }
 
 export interface NetworkInterface {

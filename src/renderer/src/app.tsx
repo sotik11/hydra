@@ -14,7 +14,7 @@ import {
   useToast,
   useUserDetails,
   useProfileImageMigration,
-  useHeroBannerHeight,
+  useHeroBannerStyle,
 } from "@renderer/hooks";
 import { useDownloadOptionsListener } from "@renderer/hooks/use-download-options-listener";
 import i18n from "i18next";
@@ -98,8 +98,8 @@ export function App() {
   // seed an empty Cloud slot on becoming a subscriber (subscription-guard rule).
   useProfileImageMigration();
 
-  // Fork: apply the user-configured banner height (--hero-height) live.
-  useHeroBannerHeight();
+  // Fork: apply the user-configured banner height + crop anchor live.
+  useHeroBannerStyle();
 
   const dispatch = useAppDispatch();
 
