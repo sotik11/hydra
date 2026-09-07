@@ -6,6 +6,7 @@ export * from "./use-toast";
 export * from "./redux";
 export * from "./use-user-details";
 export * from "./use-profile-image-migration";
+export * from "./use-hero-banner-height";
 export * from "./use-format";
 export * from "./use-feature";
 export * from "./use-download-options-listener";

@@ -1,5 +1,9 @@
 @use "../../scss/globals.scss";
 
+// Runtime-overridable banner height (Settings → Appearance). Falls back to the
+// shared default; app.tsx sets --hero-height from userPreferences.heroBannerHeight.
+$hero-height: var(--hero-height, #{globals.$hero-height});
+
 @keyframes slide-in {
   0% {
     transform: translateY(calc(40px + globals.$spacing-unit * 2));
@@ -19,25 +23,25 @@
 
   &__hero {
     width: 100%;
-    height: globals.$hero-height;
-    min-height: globals.$hero-height;
+    height: $hero-height;
+    min-height: $hero-height;
     display: flex;
     flex-direction: column;
     position: relative;
     transition: all ease 0.2s;
 
     @media (min-width: 1250px) {
-      height: globals.$hero-height;
-      min-height: globals.$hero-height;
+      height: $hero-height;
+      min-height: $hero-height;
     }
 
     &--classics-wrapper {
-      height: globals.$hero-height;
-      min-height: globals.$hero-height;
+      height: $hero-height;
+      min-height: $hero-height;
 
       @media (min-width: 1250px) {
-        height: globals.$hero-height;
-        min-height: globals.$hero-height;
+        height: $hero-height;
+        min-height: $hero-height;
       }
     }
   }
@@ -352,8 +356,8 @@
   &__hero-image-wrapper {
     position: absolute;
     width: 100%;
-    height: globals.$hero-height + 34px;
-    max-height: globals.$hero-height + 34px;
+    height: calc(#{$hero-height} + 34px);
+    max-height: calc(#{$hero-height} + 34px);
     overflow: hidden;
     border-radius: 0px 0px 8px 8px;
     z-index: 0;
@@ -376,15 +380,15 @@
     }
 
     @media (min-width: 1250px) {
-      height: globals.$hero-height + 82px;
-      min-height: globals.$hero-height + 84px;
+      height: calc(#{$hero-height} + 82px);
+      min-height: calc(#{$hero-height} + 84px);
     }
   }
 
   &__hero-image {
     width: 100%;
-    height: globals.$hero-height;
-    min-height: globals.$hero-height;
+    height: $hero-height;
+    min-height: $hero-height;
     object-fit: cover;
     object-position: top;
     transition: all ease 0.2s;
@@ -396,8 +400,8 @@
       // Anchor to the top so a banner taller than the window keeps its top and
       // only the bottom overflow is cropped (upstream centred it → cut the top).
       object-position: top;
-      height: globals.$hero-height;
-      min-height: globals.$hero-height;
+      height: $hero-height;
+      min-height: $hero-height;
     }
 
     &--blurred {

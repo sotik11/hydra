@@ -5,8 +5,9 @@
     display: flex;
     flex-direction: column;
     position: relative;
-    // Match the game-page hero banner; the shared globals.$hero-height drives both.
-    min-height: globals.$hero-height;
+    // Match the game-page hero banner. Both read the runtime --hero-height
+    // (Settings → Appearance), falling back to the shared globals.$hero-height.
+    min-height: var(--hero-height, #{globals.$hero-height});
   }
 
   &__background {

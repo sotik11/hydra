@@ -1,0 +1,113 @@
+@use "../../../scss/globals.scss";
+
+.banner-height-setting {
+  display: flex;
+  flex-direction: column;
+  gap: calc(globals.$spacing-unit * 2);
+  padding: calc(globals.$spacing-unit * 2);
+  margin-bottom: calc(globals.$spacing-unit * 2);
+  background-color: globals.$dark-background-color;
+  border: 1px solid globals.$border-color;
+  border-radius: 8px;
+
+  &__header {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit / 2);
+  }
+
+  &__title {
+    margin: 0;
+    font-size: globals.$body-font-size;
+    font-weight: 700;
+    color: globals.$muted-color;
+  }
+
+  &__description {
+    margin: 0;
+    font-size: globals.$small-font-size;
+    color: globals.$body-color;
+  }
+
+  &__controls {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 2);
+    flex-wrap: wrap;
+  }
+
+  &__slider {
+    flex: 1;
+    min-width: 200px;
+    accent-color: globals.$brand-teal;
+    cursor: pointer;
+  }
+
+  &__value {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit / 2);
+  }
+
+  &__number {
+    width: 72px;
+    padding: calc(globals.$spacing-unit / 2) globals.$spacing-unit;
+    background-color: globals.$background-color;
+    border: 1px solid globals.$border-color;
+    border-radius: 4px;
+    color: globals.$muted-color;
+    font-size: globals.$small-font-size;
+  }
+
+  &__unit {
+    color: globals.$body-color;
+    font-size: globals.$small-font-size;
+  }
+
+  &__reset {
+    padding: calc(globals.$spacing-unit / 2) globals.$spacing-unit;
+    background: transparent;
+    border: 1px solid globals.$border-color;
+    border-radius: 4px;
+    color: globals.$body-color;
+    font-size: globals.$small-font-size;
+    cursor: pointer;
+    transition: all ease 0.2s;
+
+    &:hover:not(:disabled) {
+      color: globals.$muted-color;
+      border-color: globals.$muted-color;
+    }
+
+    &:disabled {
+      opacity: globals.$disabled-opacity;
+      cursor: not-allowed;
+    }
+  }
+
+  &__preview {
+    width: 100%;
+  }
+
+  &__preview-bar {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    border-radius: 6px;
+    background: linear-gradient(
+      135deg,
+      globals.$brand-teal,
+      globals.$brand-blue
+    );
+    overflow: hidden;
+    transition: height ease 0.15s;
+  }
+
+  &__preview-label {
+    padding: globals.$spacing-unit;
+    font-size: globals.$small-font-size;
+    font-weight: 600;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+  }
+}
