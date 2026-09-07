@@ -155,8 +155,8 @@
 
   &__preview-label {
     position: absolute;
-    top: globals.$spacing-unit;
-    left: globals.$spacing-unit;
+    bottom: globals.$spacing-unit;
+    right: globals.$spacing-unit;
     z-index: 2;
     padding: calc(globals.$spacing-unit / 2) globals.$spacing-unit;
     border-radius: 4px;

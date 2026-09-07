@@ -69,8 +69,10 @@
   &__user-information {
     display: flex;
     width: 100%;
-    // Horizontal padding only — the overlay handles vertical centring now.
-    padding: 0 calc(globals.$spacing-unit * 3);
+    // Inset the avatar/name block from the banner edges to match the "change
+    // banner" button (16px). Vertical padding also keeps the block off the top
+    // edge when it's top-aligned; it stays centred when centre-aligned.
+    padding: calc(globals.$spacing-unit * 2);
     align-items: center;
     gap: calc(globals.$spacing-unit * 2);
   }
