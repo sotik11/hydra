@@ -43,7 +43,8 @@ export function BannerHeightSetting() {
 
   const storedHeight = userPreferences?.heroBannerHeight ?? null;
   const storedBannerAlignment = userPreferences?.heroBannerAlignment ?? "top";
-  const storedAvatarAlignment = userPreferences?.heroAvatarAlignment ?? "center";
+  const storedAvatarAlignment =
+    userPreferences?.heroAvatarAlignment ?? "center";
 
   const [value, setValue] = useState(storedHeight ?? DEFAULT_HEIGHT);
   const [draft, setDraft] = useState(String(storedHeight ?? DEFAULT_HEIGHT));
@@ -197,7 +198,11 @@ export function BannerHeightSetting() {
           )}
 
           <div className="banner-height-setting__preview-avatar">
-            {avatarUrl ? <img src={avatarUrl} alt="" /> : <PersonIcon size={20} />}
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="" />
+            ) : (
+              <PersonIcon size={20} />
+            )}
           </div>
 
           <span className="banner-height-setting__preview-label">
