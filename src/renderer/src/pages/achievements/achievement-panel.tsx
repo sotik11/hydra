@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { useTranslation } from "react-i18next";
 import HydraIcon from "@renderer/assets/icons/hydra.svg?react";
 import { UserAchievement } from "@types";
@@ -46,8 +47,20 @@ export function AchievementPanel({ achievements }: AchievementPanelProps) {
     );
   }
 
+  const earnedPointsProgress =
+    achievementsPointsTotal > 0
+      ? (achievementsPointsEarnedSum / achievementsPointsTotal) * 100
+      : 0;
+
   return (
-    <div className="achievement-panel">
+    <div
+      className="achievement-panel"
+      style={
+        {
+          "--earned-points-progress": `${earnedPointsProgress}%`,
+        } as CSSProperties
+      }
+    >
       <div className="achievement-panel__content">
         {t("earned_points")}{" "}
         <HydraIcon className="achievement-panel__content-icon" />
