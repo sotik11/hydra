@@ -21,6 +21,7 @@ import {
  * (`local-` ids): those describe files on this machine, not the account, and
  * are never synced to the profile — so a plain clear would delete them for good
  * (unlike catalogue-matched games, which come back on the next login sync).
+ * They are hidden from the library while signed out (see get-library.ts).
  */
 const clearAccountGames = async () => {
   const entries = await gamesSublevel.iterator().all();

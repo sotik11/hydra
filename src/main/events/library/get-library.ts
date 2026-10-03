@@ -13,6 +13,7 @@ import {
 import { composeAssetsWithArtwork } from "@shared";
 import { HydraApi } from "@main/services/hydra-api";
 import { belongsToLibraryCollection } from "@main/services/library-sync/game-visibility";
+import { isLocalRetroArchEntryId } from "@main/services/retroarch/retroarch-local-entries";
 import {
   resolveAchievementCount,
   resolveUnlockedAchievementCount,
@@ -42,6 +43,11 @@ export const lookupCachedPlatform = async (
 const getLibrary = async (
   collection: "visible" | "hidden" | "all" = "visible"
 ): Promise<LibraryGame[]> => {
+  // Fork: local rom entries survive sign-out (they describe files on this
+  // machine and are not synced to the profile) but stay hidden until the
+  // user signs in again — then they come back with playtime and favourites.
+  const showLocalEntries = HydraApi.isLoggedIn();
+
   return gamesSublevel
     .iterator()
     .all()
@@ -50,6 +56,10 @@ const getLibrary = async (
         results
           .filter(([_key, game]) =>
             belongsToLibraryCollection(game, collection)
+          )
+          .filter(
+            ([_key, game]) =>
+              showLocalEntries || !isLocalRetroArchEntryId(game.objectId)
           )
           .map(async ([key, game]) => {
             const download = await downloadsSublevel.get(key);
