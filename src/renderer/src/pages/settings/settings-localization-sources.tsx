@@ -28,7 +28,7 @@ import { AddLocalizationSourceModal } from "./add-localization-source-modal";
 import { logger } from "@renderer/logger";
 import LocalizationLogo from "@renderer/assets/icons/localization.svg?react";
 import "./settings-debrid.scss";
-import "./settings-retroachievements.scss";
+import "./settings-fork-card.scss";
 import "./settings-localization-sources.scss";
 import "../game-details/modals/localization-i18n";
 
@@ -289,7 +289,7 @@ export function SettingsLocalizationSources() {
           {t("localization:localization_sources")}
         </h3>
         <LocalizationLogo
-          className="settings-retroachievements__title-logo"
+          className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
         {localizationsEnabled && (

@@ -13,7 +13,7 @@ import {
 import CriticScoresLogo from "@renderer/assets/icons/critic-scores.svg?react";
 
 import "./settings-debrid.scss";
-import "./settings-retroachievements.scss";
+import "./settings-fork-card.scss";
 import "./settings-critic-scores.scss";
 import "./critic-scores-i18n";
 
@@ -88,7 +88,7 @@ export function SettingsCriticScores() {
           {t("critic_scores_title")}
         </h3>
         <CriticScoresLogo
-          className="settings-retroachievements__title-logo"
+          className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
         {enabled && (

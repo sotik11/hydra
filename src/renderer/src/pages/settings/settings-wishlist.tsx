@@ -15,7 +15,7 @@ import type { SteamWishlistState } from "@types";
 import steamLogo from "@renderer/assets/icons/steam.png";
 
 import "./settings-debrid.scss";
-import "./settings-retroachievements.scss";
+import "./settings-fork-card.scss";
 import "./settings-wishlist.scss";
 import "./wishlist-i18n";
 
@@ -153,7 +153,7 @@ export function SettingsWishlist() {
   const renderBody = () => {
     if (isLoading) {
       return (
-        <p className="settings-retroachievements__description">
+        <p className="settings-fork-card__description">
           {t("wishlist_loading")}
         </p>
       );
@@ -163,8 +163,8 @@ export function SettingsWishlist() {
       const profileUrl = `https://steamcommunity.com/profiles/${state.profile.steamId64}`;
 
       return (
-        <div className="settings-retroachievements__connected">
-          <div className="settings-retroachievements__profile">
+        <div className="settings-fork-card__connected">
+          <div className="settings-fork-card__profile">
             <div className="settings-wishlist__avatar">
               {state.profile.avatarUrl && !avatarError ? (
                 <img
@@ -177,8 +177,8 @@ export function SettingsWishlist() {
               )}
             </div>
 
-            <div className="settings-retroachievements__account">
-              <span className="settings-retroachievements__username">
+            <div className="settings-fork-card__account">
+              <span className="settings-fork-card__username">
                 {state.profile.personaName}
               </span>
               <button
@@ -189,12 +189,12 @@ export function SettingsWishlist() {
                 <LinkExternalIcon size={12} />
                 {t("wishlist_open_profile")}
               </button>
-              <span className="settings-retroachievements__status">
+              <span className="settings-fork-card__status">
                 <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
                 {t("wishlist_status_wishlist", { count: state.items.length })}
               </span>
               {state.libraryCount != null && (
-                <span className="settings-retroachievements__status">
+                <span className="settings-fork-card__status">
                   <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
                   {t("wishlist_status_library", { count: state.libraryCount })}
                 </span>
@@ -202,7 +202,7 @@ export function SettingsWishlist() {
             </div>
           </div>
 
-          <div className="settings-retroachievements__actions">
+          <div className="settings-fork-card__actions">
             <Button
               theme="outline"
               onClick={handleRefresh}
@@ -226,15 +226,12 @@ export function SettingsWishlist() {
     // Connect stage — mirror the RA form: left-aligned text, full-width fields,
     // Connect button bottom-right, no avatar.
     return (
-      <form
-        className="settings-retroachievements__form"
-        onSubmit={handleConnect}
-      >
-        <div className="settings-retroachievements__description-container">
-          <p className="settings-retroachievements__description">
+      <form className="settings-fork-card__form" onSubmit={handleConnect}>
+        <div className="settings-fork-card__description-container">
+          <p className="settings-fork-card__description">
             {t("wishlist_description")}
           </p>
-          <p className="settings-retroachievements__emulator-note">
+          <p className="settings-fork-card__emulator-note">
             {t("wishlist_privacy_note")}
           </p>
         </div>
@@ -266,7 +263,7 @@ export function SettingsWishlist() {
 
         <Button
           type="submit"
-          className="settings-retroachievements__submit-button"
+          className="settings-fork-card__submit-button"
           disabled={!profileInput.trim() || isSubmitting}
         >
           {t("wishlist_connect")}
@@ -304,7 +301,7 @@ export function SettingsWishlist() {
         <img
           src={steamLogo}
           alt=""
-          className="settings-retroachievements__title-logo"
+          className="settings-fork-card__title-logo"
         />
         {state.connected && (
           <CheckCircleFillIcon

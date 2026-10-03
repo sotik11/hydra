@@ -32,6 +32,7 @@ import {
 import "@renderer/pages/wishlist/wishlist-page-i18n";
 import "./library-i18n";
 import "./library-game-card.scss";
+import "./library-fork-pills.scss";
 import { logger } from "@renderer/logger";
 
 interface LibraryGameCardProps {
@@ -291,10 +292,14 @@ export const LibraryGameCard = memo(function LibraryGameCard({
 
               {showReadyBadge && (
                 <div
-                  className={cn("library-game-card__installed-badge", {
-                    "library-game-card__installed-badge--classics":
-                      classicsEmulatorIcon,
-                  })}
+                  className={cn(
+                    "library-game-card__installed-badge",
+                    "library-game-card__installed-badge--status",
+                    {
+                      "library-game-card__installed-badge--classics":
+                        classicsEmulatorIcon,
+                    }
+                  )}
                   title={t("installed_tooltip")}
                 >
                   {classicsEmulatorIcon ? (
@@ -310,14 +315,14 @@ export const LibraryGameCard = memo(function LibraryGameCard({
                     />
                   )}
                   <span className="library-game-card__installed-text">
-                    {t("installed")}
+                    {t("library_fork:installed_label")}
                   </span>
                 </div>
               )}
 
               {showAvailableBadge && (
                 <div
-                  className="library-game-card__installed-badge"
+                  className="library-game-card__installed-badge library-game-card__installed-badge--status"
                   title={t("wishlist:available_badge")}
                 >
                   <DownloadIcon

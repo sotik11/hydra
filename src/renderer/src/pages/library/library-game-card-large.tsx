@@ -34,6 +34,7 @@ import {
 import "@renderer/pages/wishlist/wishlist-page-i18n";
 import "./library-i18n";
 import "./library-game-card-large.scss";
+import "./library-fork-pills.scss";
 
 interface LibraryGameCardLargeProps {
   game: LibraryGame;
@@ -57,9 +58,13 @@ function InstalledBadge({ emulatorIcon }: Readonly<InstalledBadgeProps>) {
 
   return (
     <div
-      className={cn("library-game-card-large__installed-badge", {
-        "library-game-card-large__installed-badge--classics": emulatorIcon,
-      })}
+      className={cn(
+        "library-game-card-large__installed-badge",
+        "library-game-card-large__installed-badge--status",
+        {
+          "library-game-card-large__installed-badge--classics": emulatorIcon,
+        }
+      )}
       title={t("installed_tooltip")}
     >
       {emulatorIcon ? (
@@ -75,7 +80,7 @@ function InstalledBadge({ emulatorIcon }: Readonly<InstalledBadgeProps>) {
         />
       )}
       <span className="library-game-card-large__installed-text">
-        {t("installed")}
+        {t("library_fork:installed_label")}
       </span>
     </div>
   );
@@ -324,7 +329,7 @@ export const LibraryGameCardLarge = memo(function LibraryGameCardLarge({
   const availableBadge =
     !hideReadySizeBadges && !isInstalled && game.availableToInstall ? (
       <div
-        className="library-game-card-large__installed-badge"
+        className="library-game-card-large__installed-badge library-game-card-large__installed-badge--status"
         title={t("wishlist:available_badge")}
       >
         <DownloadIcon
