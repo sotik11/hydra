@@ -1,4 +1,5 @@
 import type { RetroArchCoreName, RetroArchPlatform } from "@types";
+import { PLATFORM_ROM_EXTENSIONS } from "../../../shared/retroarch-platform.js";
 
 export interface RetroArchCoreDefinition {
   name: RetroArchCoreName;
@@ -73,15 +74,7 @@ export const PLATFORM_TO_CORE: Record<RetroArchPlatform, RetroArchCoreName> = {
   genesis: "genesis_plus_gx",
 };
 
-export const PLATFORM_ROM_EXTENSIONS: Record<RetroArchPlatform, string[]> = {
-  nes: [".nes", ".fds"],
-  snes: [".sfc", ".smc"],
-  n64: [".n64", ".z64", ".v64"],
-  gb: [".gb"],
-  gbc: [".gbc"],
-  gba: [".gba"],
-  genesis: [".bin", ".smd", ".md", ".gen"],
-};
+export { PLATFORM_ROM_EXTENSIONS } from "../../../shared/retroarch-platform.js";
 
 export const PLATFORM_TO_LAUNCHBOX_NAME: Record<RetroArchPlatform, string> = {
   nes: "Nintendo Entertainment System",

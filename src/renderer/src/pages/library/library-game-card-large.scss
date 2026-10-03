@@ -214,10 +214,7 @@
     margin-left: auto;
   }
 
-  // Status / Steam pills reuse the stock installed-badge look (like playtime);
-  // only the accent colour changes per state.
   &__installed-badge {
-    flex-shrink: 0;
     background: rgba(0, 0, 0, 0.4);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
@@ -234,18 +231,10 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
     font-size: 12px;
     font-weight: 500;
-
-    &--status {
-      color: #22c55e;
-    }
-
-    &--steam {
-      color: #7dd3fc;
-    }
   }
 
   &__installed-icon {
-    color: inherit;
+    color: #fff;
     flex-shrink: 0;
   }
 

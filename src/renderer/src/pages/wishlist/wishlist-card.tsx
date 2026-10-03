@@ -17,7 +17,7 @@ import { levelDBService } from "@renderer/services/leveldb.service";
 import { logger } from "@renderer/logger";
 import type { DownloadSource, GameRepack, WishlistGame } from "@types";
 
-import { SteamIcon } from "@renderer/pages/library/category-filter";
+import { SteamIcon } from "@renderer/components/steam-library-badge/steam-library-badge";
 import HydraLogo from "@renderer/assets/icons/hydra.svg?react";
 import "./wishlist-card.scss";
 

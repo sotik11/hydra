@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { retroArchConfigRoots } from "./detect-retroarch";
+import { retroArchConfigRoots } from "./retroarch-config-paths";
 import { logger } from "../logger";
 
 // RetroArch's menu-toggle gamepad combo enum: 4 = Start + Select. Without a

@@ -1,4 +1,5 @@
 import { LibraryGame } from "@types";
+import { getDisplayedPlayTimeInMilliseconds } from "@shared";
 import cn from "classnames";
 import {
   useGameCard,
@@ -11,8 +12,10 @@ import {
   CLASSICS_PS_PLATFORM_LABELS,
   isGameReadyToPlay,
   resolveClassicsBadge,
+  shouldShowSteamLibraryBadge,
 } from "@renderer/helpers";
-import { AchievementProgress } from "@renderer/components";
+import { AchievementProgress, SteamLibraryBadge } from "@renderer/components";
+import { GameVisibilityBadge } from "@renderer/components/game-visibility-badge/game-visibility-badge";
 import { memo, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
@@ -22,13 +25,12 @@ import {
   CheckCircleFillIcon,
   DownloadIcon,
 } from "@primer/octicons-react";
-import { SteamIcon } from "@renderer/pages/library/category-filter";
-import "@renderer/pages/wishlist/wishlist-page-i18n";
-import "./library-i18n";
 import {
   EMULATOR_ICONS,
   RETROARCH_EMULATOR_ICON,
 } from "@renderer/pages/settings/emulation/emulator-icons";
+import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "./library-i18n";
 import "./library-game-card.scss";
 import { logger } from "@renderer/logger";
 
@@ -40,13 +42,11 @@ interface LibraryGameCardProps {
   ) => void;
   onShowTooltip?: (gameId: string) => void;
   onHideTooltip?: () => void;
-  viewMode?: string;
 }
 
 export const LibraryGameCard = memo(function LibraryGameCard({
   game,
   onContextMenu,
-  viewMode,
 }: Readonly<LibraryGameCardProps>) {
   const { t } = useTranslation("library");
   const { formatPlayTime, handleCardClick, handleContextMenuClick } =
@@ -56,21 +56,20 @@ export const LibraryGameCard = memo(function LibraryGameCard({
     (state) => state.userPreferences.value
   );
   const hideBadges = userPreferences?.hideLibraryGameBadges ?? false;
+  const hideReadySizeBadges =
+    userPreferences?.hideLibraryReadySizeBadges ?? false;
   const hideClassicsBadges =
     userPreferences?.hideLibraryClassicsBadges ?? false;
+  const showSteamLibraryBadge = shouldShowSteamLibraryBadge(
+    game,
+    userPreferences?.hideSteamLibraryBadges
+  );
   const hideAchievementProgress =
     userPreferences?.hideLibraryAchievementProgress ?? false;
   const autoplayAnimatedArtwork =
     userPreferences?.autoplayAnimatedArtwork ?? false;
 
   const isInstalled = isGameReadyToPlay(game);
-
-  // On a compact (small) cover with all three top badges (playtime + status +
-  // Steam) the row runs out of room, so drop the icons from the playtime and
-  // Steam pills and keep just their labels. The wider grid view keeps them.
-  const hasStatusPill = isInstalled || Boolean(game.availableToInstall);
-  const hideBadgeIcons =
-    viewMode === "compact" && hasStatusPill && Boolean(game.steamLibraryImport);
 
   const hasPickedCover = Boolean(game.selectedArtworkTypes?.includes("grid"));
 
@@ -146,6 +145,14 @@ export const LibraryGameCard = memo(function LibraryGameCard({
         retroarchIcon: RETROARCH_EMULATOR_ICON,
       }
     );
+
+  const showPlatformBadge =
+    !hideClassicsBadges && Boolean(classicsPlatformLabel);
+  const showReadyBadge = !hideReadySizeBadges && isInstalled;
+  // Fork: "Available" pill for games added from the wishlist that are not
+  // installed yet. Reuses the stock installed-badge styling.
+  const showAvailableBadge =
+    !hideReadySizeBadges && !isInstalled && Boolean(game.availableToInstall);
 
   const handleImageError = () => {
     logger.warn(`Image failed to load for ${game.title}`, {
@@ -233,95 +240,112 @@ export const LibraryGameCard = memo(function LibraryGameCard({
           "library-game-card__overlay--classics":
             game.shop === "launchbox" && !isChosenCoverActive,
           "library-game-card__overlay--no-fade":
-            hideAchievementProgress || (game.achievementCount ?? 0) === 0,
+            hideAchievementProgress ||
+            ((game.achievementCount ?? 0) === 0 &&
+              (game.unlockedAchievementCount ?? 0) === 0),
         })}
       >
         <div className="library-game-card__top-section">
-          {!hideBadges && (
-            <div className="library-game-card__playtime">
-              {!hideBadgeIcons &&
-                (game.hasManuallyUpdatedPlaytime ? (
+          <div className="library-game-card__top-left">
+            <GameVisibilityBadge
+              isHiddenFromOthers={game.isHiddenFromOthers}
+              isConcealed={game.isConcealed}
+            />
+            {!hideBadges && (
+              <div className="library-game-card__playtime">
+                {game.hasManuallyUpdatedPlaytime ? (
                   <AlertFillIcon
                     size={11}
                     className="library-game-card__manual-playtime"
                   />
                 ) : (
                   <ClockIcon size={11} />
-                ))}
-              <span className="library-game-card__playtime-long">
-                {formatPlayTime(game.playTimeInMilliseconds)}
-              </span>
-              <span className="library-game-card__playtime-short">
-                {formatPlayTime(game.playTimeInMilliseconds, true)}
-              </span>
-            </div>
-          )}
-
-          <div className="library-game-card__top-right">
-            {!hideClassicsBadges && classicsPlatformLabel && (
-              <div className="library-game-card__classics-badges">
-                <span className="library-game-card__platform-badge">
-                  {classicsPlatformLabel}
-                </span>
-                {classicsEmulatorIcon && (
-                  <span className="library-game-card__emulator-badge">
-                    <img src={classicsEmulatorIcon} alt="" />
-                  </span>
                 )}
+                <span className="library-game-card__playtime-long">
+                  {formatPlayTime(getDisplayedPlayTimeInMilliseconds(game))}
+                </span>
+                <span className="library-game-card__playtime-short">
+                  {formatPlayTime(
+                    getDisplayedPlayTimeInMilliseconds(game),
+                    true
+                  )}
+                </span>
               </div>
             )}
+          </div>
 
-            {/* Fork pills (respect the upstream "hide badges" setting). Status
-                pill: "Installed" once installed, otherwise "Available" (carried
-                from the wishlist). Same slot, mutually exclusive. */}
-            {!hideBadges &&
-              (isInstalled ? (
+          {(showSteamLibraryBadge ||
+            showPlatformBadge ||
+            showReadyBadge ||
+            showAvailableBadge) && (
+            <div className="library-game-card__top-right">
+              {showSteamLibraryBadge && <SteamLibraryBadge />}
+
+              {showPlatformBadge && (
+                <div className="library-game-card__classics-badges">
+                  <span className="library-game-card__platform-badge">
+                    {classicsPlatformLabel}
+                  </span>
+                </div>
+              )}
+
+              {showReadyBadge && (
                 <div
-                  className="library-game-card__installed-badge library-game-card__installed-badge--status"
+                  className={cn("library-game-card__installed-badge", {
+                    "library-game-card__installed-badge--classics":
+                      classicsEmulatorIcon,
+                  })}
                   title={t("installed_tooltip")}
                 >
-                  {!hideBadgeIcons && (
+                  {classicsEmulatorIcon ? (
+                    <img
+                      src={classicsEmulatorIcon}
+                      alt=""
+                      className="library-game-card__installed-emulator-icon"
+                    />
+                  ) : (
                     <CheckCircleFillIcon
                       size={11}
                       className="library-game-card__installed-icon"
                     />
                   )}
                   <span className="library-game-card__installed-text">
-                    {t("library_fork:installed_label")}
+                    {t("installed")}
                   </span>
                 </div>
-              ) : (
-                game.availableToInstall && (
-                  <div
-                    className="library-game-card__installed-badge library-game-card__installed-badge--status"
-                    title={t("wishlist:available_badge")}
-                  >
-                    {!hideBadgeIcons && <DownloadIcon size={11} />}
-                    <span className="library-game-card__installed-text">
-                      {t("library_fork:available_label")}
-                    </span>
-                  </div>
-                )
-              ))}
+              )}
 
-            {/* Steam pill (same stock style, light-blue accent). */}
-            {!hideBadges && game.steamLibraryImport && (
-              <div className="library-game-card__installed-badge library-game-card__installed-badge--steam">
-                {!hideBadgeIcons && <SteamIcon size={12} />}
-                <span className="library-game-card__installed-text">Steam</span>
-              </div>
-            )}
-          </div>
+              {showAvailableBadge && (
+                <div
+                  className="library-game-card__installed-badge"
+                  title={t("wishlist:available_badge")}
+                >
+                  <DownloadIcon
+                    size={11}
+                    className="library-game-card__installed-icon"
+                  />
+                  <span className="library-game-card__installed-text">
+                    {t("library_fork:available_label")}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
-        {!hideAchievementProgress && (game.achievementCount ?? 0) > 0 && (
-          <AchievementProgress
-            achievementCount={game.achievementCount ?? 0}
-            unlockedAchievementCount={game.unlockedAchievementCount ?? 0}
-            classNamePrefix="library-game-card"
-            label={`${game.title} achievements`}
-          />
-        )}
+        {!hideAchievementProgress &&
+          ((game.achievementCount ?? 0) > 0 ||
+            (game.unlockedAchievementCount ?? 0) > 0) && (
+            <AchievementProgress
+              achievementCount={Math.max(
+                game.achievementCount ?? 0,
+                game.unlockedAchievementCount ?? 0
+              )}
+              unlockedAchievementCount={game.unlockedAchievementCount ?? 0}
+              classNamePrefix="library-game-card"
+              label={`${game.title} achievements`}
+            />
+          )}
       </div>
 
       {renderCoverMedia()}
