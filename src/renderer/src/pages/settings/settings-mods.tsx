@@ -16,7 +16,7 @@ import type { NexusModsState } from "@types";
 import NexusLogo from "@renderer/assets/icons/nexus.svg?react";
 
 import "./settings-debrid.scss";
-import "./settings-retroachievements.scss";
+import "./settings-fork-card.scss";
 import "./settings-wishlist.scss";
 import "./mods-i18n";
 
@@ -147,9 +147,7 @@ export function SettingsMods() {
   const renderBody = () => {
     if (isLoading) {
       return (
-        <p className="settings-retroachievements__description">
-          {t("mods_loading")}
-        </p>
+        <p className="settings-fork-card__description">{t("mods_loading")}</p>
       );
     }
 
@@ -157,8 +155,8 @@ export function SettingsMods() {
       const profileUrl = `https://www.nexusmods.com/users/${state.profile.userId}`;
 
       return (
-        <div className="settings-retroachievements__connected">
-          <div className="settings-retroachievements__profile">
+        <div className="settings-fork-card__connected">
+          <div className="settings-fork-card__profile">
             <div className="settings-wishlist__avatar">
               {state.profile.avatarUrl && !avatarError ? (
                 <img
@@ -171,8 +169,8 @@ export function SettingsMods() {
               )}
             </div>
 
-            <div className="settings-retroachievements__account">
-              <span className="settings-retroachievements__username">
+            <div className="settings-fork-card__account">
+              <span className="settings-fork-card__username">
                 {state.profile.name}
               </span>
               <button
@@ -183,41 +181,23 @@ export function SettingsMods() {
                 <LinkExternalIcon size={12} />
                 {t("mods_open_profile")}
               </button>
-              <span className="settings-retroachievements__status">
+              <span className="settings-fork-card__status">
                 <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
                 {t("mods_status_connected")}
               </span>
-              <span className="settings-retroachievements__status">
+              <span className="settings-fork-card__status">
                 <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
                 {state.profile.isPremium
                   ? t("mods_status_premium")
                   : t("mods_status_free")}
               </span>
               {state.matchedCount != null && (
-                <span className="settings-retroachievements__status">
+                <span className="settings-fork-card__status">
                   <CheckCircleFillIcon size={STATUS_ICON_SIZE} />
                   {t("mods_status_matched", { count: state.matchedCount })}
                 </span>
               )}
             </div>
-          </div>
-
-          <div className="settings-retroachievements__actions">
-            <Button
-              theme="outline"
-              onClick={handleRefresh}
-              disabled={isRefreshing || isSubmitting}
-            >
-              <SyncIcon size={STATUS_ICON_SIZE} />
-              {t("mods_update")}
-            </Button>
-            <Button
-              theme="danger"
-              onClick={handleDisconnect}
-              disabled={isSubmitting || isRefreshing}
-            >
-              {t("mods_disconnect")}
-            </Button>
           </div>
         </div>
       );
@@ -226,15 +206,12 @@ export function SettingsMods() {
     // Connect stage — mirror the wishlist/RA form: left-aligned text, full-width
     // key field, Connect button bottom-right.
     return (
-      <form
-        className="settings-retroachievements__form"
-        onSubmit={handleConnect}
-      >
-        <div className="settings-retroachievements__description-container">
-          <p className="settings-retroachievements__description">
+      <form className="settings-fork-card__form" onSubmit={handleConnect}>
+        <div className="settings-fork-card__description-container">
+          <p className="settings-fork-card__description">
             {t("mods_description")}
           </p>
-          <p className="settings-retroachievements__emulator-note">
+          <p className="settings-fork-card__emulator-note">
             {t("mods_privacy_note")}
           </p>
         </div>
@@ -259,7 +236,7 @@ export function SettingsMods() {
 
         <Button
           type="submit"
-          className="settings-retroachievements__submit-button"
+          className="settings-fork-card__submit-button"
           disabled={!apiKeyInput.trim() || isSubmitting}
         >
           {t("mods_connect")}
@@ -291,7 +268,7 @@ export function SettingsMods() {
         </button>
         <h3 className="settings-debrid__section-title">{t("mods_title")}</h3>
         <NexusLogo
-          className="settings-retroachievements__title-logo"
+          className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
         {state.connected && (
@@ -299,6 +276,25 @@ export function SettingsMods() {
             size={CHEVRON_ICON_SIZE}
             className="settings-debrid__check-icon"
           />
+        )}
+        {!isLoading && state.connected && state.profile && (
+          <div className="settings-fork-card__header-actions">
+            <Button
+              theme="outline"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isSubmitting}
+            >
+              <SyncIcon size={STATUS_ICON_SIZE} />
+              {t("mods_update")}
+            </Button>
+            <Button
+              theme="danger"
+              onClick={handleDisconnect}
+              disabled={isSubmitting || isRefreshing}
+            >
+              {t("mods_disconnect")}
+            </Button>
+          </div>
         )}
       </div>
 

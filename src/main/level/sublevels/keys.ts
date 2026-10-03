@@ -34,8 +34,8 @@ export const levelKeys = {
   localSouvenirAssets: "local-souvenir-assets",
   steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
   wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
+  localGameSetup: "localGameSetup", // machine-local game setup kept across sign-out (fork)
   wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)
-  steamLibraryImportAppIds: "steamLibraryImportAppIds", // durable set of imported Steam appIds (fork; survives cloud sync/logout)
   nexusMods: "nexusMods", // Nexus games catalogue cache + match map (fork feature)
   globalTrackersUrlCache: "globalTrackersUrlCache",
   ps2MemoryCardSaves: "ps2MemoryCardSaves",
@@ -49,6 +49,11 @@ export const levelKeys = {
   cloudSaveSyncAnchors: "cloud-save-sync-anchors",
   cloudSaveAutomaticSyncSettings: "cloud-save-automatic-sync-settings",
   cloudSaveV2DefaultMigration: "cloud-save-v2-default-migration",
+  gameVisibilityRenameMigration: "game-visibility-rename-migration",
   cloudSaveCustomPaths: "cloud-save-custom-paths",
+  cloudSaveRpcs3ProfileBindings: "cloud-save-rpcs3-profile-bindings",
+  cloudSaveEmulatorDestinations: "cloud-save-emulator-destinations",
+  cloudSaveRetroArchBindings: "cloud-save-retroarch-bindings",
   cloudSavePendingDeletions: "cloud-save-pending-deletions",
+  steamSyncRun: "steamSyncRun",
 };

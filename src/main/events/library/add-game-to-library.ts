@@ -55,6 +55,7 @@ const addGameToLibrary = async (
 
     game.isDeleted = false;
     game.addedToLibraryAt ??= new Date();
+    game.source = "hydra";
     if (resolvedPlatform && !game.platform) game.platform = resolvedPlatform;
     // Fork: mark "available to install" (carried from the wishlist) until the
     // game is actually installed; the executable path clears it below.
@@ -77,6 +78,7 @@ const addGameToLibrary = async (
       addedToLibraryAt: new Date(),
       platform: resolvedPlatform ?? null,
       availableToInstall: Boolean(availableToInstall),
+      source: "hydra",
     };
 
     await gamesSublevel.put(gameKey, game);

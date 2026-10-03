@@ -1,0 +1,101 @@
+@use "../../scss/globals.scss";
+
+// Fork-owned styles for the fork's integration sections (wishlist, mods, critic
+// scores, localization sources). They used to borrow the upstream
+// settings-retroachievements classes, which upstream reworked in 4.1.4+.
+.settings-fork-card {
+  &__form {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__submit-button {
+    align-self: flex-end;
+  }
+
+  &__description-container {
+    display: flex;
+    flex-direction: column;
+    gap: globals.$spacing-unit;
+    align-items: flex-start;
+  }
+
+  &__emulator-note {
+    margin: 0;
+    color: var(--text-secondary);
+    font-size: globals.$small-font-size;
+    line-height: 1.5;
+  }
+
+  &__connected {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__profile {
+    display: flex;
+    align-items: center;
+    gap: calc(globals.$spacing-unit * 2);
+  }
+
+  &__account {
+    display: flex;
+    flex-direction: column;
+    gap: calc(globals.$spacing-unit / 2);
+  }
+
+  &__username {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+
+  &__status {
+    display: flex;
+    align-items: center;
+    gap: globals.$spacing-unit;
+    color: #c0c1c7;
+    font-size: globals.$small-font-size;
+
+    &--warning {
+      color: globals.$warning-color;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: globals.$spacing-unit;
+  }
+
+  // Action buttons on the section's title row (right-aligned), like the
+  // upstream integration cards.
+  &__header-actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: globals.$spacing-unit;
+  }
+
+  &__title-logo {
+    width: 18px;
+    height: 18px;
+    object-fit: contain;
+    flex-shrink: 0;
+  }
+}
+
+// Fork: upstream integration cards (Steam, RetroAchievements, …) use the same
+// round 80px avatar as the fork sections. Pure override — the upstream
+// stylesheet is untouched; the doubled class only raises specificity.
+.settings-integration-card__avatar.settings-integration-card__avatar {
+  width: 80px;
+  height: 80px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+}

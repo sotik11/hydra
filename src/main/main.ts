@@ -29,11 +29,18 @@ import {
   migrateCloudSaveAutomaticSyncDefaults,
   groupedSouvenirWorker,
 } from "@main/services";
-import { checkWishlistReminders } from "@main/services/steam-wishlist";
+import {
+  checkWishlistReminders,
+  migrateLegacyForkSteam,
+} from "@main/services/steam-wishlist";
 import { migrateDownloadSources } from "./helpers/migrate-download-sources";
 import { getDirSize } from "./services/download/helpers";
 import { GofileApi } from "./services/hosters";
 import { clearLegacyAchievementPersistence } from "./level/clear-legacy-achievements";
+import { startSteamSyncOnStartup } from "./services/steam-integration/steam-startup-sync";
+import { migrateEmulatorCloudSaveDefaults } from "./services/cloud-save/automatic-sync-emulator-migration";
+import { watchSteamLibraries } from "./services/steam-integration/steam-install-watcher";
+import { migrateGameVisibilityFields } from "./services/library-sync/game-visibility-migration";
 
 const hasMissingSeedFiles = async (download: Download): Promise<boolean> => {
   if (!download.folderName) return false;
@@ -61,6 +68,8 @@ export const loadState = async () => {
   await Lock.acquireLock();
   await clearLegacyAchievementPersistence();
   await migrateCloudSaveAutomaticSyncDefaults();
+  await migrateEmulatorCloudSaveDefaults();
+  await migrateGameVisibilityFields();
 
   const userPreferences = await db.get<string, UserPreferences | null>(
     levelKeys.userPreferences,
@@ -120,6 +129,11 @@ export const loadState = async () => {
     DeckyPlugin.checkAndUpdateIfOutdated();
   }
 
+  void watchSteamLibraries();
+
+  // Fork: one-off cleanup of the pre-4.1.6 fork Steam integration.
+  await migrateLegacyForkSteam().catch(() => {});
+
   await HydraApi.setupApi().then(async () => {
     uploadGamesBatch();
     void migrateDownloadSources();
@@ -137,6 +151,7 @@ export const loadState = async () => {
     if (HydraApi.isLoggedIn()) {
       SSEClient.connect();
       void groupedSouvenirWorker.trigger();
+      void startSteamSyncOnStartup();
     }
   });
 
@@ -194,18 +209,17 @@ export const loadState = async () => {
     );
   }
 
-  // For torrents use Python RPC; HTTP downloads use JS downloader.
+  // Torrents use the native service; HTTP downloads use the JS downloader.
   const isTorrent = downloadToResume?.downloader === Downloader.Torrent;
   if (downloadToResume && !isTorrent) {
-    // Start Python RPC for seeding only, then resume HTTP download with JS
-    await DownloadManager.startRPC(undefined, downloadsToSeed);
+    // Initialize torrent seeding, then resume the HTTP download with JS.
+    await DownloadManager.initializeTorrentService(undefined, downloadsToSeed);
     await DownloadManager.startDownload(downloadToResume).catch((err) => {
       // If resume fails, just log it - user can manually retry
       logger.error("Failed to auto-resume download:", err);
     });
   } else {
-    // Use Python RPC for everything (torrent or fallback)
-    await DownloadManager.startRPC(
+    await DownloadManager.initializeTorrentService(
       downloadToResume ?? undefined,
       downloadsToSeed
     );

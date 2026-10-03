@@ -11,6 +11,10 @@ import {
 } from "../emulators/detect-emulator";
 import { getEmulatorVersion } from "../emulators/get-emulator-version";
 import { SystemPath } from "../system-path";
+import {
+  retroArchConfigCandidates,
+  retroArchConfigRoots,
+} from "./retroarch-config-paths";
 
 export const RETROARCH_DETECTABLE: DetectableBinary = {
   binary: "retroarch",
@@ -111,17 +115,17 @@ const resolveLibretroPath = (raw: string, cfgPath: string): string => {
   return path.isAbsolute(raw) ? raw : path.join(path.dirname(cfgPath), raw);
 };
 
-// Read a raw path-valued setting (e.g. libretro_directory / system_directory)
-// from a retroarch.cfg, unquoted. Returns null when absent/empty.
-const readCfgRawValue = (cfgPath: string, key: string): string | null => {
+const readLibretroDirectory = (cfgPath: string): string | null => {
   try {
     const content = fs.readFileSync(cfgPath, "utf8");
     for (const line of content.split("\n")) {
       const eq = line.indexOf("=");
       if (eq === -1) continue;
-      if (line.slice(0, eq).trim() !== key) continue;
+      if (line.slice(0, eq).trim() !== "libretro_directory") continue;
+
       const raw = stripQuotes(line.slice(eq + 1).trim());
-      return raw || null;
+      if (!raw) return null;
+      return resolveLibretroPath(raw, cfgPath);
     }
     return null;
   } catch {
@@ -129,70 +133,13 @@ const readCfgRawValue = (cfgPath: string, key: string): string | null => {
   }
 };
 
-const readLibretroDirectory = (cfgPath: string): string | null => {
-  const raw = readCfgRawValue(cfgPath, "libretro_directory");
-  return raw ? resolveLibretroPath(raw, cfgPath) : null;
-};
-
-export const retroArchConfigRoots = (executablePath: string): string[] => {
-  const home = os.homedir();
-
-  if (executablePath.includes("org.libretro.RetroArch")) {
-    return [
-      path.join(
-        home,
-        ".var",
-        "app",
-        "org.libretro.RetroArch",
-        "config",
-        "retroarch"
-      ),
-    ];
-  }
-
-  const roots = [path.dirname(executablePath)];
-  if (process.platform === "win32") {
-    const appData = process.env.APPDATA;
-    if (appData) roots.push(path.join(appData, "RetroArch"));
-  } else if (process.platform === "darwin") {
-    roots.push(path.join(home, "Library", "Application Support", "RetroArch"));
-  } else {
-    roots.push(path.join(home, ".config", "retroarch"));
-  }
-  return roots;
-};
-
-// Resolves RetroArch's system directory (where cores look for BIOS/assets, e.g.
-// system/PPSSPP). Honors a custom `system_directory` from the user's config
-// (their RA folder may be non-standard), treating "default"/absent as
-// <config root>/system. Returns a path even if it doesn't exist yet (callers
-// create it).
-export const detectRetroArchSystemDir = (executablePath: string): string => {
-  const roots = retroArchConfigRoots(executablePath);
-
-  for (const root of roots) {
-    const raw = readCfgRawValue(
-      path.join(root, "retroarch.cfg"),
-      "system_directory"
-    );
-    if (raw && raw.toLowerCase() !== "default") {
-      return resolveLibretroPath(raw, path.join(root, "retroarch.cfg"));
-    }
-  }
-
-  for (const root of roots) {
-    if (isDirectory(root)) return path.join(root, "system");
-  }
-  return path.join(roots[0], "system");
-};
-
 export const detectRetroArchCoresDir = (
   executablePath: string
 ): string | null => {
   const roots = retroArchConfigRoots(executablePath);
 
-  for (const root of roots) {
-    const resolved = readLibretroDirectory(path.join(root, "retroarch.cfg"));
+  for (const configPath of retroArchConfigCandidates(executablePath)) {
+    const resolved = readLibretroDirectory(configPath);
     if (resolved && isDirectory(resolved)) return resolved;
   }
   for (const root of roots) {

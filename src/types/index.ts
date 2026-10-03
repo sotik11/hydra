@@ -233,7 +233,10 @@ export type UserGame = {
   achievementCount: number;
   achievementsPointsEarnedSum: number;
   hasManuallyUpdatedPlaytime: boolean;
+  hasActiveSteamImport?: boolean;
   isFavorite: boolean;
+  isHiddenFromOthers?: boolean;
+  isConcealed?: boolean;
   isPinned: boolean;
   pinnedDate?: Date | null;
   customLibraryImageUrl?: string | null;
@@ -353,6 +356,7 @@ export interface UserRelation {
 export type UserProfileCurrentGame = GameRunning &
   ShopAssets & {
     sessionDurationInSeconds: number;
+    isHiddenFromOthers?: boolean;
   };
 
 export type ProfileVisibility = "PUBLIC" | "PRIVATE" | "FRIENDS";
@@ -849,6 +853,7 @@ export type UserGameDetails = ShopAssets & {
 
 export * from "./game.types";
 export * from "./steam.types";
+export * from "./steam-integration.types";
 export * from "./download.types";
 export * from "./ludusavi.types";
 export * from "./how-long-to-beat.types";
@@ -859,3 +864,8 @@ export * from "./retroarch.types";
 export * from "./artwork.types";
 export * from "./cloud-save.types";
 export * from "./souvenir.types";
+
+export type ExtractionFailure =
+  | { reason: "unsupported-format"; format: string }
+  | { reason: "file-not-found" };
+export type { SystemPowerAction } from "./system-power";

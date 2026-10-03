@@ -45,15 +45,18 @@ export interface Game {
   customOriginalHeroPath?: string | null;
   customOriginalCoverPath?: string | null;
   playTimeInMilliseconds: number;
+  steamPlayTimeInMilliseconds?: number;
+  hasActiveSteamImport?: boolean;
+  enableHydraPlaytimeTracking?: boolean;
   unsyncedDeltaPlayTimeInMilliseconds?: number;
   lastTimePlayed: Date | null;
   addedToLibraryAt?: Date | null;
   objectId: string;
   shop: GameShop;
   remoteId: string | null;
+  source?: "hydra" | "steam";
   collectionIds?: string[];
   isDeleted: boolean;
-  steamLibraryImport?: boolean;
   // Fork: carried over from the wishlist "download available" state when the
   // game is added to the library, so the card can show an "available to install"
   // marker until it's actually installed.
@@ -68,6 +71,8 @@ export interface Game {
   autoRunMangohud?: boolean | null;
   autoRunGamemode?: boolean | null;
   favorite?: boolean;
+  isHiddenFromOthers?: boolean;
+  isConcealed?: boolean;
   isPinned?: boolean;
   achievementCount?: number;
   unlockedAchievementCount?: number;
@@ -151,12 +156,6 @@ export interface UserPreferences {
   torBoxApiToken?: string | null;
   retroAchievementsWebApiKey?: string | null;
   retroAchievementsUsername?: string | null;
-  steamWishlistSteamId?: string | null;
-  steamWishlistPersonaName?: string | null;
-  steamWishlistAvatarUrl?: string | null;
-  steamWishlistSyncedAt?: number | null;
-  steamWishlistApiKey?: string | null;
-  steamWishlistLibraryCount?: number | null;
   nexusApiKey?: string | null;
   nexusUserId?: number | null;
   nexusUserName?: string | null;
@@ -209,9 +208,12 @@ export interface UserPreferences {
   hideClassicsBookmark?: boolean;
   classicsUseHeroLayout?: boolean;
   hideLibraryGameBadges?: boolean;
+  hideLibraryReadySizeBadges?: boolean;
   hideLibraryClassicsBadges?: boolean;
+  hideSteamLibraryBadges?: boolean;
   hideLibraryAchievementProgress?: boolean;
   autoplayAnimatedArtwork?: boolean;
+  persistFiltersAndSorting?: boolean;
   // Fork: "Game rating & scores" integration. Master toggle + per-source flags.
   criticScoresEnabled?: boolean;
   criticScoresMetacriticEnabled?: boolean;

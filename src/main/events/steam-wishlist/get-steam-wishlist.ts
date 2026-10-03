@@ -1,45 +1,9 @@
 import { registerEvent } from "../register-event";
-import { db, levelKeys, steamWishlistSublevel } from "@main/level";
-import type { SteamWishlistState, UserPreferences } from "@types";
+import { getSteamWishlistSummary } from "@main/services/steam-wishlist";
+import type { SteamWishlistSummary } from "@types";
 
-// Rebuild the wishlist state from what's stored: profile fields, API-key
-// presence and library count live in user preferences, the (potentially large)
-// item list lives in its own sublevel.
-const getSteamWishlist = async (): Promise<SteamWishlistState> => {
-  const userPreferences = await db
-    .get<string, UserPreferences | null>(levelKeys.userPreferences, {
-      valueEncoding: "json",
-    })
-    .catch(() => null);
-
-  const steamId = userPreferences?.steamWishlistSteamId;
-
-  if (!steamId) {
-    return {
-      connected: false,
-      profile: null,
-      items: [],
-      syncedAt: null,
-      hasApiKey: false,
-      libraryCount: null,
-    };
-  }
-
-  const items =
-    (await steamWishlistSublevel.get(steamId).catch(() => null)) ?? [];
-
-  return {
-    connected: true,
-    profile: {
-      steamId64: steamId,
-      personaName: userPreferences?.steamWishlistPersonaName ?? steamId,
-      avatarUrl: userPreferences?.steamWishlistAvatarUrl ?? "",
-    },
-    items,
-    syncedAt: userPreferences?.steamWishlistSyncedAt ?? null,
-    hasApiKey: Boolean(userPreferences?.steamWishlistApiKey),
-    libraryCount: userPreferences?.steamWishlistLibraryCount ?? null,
-  };
-};
+// What is cached from the last successful Steam wishlist sync (count + time).
+const getSteamWishlist = (): Promise<SteamWishlistSummary> =>
+  getSteamWishlistSummary();
 
 registerEvent("getSteamWishlist", getSteamWishlist);

@@ -11,7 +11,13 @@ import {
   gamesSublevel,
 } from "@main/level";
 import { composeAssetsWithArtwork } from "@shared";
-import { AchievementMemoryStore } from "@main/services/achievements/achievement-memory-store";
+import { HydraApi } from "@main/services/hydra-api";
+import { belongsToLibraryCollection } from "@main/services/library-sync/game-visibility";
+import { isLocalRetroArchEntryId } from "@main/services/retroarch/retroarch-local-entries";
+import {
+  resolveAchievementCount,
+  resolveUnlockedAchievementCount,
+} from "@main/services/achievements/achievement-memory-store";
 
 export const lookupCachedPlatform = async (
   gameKey: string
@@ -34,14 +40,27 @@ export const lookupCachedPlatform = async (
   return null;
 };
 
-const getLibrary = async (): Promise<LibraryGame[]> => {
+const getLibrary = async (
+  collection: "visible" | "hidden" | "all" = "visible"
+): Promise<LibraryGame[]> => {
+  // Fork: local rom entries survive sign-out (they describe files on this
+  // machine and are not synced to the profile) but stay hidden until the
+  // user signs in again — then they come back with playtime and favourites.
+  const showLocalEntries = HydraApi.isLoggedIn();
+
   return gamesSublevel
     .iterator()
     .all()
     .then((results) => {
       return Promise.all(
         results
-          .filter(([_key, game]) => game.isDeleted === false)
+          .filter(([_key, game]) =>
+            belongsToLibraryCollection(game, collection)
+          )
+          .filter(
+            ([_key, game]) =>
+              showLocalEntries || !isLocalRetroArchEntryId(game.objectId)
+          )
           .map(async ([key, game]) => {
             const download = await downloadsSublevel.get(key);
             const gameAssets = await gamesShopAssetsSublevel.get(key);
@@ -51,26 +70,11 @@ const getLibrary = async (): Promise<LibraryGame[]> => {
               gameAssets ?? null,
               artworkSelection
             );
-            const achievements = AchievementMemoryStore.get(
+            const unlockedAchievementCount = resolveUnlockedAchievementCount(
               game.shop,
-              game.objectId
+              game.objectId,
+              game.unlockedAchievementCount
             );
-
-            const validAchievementNames = new Set(
-              achievements?.achievements?.map((a) =>
-                (a.name ?? "").toUpperCase()
-              ) || []
-            );
-
-            const unlockedAchievementCount =
-              achievements?.unlockedAchievements?.filter(
-                (unlocked) =>
-                  validAchievementNames.has(
-                    (unlocked.name ?? "").toUpperCase()
-                  ) && unlocked.unlockTime > 0
-              ).length ??
-              game.unlockedAchievementCount ??
-              0;
 
             // Verify installer still exists, clear if deleted externally
             let installerSizeInBytes = game.installerSizeInBytes;
@@ -119,7 +123,11 @@ const getLibrary = async (): Promise<LibraryGame[]> => {
               installedSizeInBytes,
               download: download ?? null,
               unlockedAchievementCount,
-              achievementCount: game.achievementCount ?? 0,
+              achievementCount: resolveAchievementCount(
+                game.shop,
+                game.objectId,
+                game.achievementCount
+              ),
               // Spread composed assets last to ensure all image URLs are properly set
               ...composedAssets,
               title: composedAssets?.title || game.title,
@@ -135,4 +143,9 @@ const getLibrary = async (): Promise<LibraryGame[]> => {
     });
 };
 
-registerEvent("getLibrary", getLibrary);
+registerEvent("getLibrary", (_event, includeConcealed = false) =>
+  getLibrary(includeConcealed ? "all" : "visible")
+);
+registerEvent("getHiddenLibrary", () =>
+  HydraApi.isLoggedIn() ? getLibrary("hidden") : Promise.resolve([])
+);

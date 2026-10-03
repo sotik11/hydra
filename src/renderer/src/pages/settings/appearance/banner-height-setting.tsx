@@ -87,11 +87,11 @@ export function BannerHeightSetting() {
   const localBannerPath = userPreferences?.localProfileBannerPath ?? null;
   const localAvatarPath = userPreferences?.localProfileAvatarPath ?? null;
   const bannerUrl =
-    !hasActiveSubscription && localBannerPath
+    userDetails && !hasActiveSubscription && localBannerPath
       ? `local:${localBannerPath}`
       : (userDetails?.backgroundImageUrl ?? null);
   const avatarUrl =
-    !hasActiveSubscription && localAvatarPath
+    userDetails && !hasActiveSubscription && localAvatarPath
       ? `local:${localAvatarPath}`
       : (userDetails?.profileImageUrl ?? null);
 

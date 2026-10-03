@@ -1,0 +1,11 @@
+// Fork: green status pills ("Installed" / "Available") on library cards. Kept in
+// a fork-owned file so upstream's card stylesheets stay untouched.
+.library-game-card__installed-badge--status,
+.library-game-card-large__installed-badge--status {
+  color: #22c55e;
+
+  .library-game-card__installed-icon,
+  .library-game-card-large__installed-icon {
+    color: inherit;
+  }
+}

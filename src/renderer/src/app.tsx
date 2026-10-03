@@ -15,6 +15,7 @@ import {
   useUserDetails,
   useProfileImageMigration,
   useHeroBannerStyle,
+  useSteamWishlistSync,
 } from "@renderer/hooks";
 import { useDownloadOptionsListener } from "@renderer/hooks/use-download-options-listener";
 import i18n from "i18next";
@@ -32,6 +33,7 @@ import {
   hydrateRetroArchScan,
   setExtractionProgress,
   setGameRunning,
+  setLibrarySyncingRemote,
   setProfileBackground,
   setUserDetails,
   setUserPreferences,
@@ -72,7 +74,7 @@ type WorkWondersWithKnowledge = WorkWonders & {
 
 export function App() {
   const contentRef = useRef<HTMLDivElement>(null);
-  const { updateLibrary, library } = useLibrary();
+  const { updateLibrary, library, downloadLibrary } = useLibrary();
 
   // Listen for new download options updates
   useDownloadOptionsListener();
@@ -100,6 +102,9 @@ export function App() {
 
   // Fork: apply the user-configured banner height + crop anchor live.
   useHeroBannerStyle();
+
+  // Fork: refresh the Steam wishlist after each successful Steam sync.
+  useSteamWishlistSync();
 
   const dispatch = useAppDispatch();
 
@@ -182,12 +187,14 @@ export function App() {
   useEffect(() => {
     if (!lastPacket?.gameId) return;
 
-    const activeGame = library.find((game) => game.id === lastPacket.gameId);
+    const activeGame = downloadLibrary.find(
+      (game) => game.id === lastPacket.gameId
+    );
 
     if (!activeGame || activeGame.download?.status !== "active") {
       clearDownload();
     }
-  }, [clearDownload, lastPacket?.gameId, library]);
+  }, [clearDownload, lastPacket?.gameId, downloadLibrary]);
 
   const setupWorkWonders = useCallback(
     async (token?: string, locale?: string) => {
@@ -248,6 +255,7 @@ export function App() {
           "install-dolphin": 7268,
           "wii-saves": 7384,
           "retroachievements-emulators": 6629,
+          "downloading-metadata": 7719,
         },
         en: {
           "cannot-write-directory": 4122,
@@ -262,6 +270,7 @@ export function App() {
           "install-dolphin": 7281,
           "wii-saves": 7406,
           "retroachievements-emulators": 6692,
+          "downloading-metadata": 7773,
         },
         ru: {
           "install-duckstation": 6479,
@@ -272,6 +281,7 @@ export function App() {
           "install-dolphin": 7292,
           "wii-saves": 7422,
           "retroachievements-emulators": 6717,
+          "downloading-metadata": 7848,
         },
         es: {
           "install-duckstation": 6492,
@@ -282,6 +292,7 @@ export function App() {
           "install-dolphin": 7303,
           "wii-saves": 7431,
           "retroachievements-emulators": 6743,
+          "downloading-metadata": 7854,
         },
       };
 
@@ -449,6 +460,27 @@ export function App() {
   }, [dispatch, updateLibrary]);
 
   useEffect(() => {
+    let hasReceivedSyncState = false;
+
+    void window.electron.getRemoteLibrarySyncState().then((syncing) => {
+      if (!hasReceivedSyncState) dispatch(setLibrarySyncingRemote(syncing));
+    });
+
+    return window.electron.onRemoteLibrarySyncStateChange((syncing) => {
+      hasReceivedSyncState = true;
+
+      if (syncing) {
+        dispatch(setLibrarySyncingRemote(true));
+        return;
+      }
+
+      void updateLibrary().finally(() =>
+        dispatch(setLibrarySyncingRemote(false))
+      );
+    });
+  }, [dispatch, updateLibrary]);
+
+  useEffect(() => {
     const listeners = [
       window.electron.onSignIn(onSignIn),
       window.electron.onLibraryBatchComplete(() => {
@@ -465,12 +497,38 @@ export function App() {
         dispatch(clearExtraction());
         updateLibrary();
       }),
-      window.electron.onExtractionFailed(() => {
+      window.electron.onExtractionFailed((_shop, _objectId, failure) => {
         dispatch(clearExtraction());
         updateLibrary();
+
+        if (failure?.reason === "unsupported-format") {
+          showErrorToast(
+            t("extraction_unsupported_format_title", { ns: "downloads" }),
+            t("extraction_unsupported_format_description", {
+              ns: "downloads",
+              format: failure.format,
+            })
+          );
+          return;
+        }
+
+        if (failure?.reason === "file-not-found") {
+          showErrorToast(
+            t("extraction_file_not_found_title", { ns: "downloads" }),
+            t("extraction_file_not_found_description", { ns: "downloads" })
+          );
+          return;
+        }
+
         showErrorToast(
           t("extraction_failed_title", { ns: "downloads" }),
           t("extraction_failed_description", { ns: "downloads" })
+        );
+      }),
+      window.electron.onGameExecutableNotFound(() => {
+        showErrorToast(
+          t("executable_not_found_title", { ns: "game_details" }),
+          t("executable_not_found_description", { ns: "game_details" })
         );
       }),
       window.electron.onDownloadHalted((gameTitle) => {
