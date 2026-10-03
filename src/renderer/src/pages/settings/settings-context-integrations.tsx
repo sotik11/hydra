@@ -2,7 +2,6 @@ import { useTranslation } from "react-i18next";
 import { SettingsDebrid } from "./settings-debrid";
 import { SettingsRetroAchievements } from "./settings-retroachievements";
 import { SettingsSteam } from "./settings-steam";
-import { SettingsWishlist } from "./settings-wishlist";
 import { SettingsMods } from "./settings-mods";
 import { SettingsCriticScores } from "./settings-critic-scores";
 import { SettingsLocalizationSources } from "./settings-localization-sources";
@@ -16,10 +15,6 @@ export function SettingsContextIntegrations() {
         <SettingsSteam />
         <SettingsRetroAchievements />
       </div>
-
-      <hr className="settings-context-panel__divider" />
-
-      <SettingsWishlist />
 
       <hr className="settings-context-panel__divider" />
 

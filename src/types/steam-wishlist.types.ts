@@ -1,13 +1,6 @@
-// Fork feature: Steam wishlist import. A user connects a public Steam profile;
-// we resolve it to a SteamID64, pull the wishlist, and match each app against
-// Hydra's repack catalogue. With an optional Web API key we also resolve the
-// profile reliably (GetPlayerSummaries) and import the owned-games library.
-
-export interface SteamProfile {
-  steamId64: string;
-  personaName: string;
-  avatarUrl: string;
-}
+// Fork feature: Steam wishlist. The wishlist is pulled through upstream's Steam
+// integration session (no SteamID input, no Web API key) and matched against
+// Hydra's repack catalogue.
 
 export interface SteamWishlistItem {
   appId: string;
@@ -15,18 +8,20 @@ export interface SteamWishlistItem {
   dateAdded: number;
 }
 
-export interface SteamOwnedGame {
-  appId: string;
-  title: string;
+// Cached raw Steam wishlist of the connected account.
+export interface SteamWishlistCache {
+  steamId64: string;
+  items: SteamWishlistItem[];
+  syncedAt: number;
 }
 
-export interface SteamWishlistState {
-  connected: boolean;
-  profile: SteamProfile | null;
-  items: SteamWishlistItem[];
+// What the UI needs to know about the Steam wishlist. `status` is
+// "unavailable" when the last refresh could not reach Steam (stale or missing
+// session) — the counts then describe the previous successful sync.
+export interface SteamWishlistSummary {
+  status: "ok" | "unavailable";
+  count: number | null;
   syncedAt: number | null;
-  hasApiKey: boolean;
-  libraryCount: number | null;
 }
 
 // Working wishlist store (screen + manual adds), separate from the raw Steam

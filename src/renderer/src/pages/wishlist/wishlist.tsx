@@ -102,9 +102,16 @@ export default function Wishlist() {
   }, [loadGames]);
 
   const handleRefresh = () => {
-    loadGames();
-    setRefreshKey((key) => key + 1);
-    window.electron.refreshWishlistReminders().catch(() => {});
+    // Re-pull the Steam wishlist first (leaves it untouched when Steam is not
+    // connected or its session is stale), then reload and re-check reminders.
+    window.electron
+      .refreshSteamWishlist()
+      .catch(() => null)
+      .finally(() => {
+        loadGames();
+        setRefreshKey((key) => key + 1);
+        window.electron.refreshWishlistReminders().catch(() => {});
+      });
   };
 
   const handleRemoved = (appId: string) => {

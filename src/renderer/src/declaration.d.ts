@@ -7,7 +7,7 @@ import type {
   DownloadProgress,
   SeedingStatus,
   UserPreferences,
-  SteamWishlistState,
+  SteamWishlistSummary,
   NexusModsState,
   NexusMatch,
   NexusHighlights,
@@ -1045,13 +1045,8 @@ declare global {
     syncLocalizationSources: () => Promise<void>;
 
     /* Steam wishlist */
-    connectSteamWishlist: (
-      profileInput: string,
-      apiKey?: string | null
-    ) => Promise<SteamWishlistState>;
-    getSteamWishlist: () => Promise<SteamWishlistState>;
-    refreshSteamWishlist: () => Promise<SteamWishlistState>;
-    disconnectSteamWishlist: () => Promise<void>;
+    getSteamWishlist: () => Promise<SteamWishlistSummary>;
+    refreshSteamWishlist: () => Promise<SteamWishlistSummary>;
     getWishlistGames: () => Promise<WishlistGame[]>;
     addWishlistGame: (appId: string) => Promise<void>;
     removeWishlistGame: (appId: string) => Promise<void>;

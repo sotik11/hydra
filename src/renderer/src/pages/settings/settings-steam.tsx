@@ -25,6 +25,7 @@ import {
 } from "./steam-disconnect-state";
 
 import "./settings-steam.scss";
+import { SteamCardExtras } from "./steam-card-extras";
 
 const INTEGRATION_ENDPOINT = "/profile/integrations/steam";
 
@@ -466,6 +467,7 @@ export function SettingsSteam() {
                     : t("steam_never_synced")}
                 </span>
               ) : null}
+              <SteamCardExtras steamId64={steamAccount.steamId64} />
             </div>
           </div>
 

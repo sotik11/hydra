@@ -431,14 +431,6 @@ export const mergeWithRemoteGames = async (
     return false;
   }
 
-  // Fork: cloud sync recreates Steam game records without our fork-local
-  // `steamLibraryImport` flag. Re-apply it from our durable set so the Steam
-  // library filter survives cloud sync, relogin and rebuilds (dynamic import
-  // avoids a static cycle with the steam-wishlist service).
-  await import("../steam-wishlist/restamp-library-import")
-    .then((m) => m.restampSteamLibraryImport())
-    .catch(() => {});
-
   // Fork: Nexus match map is rebuilt from the library; cloud sync repopulates
   // the library after relogin, so re-match once it's populated (a startup-only
   // match would run on the still-empty library and wipe the map to 0).

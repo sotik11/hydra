@@ -11,6 +11,7 @@ import {
   hasImportedSteamData,
 } from "@main/services/steam-integration/steam-imported-games";
 import { clearImportedSteamGames } from "@main/services/steam-integration/clear-imported-steam-games";
+import { clearSteamWishlist } from "@main/services/steam-wishlist";
 import { AchievementMemoryStore } from "@main/services/achievements/achievement-memory-store";
 import { db, gamesSublevel } from "@main/level";
 import type { Game } from "@types";
@@ -92,6 +93,9 @@ const disconnectSteam = async (
     steamSyncLogger.error("Failed to disconnect Steam", error);
     throw new Error(message ?? "steam-disconnect-failed");
   }
+
+  // Fork: the Steam wishlist rides on this session — forget it too.
+  void clearSteamWishlist();
 
   const localUpdates: [string, Game][] = [];
 

@@ -29,7 +29,10 @@ import {
   migrateCloudSaveAutomaticSyncDefaults,
   groupedSouvenirWorker,
 } from "@main/services";
-import { checkWishlistReminders } from "@main/services/steam-wishlist";
+import {
+  checkWishlistReminders,
+  migrateLegacyForkSteam,
+} from "@main/services/steam-wishlist";
 import { migrateDownloadSources } from "./helpers/migrate-download-sources";
 import { getDirSize } from "./services/download/helpers";
 import { GofileApi } from "./services/hosters";
@@ -127,6 +130,9 @@ export const loadState = async () => {
   }
 
   void watchSteamLibraries();
+
+  // Fork: one-off cleanup of the pre-4.1.6 fork Steam integration.
+  await migrateLegacyForkSteam().catch(() => {});
 
   await HydraApi.setupApi().then(async () => {
     uploadGamesBatch();

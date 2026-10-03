@@ -1,5 +1,5 @@
 export * from "./steam-wishlist";
-export * from "./import-owned-games";
-export * from "./restamp-library-import";
+export * from "./sync-steam-wishlist";
+export * from "./migrate-legacy-steam";
 export * from "./wishlist-games";
 export * from "./wishlist-reminders";

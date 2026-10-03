@@ -1006,11 +1006,8 @@ contextBridge.exposeInMainWorld("electron", {
   syncLocalizationSources: () => ipcRenderer.invoke("syncLocalizationSources"),
 
   /* Steam wishlist */
-  connectSteamWishlist: (profileInput: string, apiKey?: string | null) =>
-    ipcRenderer.invoke("connectSteamWishlist", profileInput, apiKey),
   getSteamWishlist: () => ipcRenderer.invoke("getSteamWishlist"),
   refreshSteamWishlist: () => ipcRenderer.invoke("refreshSteamWishlist"),
-  disconnectSteamWishlist: () => ipcRenderer.invoke("disconnectSteamWishlist"),
   getWishlistGames: () => ipcRenderer.invoke("getWishlistGames"),
   addWishlistGame: (appId: string) =>
     ipcRenderer.invoke("addWishlistGame", appId),

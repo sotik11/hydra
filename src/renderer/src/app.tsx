@@ -15,6 +15,7 @@ import {
   useUserDetails,
   useProfileImageMigration,
   useHeroBannerStyle,
+  useSteamWishlistSync,
 } from "@renderer/hooks";
 import { useDownloadOptionsListener } from "@renderer/hooks/use-download-options-listener";
 import i18n from "i18next";
@@ -101,6 +102,9 @@ export function App() {
 
   // Fork: apply the user-configured banner height + crop anchor live.
   useHeroBannerStyle();
+
+  // Fork: refresh the Steam wishlist after each successful Steam sync.
+  useSteamWishlistSync();
 
   const dispatch = useAppDispatch();
 

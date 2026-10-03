@@ -8,6 +8,7 @@ export * from "./redux";
 export * from "./use-user-details";
 export * from "./use-profile-image-migration";
 export * from "./use-hero-banner-style";
+export * from "./use-steam-wishlist-sync";
 export * from "./use-format";
 export * from "./use-feature";
 export * from "./use-download-options-listener";

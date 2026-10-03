@@ -81,6 +81,19 @@ export async function removeWishlistGame(appId: string): Promise<void> {
 }
 
 /**
+ * Remove every game the Steam wishlist brought in (Steam was disconnected).
+ * Manually added games and the denylist are kept.
+ */
+export async function removeSteamSourcedWishlistGames(): Promise<void> {
+  const entries = await wishlistGamesSublevel.iterator().all();
+  for (const [appId, game] of entries) {
+    if (game.source === "steam") {
+      await wishlistGamesSublevel.del(appId).catch(() => {});
+    }
+  }
+}
+
+/**
  * Reconcile the store with the raw Steam wishlist: add newly-wishlisted Steam
  * games (unless denied or already present) and drop steam-sourced games the
  * user removed in Steam. Manual games are never touched.

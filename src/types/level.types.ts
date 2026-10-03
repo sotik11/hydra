@@ -57,7 +57,6 @@ export interface Game {
   source?: "hydra" | "steam";
   collectionIds?: string[];
   isDeleted: boolean;
-  steamLibraryImport?: boolean;
   // Fork: carried over from the wishlist "download available" state when the
   // game is added to the library, so the card can show an "available to install"
   // marker until it's actually installed.
@@ -157,12 +156,6 @@ export interface UserPreferences {
   torBoxApiToken?: string | null;
   retroAchievementsWebApiKey?: string | null;
   retroAchievementsUsername?: string | null;
-  steamWishlistSteamId?: string | null;
-  steamWishlistPersonaName?: string | null;
-  steamWishlistAvatarUrl?: string | null;
-  steamWishlistSyncedAt?: number | null;
-  steamWishlistApiKey?: string | null;
-  steamWishlistLibraryCount?: number | null;
   nexusApiKey?: string | null;
   nexusUserId?: number | null;
   nexusUserName?: string | null;
