@@ -8,6 +8,7 @@ import {
   retroarch,
 } from "@main/services";
 import { clearGamesPlaytimeState } from "@main/services/game-running-state";
+import { rememberLocalGameSetup } from "@main/services/library-sync/local-game-setup";
 import {
   db,
   downloadLayoutStateSublevel,
@@ -25,6 +26,11 @@ import {
  */
 const clearAccountGames = async () => {
   const entries = await gamesSublevel.iterator().all();
+
+  // Executable paths and launch options are facts about this machine, not the
+  // account: remember them so the next sign-in can put them back.
+  await rememberLocalGameSetup(entries).catch(() => {});
+
   const deletions = entries
     .filter(([, game]) => !retroarch.isLocalRetroArchEntryId(game.objectId))
     .map(([key]) => ({ type: "del" as const, key }));

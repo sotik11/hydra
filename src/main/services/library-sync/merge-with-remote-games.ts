@@ -34,6 +34,7 @@ import { mergeLocalAndRemotePlayTime } from "@shared";
 import { mergePersistedAchievementTotals } from "../achievements/achievement-memory-store";
 import { trackAchievementBatchGame } from "../achievements/achievement-batch-games";
 import { fetchRemoteProfileGames as fetchProfileGames } from "./fetch-remote-profile-games";
+import { runForkPostMergeHooks } from "./fork-post-merge";
 
 type ProfileGame = {
   id: string;
@@ -425,18 +426,15 @@ export const mergeWithRemoteGames = async (
       )
     );
 
+    await runForkPostMergeHooks();
+
     return true;
   } catch {
     // Keep local library available when remote sync fails.
+    await runForkPostMergeHooks();
+
     return false;
   }
-
-  // Fork: Nexus match map is rebuilt from the library; cloud sync repopulates
-  // the library after relogin, so re-match once it's populated (a startup-only
-  // match would run on the still-empty library and wipe the map to 0).
-  await import("../nexus-mods/match-library")
-    .then((m) => m.matchLibraryFromCache())
-    .catch(() => {});
 };
 
 // Emulator imports already have catalogue assets and ROM metadata locally.

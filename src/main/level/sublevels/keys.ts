@@ -34,6 +34,7 @@ export const levelKeys = {
   localSouvenirAssets: "local-souvenir-assets",
   steamWishlist: "steamWishlist", // Steam wishlist import (fork feature)
   wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
+  localGameSetup: "localGameSetup", // machine-local game setup kept across sign-out (fork)
   wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)
   nexusMods: "nexusMods", // Nexus games catalogue cache + match map (fork feature)
   globalTrackersUrlCache: "globalTrackersUrlCache",
