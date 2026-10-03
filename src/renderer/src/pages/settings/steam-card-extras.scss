@@ -1,16 +1,5 @@
 @use "../../scss/globals.scss";
 
-// Fork: the Steam card gets the fork's round, larger avatar.
-.settings-integration-card__profile:has(.steam-card-extras) {
-  .settings-integration-card__avatar {
-    width: 80px;
-    height: 80px;
-    border: none;
-    border-radius: 50%;
-    background: transparent;
-  }
-}
-
 // Fork: extra lines inside upstream's Steam integration card.
 .steam-card-extras {
   display: flex;

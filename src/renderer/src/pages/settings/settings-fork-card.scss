@@ -88,3 +88,14 @@
     flex-shrink: 0;
   }
 }
+
+// Fork: upstream integration cards (Steam, RetroAchievements, …) use the same
+// round 80px avatar as the fork sections. Pure override — the upstream
+// stylesheet is untouched; the doubled class only raises specificity.
+.settings-integration-card__avatar.settings-integration-card__avatar {
+  width: 80px;
+  height: 80px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+}
