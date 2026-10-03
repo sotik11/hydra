@@ -71,6 +71,16 @@
     gap: globals.$spacing-unit;
   }
 
+  // Action buttons on the section's title row (right-aligned), like the
+  // upstream integration cards.
+  &__header-actions {
+    margin-left: auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: globals.$spacing-unit;
+  }
+
   &__title-logo {
     width: 18px;
     height: 18px;

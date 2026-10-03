@@ -199,24 +199,6 @@ export function SettingsMods() {
               )}
             </div>
           </div>
-
-          <div className="settings-fork-card__actions">
-            <Button
-              theme="outline"
-              onClick={handleRefresh}
-              disabled={isRefreshing || isSubmitting}
-            >
-              <SyncIcon size={STATUS_ICON_SIZE} />
-              {t("mods_update")}
-            </Button>
-            <Button
-              theme="danger"
-              onClick={handleDisconnect}
-              disabled={isSubmitting || isRefreshing}
-            >
-              {t("mods_disconnect")}
-            </Button>
-          </div>
         </div>
       );
     }
@@ -294,6 +276,25 @@ export function SettingsMods() {
             size={CHEVRON_ICON_SIZE}
             className="settings-debrid__check-icon"
           />
+        )}
+        {!isLoading && state.connected && state.profile && (
+          <div className="settings-fork-card__header-actions">
+            <Button
+              theme="outline"
+              onClick={handleRefresh}
+              disabled={isRefreshing || isSubmitting}
+            >
+              <SyncIcon size={STATUS_ICON_SIZE} />
+              {t("mods_update")}
+            </Button>
+            <Button
+              theme="danger"
+              onClick={handleDisconnect}
+              disabled={isSubmitting || isRefreshing}
+            >
+              {t("mods_disconnect")}
+            </Button>
+          </div>
         )}
       </div>
 
