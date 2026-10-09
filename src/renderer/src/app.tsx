@@ -53,6 +53,7 @@ import { CloudGiftNotificationModal } from "./pages/shared-modals/cloud-gift-not
 
 import type { UserPreferences } from "@types";
 import "./app.scss";
+import "./app-fork-title.scss";
 import {
   getAchievementSoundUrl,
   getAchievementSoundVolume,
@@ -674,6 +675,7 @@ export function App() {
         >
           <h4>
             Hydra
+            <span className="title-bar-fork__localized-text"> Localized</span>
             {hasActiveSubscription && (
               <span className="title-bar__cloud-text"> Cloud</span>
             )}
