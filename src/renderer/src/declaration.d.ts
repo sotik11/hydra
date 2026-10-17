@@ -385,8 +385,13 @@ declare global {
     getGameStats: (objectId: string, shop: GameShop) => Promise<GameStats>;
     getCriticScores: (
       shop: GameShop,
-      objectId: string
+      objectId: string,
+      includeMetacritic?: boolean
     ) => Promise<ExternalCriticScores>;
+    getEpicStorePageUrl: (
+      objectId: string,
+      title?: string
+    ) => Promise<string | null>;
     getGameAssets: (
       objectId: string,
       shop: GameShop,

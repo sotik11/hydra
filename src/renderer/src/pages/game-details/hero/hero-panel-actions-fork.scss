@@ -1,0 +1,10 @@
+// Fork: Epic Games Store button next to the Steam one in the action bar.
+.hero-panel-actions__epic-store {
+  svg {
+    transition: color 0.2s ease;
+  }
+
+  &:hover:not(:disabled) svg {
+    color: #d4d4d4;
+  }
+}

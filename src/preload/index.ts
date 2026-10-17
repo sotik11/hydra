@@ -538,8 +538,13 @@ contextBridge.exposeInMainWorld("electron", {
   getRandomGame: () => ipcRenderer.invoke("getRandomGame"),
   getGameStats: (objectId: string, shop: GameShop) =>
     ipcRenderer.invoke("getGameStats", objectId, shop),
-  getCriticScores: (shop: GameShop, objectId: string) =>
-    ipcRenderer.invoke("getCriticScores", shop, objectId),
+  getCriticScores: (
+    shop: GameShop,
+    objectId: string,
+    includeMetacritic?: boolean
+  ) => ipcRenderer.invoke("getCriticScores", shop, objectId, includeMetacritic),
+  getEpicStorePageUrl: (objectId: string, title?: string) =>
+    ipcRenderer.invoke("getEpicStorePageUrl", objectId, title),
   getGameAssets: (
     objectId: string,
     shop: GameShop,

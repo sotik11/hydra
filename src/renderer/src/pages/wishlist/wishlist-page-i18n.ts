@@ -36,6 +36,7 @@ const wishlist: Record<string, Record<string, string>> = {
     available_toast: "{{game}} is now available to download!",
     available_badge: "Available to download",
     open_in_steam: "Open the Steam page",
+    open_in_epic: "Open the Epic Games Store page",
   },
   ru: {
     page_title: "Список желаемого",
@@ -64,6 +65,7 @@ const wishlist: Record<string, Record<string, string>> = {
     available_toast: "Игра {{game}} стала доступна для скачивания!",
     available_badge: "Доступна для скачивания",
     open_in_steam: "Открыть страницу в Steam",
+    open_in_epic: "Открыть страницу в Epic Games Store",
   },
   uk: {
     page_title: "Список бажаного",
@@ -92,6 +94,7 @@ const wishlist: Record<string, Record<string, string>> = {
     available_toast: "Гра {{game}} стала доступною для завантаження!",
     available_badge: "Доступна для завантаження",
     open_in_steam: "Відкрити сторінку в Steam",
+    open_in_epic: "Відкрити сторінку в Epic Games Store",
   },
 };
 

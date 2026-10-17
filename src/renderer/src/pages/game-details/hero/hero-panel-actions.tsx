@@ -37,10 +37,12 @@ import {
   handleClassicsLaunchError,
 } from "@renderer/helpers";
 import { SteamIcon } from "@renderer/components/steam-library-badge/steam-library-badge";
+import EpicLogo from "@renderer/assets/epic-integration-logo.svg?react";
 import { DiscSelectionModal } from "../modals/disc-selection-modal";
 import { EpicCloudSaveConflictModal } from "../modals/epic-cloud-save-conflict-modal";
 
 import "./hero-panel-actions.scss";
+import "./hero-panel-actions-fork.scss";
 import { useEffect } from "react";
 import {
   applyLibraryGroupAction,
@@ -559,6 +561,30 @@ export function HeroPanelActions() {
       </Button>
     ) : null;
 
+  // Fork: the game's Epic Games Store page — for an Epic game, or a game grouped
+  // with an Epic copy. The slug is resolved in main (storefront GraphQL); without
+  // one the store search by title opens instead.
+  const epicStoreObjectId =
+    shop === "epic" ? objectId : (officialMembers.epic?.objectId ?? null);
+  const epicStoreButton = epicStoreObjectId ? (
+    <Button
+      onClick={() => {
+        window.electron
+          .getEpicStorePageUrl(epicStoreObjectId, gameTitle)
+          .then((url) => {
+            if (url) window.electron.openExternal(url);
+          })
+          .catch(() => {});
+      }}
+      theme="outline"
+      disabled={deleting}
+      className="hero-panel-actions__action hero-panel-actions__epic-store"
+      title={t("open_in_epic", { ns: "wishlist" })}
+    >
+      <EpicLogo width={16} height={16} aria-hidden="true" />
+    </Button>
+  ) : null;
+
   // In-library layout: no wishlist star (a library game can't be wishlisted).
   // Instead, an X button that mirrors the context-menu "remove from library".
   const removeFromLibraryButton = (
@@ -641,6 +667,7 @@ export function HeroPanelActions() {
         {wishlistButton}
         {showDownloadOptionsButton}
         {steamButton}
+        {epicStoreButton}
       </>
     );
   }
@@ -729,6 +756,7 @@ export function HeroPanelActions() {
         </Button>
 
         {steamButton}
+        {epicStoreButton}
 
         {game.shop === "launchbox" && (
           <DiscSelectionModal
@@ -788,6 +816,7 @@ export function HeroPanelActions() {
       {addGameToLibraryButton}
       {wishlistButton}
       {steamButton}
+      {epicStoreButton}
     </>
   );
 }
