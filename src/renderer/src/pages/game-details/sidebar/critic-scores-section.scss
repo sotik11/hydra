@@ -90,8 +90,8 @@
     display: block;
     object-fit: contain;
 
-    // Epic shield is drawn in currentColor — keep it white like in the Epic card.
-    &--epic {
+    // Epic / Steam logos are drawn in currentColor — keep them white.
+    &--white {
       color: #ffffff;
     }
   }

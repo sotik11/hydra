@@ -7,6 +7,7 @@ import { SidebarSection } from "../sidebar-section/sidebar-section";
 import MetacriticLogo from "@renderer/assets/icons/metacritic.svg?react";
 import OpenCriticLogo from "@renderer/assets/icons/opencritic.svg?react";
 import EpicLogo from "@renderer/assets/epic-integration-logo.svg?react";
+import { SteamIcon } from "@renderer/components/steam-library-badge/steam-library-badge";
 
 import "../../settings/critic-scores-i18n";
 import "./critic-scores-section.scss";
@@ -25,6 +26,8 @@ interface CriticScoresSectionProps {
   showOpenCritic: boolean;
   // Epic game ("namespace:itemId"): OpenCritic + Epic player rating from the
   // Epic storefront — the only source for Epic exclusives.
+  // Steam user reviews (% positive) by Steam appid.
+  showSteamReviews?: boolean;
   epicObjectId?: string;
   showEpicRating?: boolean;
 }
@@ -99,10 +102,11 @@ export function CriticScoresSection({
   showMetacritic,
   showMetacriticUser,
   showOpenCritic,
+  showSteamReviews = false,
   epicObjectId,
   showEpicRating = false,
 }: Readonly<CriticScoresSectionProps>) {
-  const { t } = useTranslation("critic_scores");
+  const { t, i18n } = useTranslation("critic_scores");
   const [external, setExternal] = useState<ExternalCriticScores | null>(null);
 
   // Augmented Steam feeds the Metacritic user score + OpenCritic, by Steam appid.
@@ -110,6 +114,7 @@ export function CriticScoresSection({
     shop === "steam" &&
     (showMetacriticUser ||
       showOpenCritic ||
+      showSteamReviews ||
       (fetchMetacritic && showMetacritic));
 
   useEffect(() => {
@@ -120,7 +125,7 @@ export function CriticScoresSection({
 
     let active = true;
     window.electron
-      .getCriticScores(shop, objectId, fetchMetacritic)
+      .getCriticScores(shop, objectId, fetchMetacritic, i18n.language)
       .then((data) => {
         if (active) setExternal(data);
       })
@@ -131,7 +136,7 @@ export function CriticScoresSection({
     return () => {
       active = false;
     };
-  }, [shop, objectId, needsExternal, fetchMetacritic]);
+  }, [shop, objectId, needsExternal, fetchMetacritic, i18n.language]);
 
   const [epicScores, setEpicScores] = useState<ExternalCriticScores | null>(
     null
@@ -223,6 +228,34 @@ export function CriticScoresSection({
     );
   }
 
+  const steamReviews = external?.steamReviews;
+  if (showSteamReviews && steamReviews) {
+    const verdict =
+      steamReviews.description.charAt(0).toUpperCase() +
+      steamReviews.description.slice(1);
+    rows.push(
+      <CriticRow
+        key="steam-reviews"
+        score={steamReviews.percent}
+        displayScore={String(steamReviews.percent)}
+        displayScale="%"
+        url={steamReviews.url}
+        logo={
+          <SteamIcon
+            size={22}
+            className="critic-scores__brand-logo critic-scores__brand-logo--white"
+          />
+        }
+        name={t("critic_scores_steam_reviews_name")}
+        linkLabel={
+          verdict
+            ? `${verdict} — ${t("critic_scores_steam_reviews_link")}`
+            : t("critic_scores_steam_reviews_link")
+        }
+      />
+    );
+  }
+
   const epicRating = epicScores?.epicPlayerRating;
   if (showEpicRating && epicRating) {
     rows.push(
@@ -234,7 +267,7 @@ export function CriticScoresSection({
         url={epicRating.url}
         logo={
           <EpicLogo
-            className="critic-scores__brand-logo critic-scores__brand-logo--epic"
+            className="critic-scores__brand-logo critic-scores__brand-logo--white"
             aria-hidden="true"
           />
         }

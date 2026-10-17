@@ -156,6 +156,8 @@ export function Sidebar() {
     userPreferences?.criticScoresMetacriticUserEnabled ?? true;
   const openCriticEnabled =
     userPreferences?.criticScoresOpenCriticEnabled ?? true;
+  const steamReviewsEnabled =
+    userPreferences?.criticScoresSteamReviewsEnabled ?? true;
   const epicRatingEnabled =
     userPreferences?.criticScoresEpicRatingEnabled ?? true;
   // An Epic copy of a game that is also on Steam rates by its linked Steam appid
@@ -396,6 +398,7 @@ export function Sidebar() {
           showMetacritic={metacriticEnabled}
           showMetacriticUser={metacriticUserEnabled}
           showOpenCritic={openCriticEnabled}
+          showSteamReviews={steamReviewsEnabled}
           epicObjectId={criticScoresEpicObjectId}
           showEpicRating={epicRatingEnabled}
         />

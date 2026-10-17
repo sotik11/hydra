@@ -98,3 +98,74 @@ export async function getSteamMetacritic(
     return null;
   }
 }
+
+// Steam user reviews summary (% positive + Steam's verdict in the UI language).
+const STEAM_APPREVIEWS = "https://store.steampowered.com/appreviews/";
+type SteamReviews = NonNullable<ExternalCriticScores["steamReviews"]>;
+const STEAM_REVIEW_LANGUAGES: Record<string, string> = {
+  ru: "russian",
+  uk: "ukrainian",
+  de: "german",
+  fr: "french",
+  es: "spanish",
+  it: "italian",
+  pl: "polish",
+  pt: "portuguese",
+  tr: "turkish",
+  cs: "czech",
+  hu: "hungarian",
+  ja: "japanese",
+  ko: "koreana",
+  zh: "schinese",
+};
+const steamReviewsCache = new Map<
+  string,
+  { data: SteamReviews | null; fetchedAt: number }
+>();
+
+export async function getSteamReviews(
+  appId: string,
+  language?: string
+): Promise<SteamReviews | null> {
+  const steamLanguage =
+    STEAM_REVIEW_LANGUAGES[(language ?? "en").toLowerCase().split(/[-_]/)[0]] ??
+    "english";
+  const cacheKey = `${appId}:${steamLanguage}`;
+  const cached = steamReviewsCache.get(cacheKey);
+  if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+    return cached.data;
+  }
+
+  try {
+    const { data } = await axios.get(`${STEAM_APPREVIEWS}${appId}`, {
+      params: {
+        json: 1,
+        language: "all",
+        purchase_type: "all",
+        num_per_page: 0,
+        l: steamLanguage,
+      },
+      timeout: 15000,
+    });
+    const summary = data?.query_summary;
+    const total = Number(summary?.total_reviews ?? 0);
+    const positive = Number(summary?.total_positive ?? 0);
+    const result: SteamReviews | null =
+      total > 0
+        ? {
+            percent: Math.round((positive / total) * 100),
+            total,
+            description: String(summary?.review_score_desc ?? ""),
+            url: `https://store.steampowered.com/app/${appId}/#app_reviews_hash`,
+          }
+        : null;
+    steamReviewsCache.set(cacheKey, { data: result, fetchedAt: Date.now() });
+    return result;
+  } catch (err) {
+    logger.error("[critic-scores] Steam reviews fetch failed", {
+      appId,
+      message: (err as Error)?.message,
+    });
+    return null;
+  }
+}

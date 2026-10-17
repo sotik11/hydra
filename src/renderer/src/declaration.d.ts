@@ -386,7 +386,8 @@ declare global {
     getCriticScores: (
       shop: GameShop,
       objectId: string,
-      includeMetacritic?: boolean
+      includeMetacritic?: boolean,
+      language?: string
     ) => Promise<ExternalCriticScores>;
     getEpicStorePageUrl: (
       objectId: string,

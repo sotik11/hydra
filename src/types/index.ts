@@ -695,6 +695,13 @@ export interface ExternalCriticScores {
   metacritic?: { score: number; url: string } | null;
   // Epic's own player rating (0–5) from the Epic storefront — Epic games only.
   epicPlayerRating?: { average: number; url: string } | null;
+  // Steam user reviews: % positive + Steam's own (localized) verdict.
+  steamReviews?: {
+    percent: number;
+    total: number;
+    description: string;
+    url: string;
+  } | null;
 }
 
 export interface GameReviewAnswer {

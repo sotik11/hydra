@@ -33,6 +33,8 @@ export function SettingsCriticScores() {
     userPreferences?.criticScoresMetacriticUserEnabled ?? true;
   const openCriticEnabled =
     userPreferences?.criticScoresOpenCriticEnabled ?? true;
+  const steamReviewsEnabled =
+    userPreferences?.criticScoresSteamReviewsEnabled ?? true;
   const epicRatingEnabled =
     userPreferences?.criticScoresEpicRatingEnabled ?? true;
 
@@ -139,6 +141,14 @@ export function SettingsCriticScores() {
                   criticScoresOpenCriticEnabled: !openCriticEnabled,
                 }),
               t("critic_scores_source_opencritic")
+            )}
+            {renderSource(
+              steamReviewsEnabled,
+              () =>
+                updateUserPreferences({
+                  criticScoresSteamReviewsEnabled: !steamReviewsEnabled,
+                }),
+              t("critic_scores_source_steam_reviews")
             )}
             {renderSource(
               epicRatingEnabled,

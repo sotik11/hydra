@@ -541,8 +541,16 @@ contextBridge.exposeInMainWorld("electron", {
   getCriticScores: (
     shop: GameShop,
     objectId: string,
-    includeMetacritic?: boolean
-  ) => ipcRenderer.invoke("getCriticScores", shop, objectId, includeMetacritic),
+    includeMetacritic?: boolean,
+    language?: string
+  ) =>
+    ipcRenderer.invoke(
+      "getCriticScores",
+      shop,
+      objectId,
+      includeMetacritic,
+      language
+    ),
   getEpicStorePageUrl: (objectId: string, title?: string) =>
     ipcRenderer.invoke("getEpicStorePageUrl", objectId, title),
   getGameAssets: (
