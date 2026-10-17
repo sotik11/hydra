@@ -42,8 +42,10 @@ interface RowProps {
   logo: React.ReactNode;
   name: string;
   linkLabel: string;
-  // Shown instead of the 0–100 score (e.g. "4.3 / 5"); colour still uses score.
+  // Shown instead of the 0–100 score (e.g. 4.3 of 5); colour still uses score.
   displayScore?: string;
+  // Small scale suffix next to displayScore (e.g. "/5").
+  displayScale?: string;
 }
 
 function CriticRow({
@@ -53,6 +55,7 @@ function CriticRow({
   name,
   linkLabel,
   displayScore,
+  displayScale,
 }: Readonly<RowProps>) {
   return (
     <button
@@ -63,8 +66,15 @@ function CriticRow({
       }}
       title={linkLabel}
     >
-      <span className={`critic-scores__score ${scoreModifier(score)}`}>
+      <span
+        className={`critic-scores__score ${scoreModifier(score)}${
+          displayScale ? " critic-scores__score--scaled" : ""
+        }`}
+      >
         {displayScore ?? score}
+        {displayScale && (
+          <span className="critic-scores__score-scale">{displayScale}</span>
+        )}
       </span>
 
       <span className="critic-scores__info">
@@ -219,10 +229,14 @@ export function CriticScoresSection({
       <CriticRow
         key="epic-rating"
         score={Math.round((epicRating.average / 5) * 100)}
-        displayScore={`${epicRating.average.toFixed(1)} / 5`}
+        displayScore={epicRating.average.toFixed(1)}
+        displayScale="/5"
         url={epicRating.url}
         logo={
-          <EpicLogo className="critic-scores__brand-logo" aria-hidden="true" />
+          <EpicLogo
+            className="critic-scores__brand-logo critic-scores__brand-logo--epic"
+            aria-hidden="true"
+          />
         }
         name={t("critic_scores_epic_rating_name")}
         linkLabel={t("critic_scores_epic_rating_link")}

@@ -27,6 +27,7 @@ import {
 import { HowLongToBeatSection } from "./how-long-to-beat-section";
 import { LaunchboxDetailsSection } from "./launchbox-details-section";
 import { CriticScoresSection } from "./critic-scores-section";
+import { getOfficialStoreMembers } from "@shared";
 import { SidebarSection } from "../sidebar-section/sidebar-section";
 import { buildGameAchievementPath } from "@renderer/helpers";
 import { useSubscription } from "@renderer/hooks/use-subscription";
@@ -130,6 +131,7 @@ export function Sidebar() {
     objectId,
     shop,
     catalogueGame,
+    presentation,
     stats,
     achievements,
   } = useContext(gameDetailsContext);
@@ -165,8 +167,11 @@ export function Sidebar() {
       : shop === "epic" && catalogueGame.shop === "steam"
         ? catalogueGame.objectId
         : "";
+  // Epic player rating also for a Steam page whose game has an Epic copy.
   const criticScoresEpicObjectId =
-    shop === "epic" && objectId ? objectId : undefined;
+    shop === "epic"
+      ? objectId || undefined
+      : getOfficialStoreMembers(presentation?.members ?? []).epic?.objectId;
   const steamMetacritic =
     shop === "steam" ? (shopDetails?.metacritic ?? null) : null;
   const shouldShowCriticScores =
