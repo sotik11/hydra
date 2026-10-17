@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { LinkExternalIcon, PersonIcon, SyncIcon } from "@primer/octicons-react";
+import { LinkExternalIcon, SyncIcon } from "@primer/octicons-react";
 
 import { Button, ConfirmationModal } from "@renderer/components";
 import { useToast, useUserDetails } from "@renderer/hooks";
 import { AuthPage } from "@shared";
 import type { EpicConnectionState, EpicErrorCode, EpicSyncState } from "@types";
 import EpicLogo from "@renderer/assets/epic-integration-logo.svg?react";
+import { EpicCardAvatar, EpicCardExtras } from "./epic-card-extras";
 import {
   SettingsIntegrationCard,
   SettingsIntegrationLastSynced,
@@ -455,7 +456,7 @@ export function SettingsEpic() {
         {connection ? (
           <div className="settings-integration-card__profile">
             <div className="settings-integration-card__avatar">
-              <PersonIcon size={28} />
+              <EpicCardAvatar connection={connection} size={28} />
             </div>
             <div className="settings-integration-card__account">
               <span className="settings-integration-card__username">
@@ -466,6 +467,7 @@ export function SettingsEpic() {
                   lastSyncedAt={connection.lastSyncedAt}
                 />
               )}
+              <EpicCardExtras epicAccountId={connection.epicAccountId} />
             </div>
           </div>
         ) : (

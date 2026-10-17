@@ -77,6 +77,8 @@ it("shows Epic disconnect progress immediately, blocks repeat actions and recove
       useToast: () => ({ showSuccessToast: noop, showErrorToast: noop }),
     },
     "./settings-epic-state": presentation,
+    // Fork: avatar + profile/library lines inside the Epic card.
+    "./epic-card-extras": { EpicCardAvatar: icon, EpicCardExtras: icon },
     "./settings-integration-card": {
       SettingsIntegrationCard: ({
         children,
