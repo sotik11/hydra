@@ -59,7 +59,11 @@ const pickSlug = (body: SlugResponse, itemId: string): string | null => {
   return productSlug || null;
 };
 
-const fetchSlug = async (namespace: string, itemId: string) => {
+/** POST to the public storefront GraphQL with Epic client headers. */
+export const queryEpicStorefront = async <T>(
+  query: string,
+  variables: Record<string, unknown>
+): Promise<T> => {
   const response = await fetch(STOREFRONT_GRAPHQL, {
     method: "POST",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -70,35 +74,49 @@ const fetchSlug = async (namespace: string, itemId: string) => {
       Origin: "https://store.epicgames.com",
       Referer: "https://store.epicgames.com/",
     },
-    body: JSON.stringify({ query: SLUG_QUERY, variables: { namespace } }),
+    body: JSON.stringify({ query, variables }),
   });
   if (!response.ok) throw new Error(`Epic storefront HTTP ${response.status}`);
-  return pickSlug((await response.json()) as SlugResponse, itemId);
+  return (await response.json()) as T;
+};
+
+/**
+ * Store page slug of an Epic game ("namespace:itemId"), cached per session.
+ * Throws on network errors (not cached) so callers can fall back.
+ */
+export const getEpicPageSlug = async (
+  objectId: string
+): Promise<string | null> => {
+  const [namespace, itemId] = objectId.split(":");
+  if (!namespace || !itemId) return null;
+  if (!slugCache.has(objectId)) {
+    const body = await queryEpicStorefront<SlugResponse>(SLUG_QUERY, {
+      namespace,
+    });
+    slugCache.set(objectId, pickSlug(body, itemId));
+  }
+  return slugCache.get(objectId) ?? null;
 };
 
 export const getEpicStorePageUrl = async (
   objectId: string,
   title?: string
 ): Promise<string | null> => {
-  const [namespace, itemId] = objectId.split(":");
   const searchUrl = title?.trim()
     ? `${STORE_SEARCH}${encodeURIComponent(title.trim())}`
     : null;
-  if (!namespace || !itemId) return searchUrl;
 
-  if (!slugCache.has(objectId)) {
-    try {
-      slugCache.set(objectId, await fetchSlug(namespace, itemId));
-    } catch (error) {
-      logger.warn("[epic-store-page] slug lookup failed", {
-        objectId,
-        message: (error as Error)?.message,
-      });
-      // Not cached: a network hiccup should not stick for the session.
-      return searchUrl;
-    }
+  try {
+    const slug = await getEpicPageSlug(objectId);
+    return slug ? `${STORE_PAGE}${slug}` : searchUrl;
+  } catch (error) {
+    logger.warn("[epic-store-page] slug lookup failed", {
+      objectId,
+      message: (error as Error)?.message,
+    });
+    // Not cached: a network hiccup should not stick for the session.
+    return searchUrl;
   }
-
-  const slug = slugCache.get(objectId);
-  return slug ? `${STORE_PAGE}${slug}` : searchUrl;
 };
+
+export const EPIC_STORE_PAGE_URL = STORE_PAGE;

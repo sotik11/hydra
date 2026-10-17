@@ -33,6 +33,8 @@ export function SettingsCriticScores() {
     userPreferences?.criticScoresMetacriticUserEnabled ?? true;
   const openCriticEnabled =
     userPreferences?.criticScoresOpenCriticEnabled ?? true;
+  const epicRatingEnabled =
+    userPreferences?.criticScoresEpicRatingEnabled ?? true;
 
   // Expanded by default (like RetroAchievements / Steam), unlike Localization.
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -137,6 +139,14 @@ export function SettingsCriticScores() {
                   criticScoresOpenCriticEnabled: !openCriticEnabled,
                 }),
               t("critic_scores_source_opencritic")
+            )}
+            {renderSource(
+              epicRatingEnabled,
+              () =>
+                updateUserPreferences({
+                  criticScoresEpicRatingEnabled: !epicRatingEnabled,
+                }),
+              t("critic_scores_source_epic_rating")
             )}
           </ul>
         </div>

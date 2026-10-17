@@ -6,6 +6,7 @@ import type { ExternalCriticScores, GameShop } from "@types";
 import { SidebarSection } from "../sidebar-section/sidebar-section";
 import MetacriticLogo from "@renderer/assets/icons/metacritic.svg?react";
 import OpenCriticLogo from "@renderer/assets/icons/opencritic.svg?react";
+import EpicLogo from "@renderer/assets/epic-integration-logo.svg?react";
 
 import "../../settings/critic-scores-i18n";
 import "./critic-scores-section.scss";
@@ -22,6 +23,10 @@ interface CriticScoresSectionProps {
   showMetacritic: boolean;
   showMetacriticUser: boolean;
   showOpenCritic: boolean;
+  // Epic game ("namespace:itemId"): OpenCritic + Epic player rating from the
+  // Epic storefront — the only source for Epic exclusives.
+  epicObjectId?: string;
+  showEpicRating?: boolean;
 }
 
 // Colour bands by score (0–100), shared across sources.
@@ -37,18 +42,29 @@ interface RowProps {
   logo: React.ReactNode;
   name: string;
   linkLabel: string;
+  // Shown instead of the 0–100 score (e.g. "4.3 / 5"); colour still uses score.
+  displayScore?: string;
 }
 
-function CriticRow({ score, url, logo, name, linkLabel }: Readonly<RowProps>) {
+function CriticRow({
+  score,
+  url,
+  logo,
+  name,
+  linkLabel,
+  displayScore,
+}: Readonly<RowProps>) {
   return (
     <button
       type="button"
       className="critic-scores__row"
-      onClick={() => window.electron.openExternal(url)}
+      onClick={() => {
+        if (url) window.electron.openExternal(url);
+      }}
       title={linkLabel}
     >
       <span className={`critic-scores__score ${scoreModifier(score)}`}>
-        {score}
+        {displayScore ?? score}
       </span>
 
       <span className="critic-scores__info">
@@ -73,6 +89,8 @@ export function CriticScoresSection({
   showMetacritic,
   showMetacriticUser,
   showOpenCritic,
+  epicObjectId,
+  showEpicRating = false,
 }: Readonly<CriticScoresSectionProps>) {
   const { t } = useTranslation("critic_scores");
   const [external, setExternal] = useState<ExternalCriticScores | null>(null);
@@ -104,6 +122,32 @@ export function CriticScoresSection({
       active = false;
     };
   }, [shop, objectId, needsExternal, fetchMetacritic]);
+
+  const [epicScores, setEpicScores] = useState<ExternalCriticScores | null>(
+    null
+  );
+  const needsEpic = !!epicObjectId && (showOpenCritic || showEpicRating);
+
+  useEffect(() => {
+    if (!needsEpic || !epicObjectId) {
+      setEpicScores(null);
+      return;
+    }
+
+    let active = true;
+    window.electron
+      .getCriticScores("epic", epicObjectId)
+      .then((data) => {
+        if (active) setEpicScores(data);
+      })
+      .catch(() => {
+        if (active) setEpicScores(null);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [epicObjectId, needsEpic]);
 
   const rows: React.ReactNode[] = [];
   const metacritic = steamMetacritic ?? external?.metacritic ?? null;
@@ -144,8 +188,10 @@ export function CriticScoresSection({
     );
   }
 
-  if (showOpenCritic && external?.openCritic) {
-    const { score, url, verdict } = external.openCritic;
+  // OpenCritic: by Steam appid when there is one, else from the Epic storefront.
+  const openCritic = external?.openCritic ?? epicScores?.openCritic ?? null;
+  if (showOpenCritic && openCritic) {
+    const { score, url, verdict } = openCritic;
     rows.push(
       <CriticRow
         key="oc"
@@ -163,6 +209,23 @@ export function CriticScoresSection({
             ? `${verdict} — ${t("critic_scores_opencritic_link")}`
             : t("critic_scores_opencritic_link")
         }
+      />
+    );
+  }
+
+  const epicRating = epicScores?.epicPlayerRating;
+  if (showEpicRating && epicRating) {
+    rows.push(
+      <CriticRow
+        key="epic-rating"
+        score={Math.round((epicRating.average / 5) * 100)}
+        displayScore={`${epicRating.average.toFixed(1)} / 5`}
+        url={epicRating.url}
+        logo={
+          <EpicLogo className="critic-scores__brand-logo" aria-hidden="true" />
+        }
+        name={t("critic_scores_epic_rating_name")}
+        linkLabel={t("critic_scores_epic_rating_link")}
       />
     );
   }

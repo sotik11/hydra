@@ -154,17 +154,23 @@ export function Sidebar() {
     userPreferences?.criticScoresMetacriticUserEnabled ?? true;
   const openCriticEnabled =
     userPreferences?.criticScoresOpenCriticEnabled ?? true;
+  const epicRatingEnabled =
+    userPreferences?.criticScoresEpicRatingEnabled ?? true;
   // An Epic copy of a game that is also on Steam rates by its linked Steam appid
-  // (catalogueGame); Epic exclusives have no Steam appid and get no block.
+  // (catalogueGame). Every Epic game (exclusives too) also gets OpenCritic and
+  // the Epic player rating from the Epic storefront.
   const criticScoresAppId =
     shop === "steam"
       ? (objectId ?? "")
       : shop === "epic" && catalogueGame.shop === "steam"
         ? catalogueGame.objectId
         : "";
+  const criticScoresEpicObjectId =
+    shop === "epic" && objectId ? objectId : undefined;
   const steamMetacritic =
     shop === "steam" ? (shopDetails?.metacritic ?? null) : null;
-  const shouldShowCriticScores = criticScoresEnabled && !!criticScoresAppId;
+  const shouldShowCriticScores =
+    criticScoresEnabled && (!!criticScoresAppId || !!criticScoresEpicObjectId);
 
   const shouldRenderAchievementsSection =
     (!!userDetails && achievementsCount > 0) ||
@@ -385,6 +391,8 @@ export function Sidebar() {
           showMetacritic={metacriticEnabled}
           showMetacriticUser={metacriticUserEnabled}
           showOpenCritic={openCriticEnabled}
+          epicObjectId={criticScoresEpicObjectId}
+          showEpicRating={epicRatingEnabled}
         />
       )}
 

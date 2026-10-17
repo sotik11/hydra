@@ -3,6 +3,7 @@ import {
   getExternalCriticScores,
   getSteamMetacritic,
 } from "@main/services/critic-scores";
+import { getEpicCriticScores } from "@main/services/epic-critic-scores";
 import type { ExternalCriticScores, GameShop } from "@types";
 
 const getCriticScores = async (
@@ -11,6 +12,9 @@ const getCriticScores = async (
   objectId: string,
   includeMetacritic?: boolean
 ): Promise<ExternalCriticScores> => {
+  // Epic games (exclusives too): OpenCritic + Epic player rating from the Epic
+  // storefront, by "namespace:itemId".
+  if (shop === "epic") return getEpicCriticScores(objectId);
   // Augmented Steam API is keyed by Steam appid — other shops have none.
   // Epic copies of Steam games pass their linked Steam appid here.
   if (shop !== "steam") return { metacriticUser: null, openCritic: null };

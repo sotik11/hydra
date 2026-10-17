@@ -693,6 +693,8 @@ export interface ExternalCriticScores {
   // Metacritic critic score from Steam appdetails — filled only on request, for
   // pages that have no Steam shop details of their own (Epic copies of Steam games).
   metacritic?: { score: number; url: string } | null;
+  // Epic's own player rating (0–5) from the Epic storefront — Epic games only.
+  epicPlayerRating?: { average: number; url: string } | null;
 }
 
 export interface GameReviewAnswer {
