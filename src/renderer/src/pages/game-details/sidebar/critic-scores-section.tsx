@@ -7,7 +7,7 @@ import { SidebarSection } from "../sidebar-section/sidebar-section";
 import MetacriticLogo from "@renderer/assets/icons/metacritic.svg?react";
 import OpenCriticLogo from "@renderer/assets/icons/opencritic.svg?react";
 import EpicLogo from "@renderer/assets/epic-integration-logo.svg?react";
-import { SteamIcon } from "@renderer/components/steam-library-badge/steam-library-badge";
+import SteamBrandLogo from "@renderer/assets/steam-logo-brand.svg?react";
 
 import "../../settings/critic-scores-i18n";
 import "./critic-scores-section.scss";
@@ -241,9 +241,9 @@ export function CriticScoresSection({
         displayScale="%"
         url={steamReviews.url}
         logo={
-          <SteamIcon
-            size={22}
-            className="critic-scores__brand-logo critic-scores__brand-logo--white"
+          <SteamBrandLogo
+            className="critic-scores__brand-logo"
+            aria-hidden="true"
           />
         }
         name={t("critic_scores_steam_reviews_name")}
