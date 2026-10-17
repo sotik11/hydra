@@ -1,3 +1,4 @@
+import type { EpicInstallation } from "@types";
 import { db } from "../level";
 import { levelKeys } from "./keys";
 
@@ -14,6 +15,9 @@ export interface LocalGameSetup {
   autoRunGamemode?: boolean | null;
   automaticCloudSync?: boolean;
   installedSizeInBytes?: number | null;
+  // Epic install + save-sync state (save path, sync anchor, pending upload).
+  // Restored only for the same Hydra user/environment it belongs to.
+  epicInstallation?: EpicInstallation;
 }
 
 export const localGameSetupSublevel = db.sublevel<string, LocalGameSetup>(

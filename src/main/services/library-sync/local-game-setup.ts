@@ -5,6 +5,7 @@ import {
   localGameSetupSublevel,
   type LocalGameSetup,
 } from "@main/level";
+import { HydraApi } from "@main/services/hydra-api";
 import { logger } from "@main/services/logger";
 import { WindowManager } from "@main/services/window-manager";
 import { AchievementWatcherManager } from "@main/services/achievements/achievement-watcher-manager";
@@ -19,7 +20,20 @@ const SETUP_FIELDS = [
   "autoRunGamemode",
   "automaticCloudSync",
   "installedSizeInBytes",
+  "epicInstallation",
 ] as const satisfies readonly (keyof LocalGameSetup & keyof Game)[];
+
+/** An Epic installation (and its save-sync state) belongs to one Hydra user. */
+const isEpicInstallationOwnedByCurrentUser = (
+  installation: NonNullable<LocalGameSetup["epicInstallation"]>
+) => {
+  const context = HydraApi.getAuthContext();
+  return (
+    !!context &&
+    installation.owner?.environment === context.environment &&
+    installation.owner?.userId === context.userId
+  );
+};
 
 const isSet = (value: unknown) =>
   value !== undefined && value !== null && value !== "" && value !== false;
@@ -69,12 +83,21 @@ export const restoreLocalGameSetup = async (): Promise<void> => {
     if (!game || game.isDeleted) continue;
 
     const patch: Record<string, unknown> = {};
+    // Another user's Epic installation waits for its owner instead of being dropped.
+    let keepForOwner: LocalGameSetup | null = null;
     for (const field of SETUP_FIELDS) {
       if (!isSet(setup[field]) || isSet(game[field])) continue;
       if (
         field === "executablePath" &&
         !fs.existsSync(setup[field] as string)
       ) {
+        continue;
+      }
+      if (
+        field === "epicInstallation" &&
+        !isEpicInstallationOwnedByCurrentUser(setup.epicInstallation!)
+      ) {
+        keepForOwner = { epicInstallation: setup.epicInstallation };
         continue;
       }
       patch[field] = setup[field];
@@ -98,7 +121,11 @@ export const restoreLocalGameSetup = async (): Promise<void> => {
       }
     }
 
-    await localGameSetupSublevel.del(key).catch(() => {});
+    if (keepForOwner) {
+      await localGameSetupSublevel.put(key, keepForOwner).catch(() => {});
+    } else {
+      await localGameSetupSublevel.del(key).catch(() => {});
+    }
   }
 
   if (restored > 0) {
