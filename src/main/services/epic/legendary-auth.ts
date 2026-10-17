@@ -14,6 +14,34 @@ import {
 } from "./auth-protocol.js";
 import type { EpicSessionBundle } from "./store";
 
+/* Fork: run diagnostics hook. Upstream reports every failed Legendary run as
+ * "auth-failed" and drops its output; legendary-run-log.ts subscribes here to
+ * log command, exit code, duration and a redacted stderr tail. No imports are
+ * added to this module so upstream dependency-whitelist tests keep passing. */
+export interface LegendaryRunReport {
+  args: readonly string[];
+  durationMs: number;
+  exitCode: number | null;
+  outcome: "ok" | "failed" | "timeout" | "operation-cancelled" | "spawn-failed";
+  errorCode?: string;
+  stderrTail: string;
+  stdoutBytes: number;
+}
+const LEGENDARY_RUN_TAIL_LENGTH = 2048;
+let legendaryRunObserver: ((report: LegendaryRunReport) => void) | undefined;
+export const observeLegendaryRuns = (
+  observer: ((report: LegendaryRunReport) => void) | undefined
+) => {
+  legendaryRunObserver = observer;
+};
+const reportLegendaryRun = (report: LegendaryRunReport) => {
+  try {
+    legendaryRunObserver?.(report);
+  } catch {
+    /* Diagnostics must never change the run result. */
+  }
+};
+
 export const EPIC_LEGENDARY_PROCESS_TIMEOUT_MS = 60_000;
 export const EPIC_LEGENDARY_API_TIMEOUT_SECONDS = 15;
 export const EPIC_LEGENDARY_MAX_OUTPUT_BYTES = 128 * 1024;
@@ -94,9 +122,22 @@ export function executeLegendaryCommand(
         cwd: options.cwd,
       });
     } catch {
+      reportLegendaryRun({
+        args,
+        durationMs: 0,
+        exitCode: null,
+        outcome: "spawn-failed",
+        stderrTail: "",
+        stdoutBytes: 0,
+      });
       reject(new EpicIntegrationError("auth-failed"));
       return;
     }
+    // Fork: run diagnostics (see observeLegendaryRuns above).
+    const startedAt = Date.now();
+    let logTail = "";
+    let stdoutBytes = 0;
+    let exitCode: number | null = null;
     let output = "";
     const decoder = new StringDecoder("utf8");
     const diagnosticDecoder = new StringDecoder("utf8");
@@ -123,6 +164,21 @@ export function executeLegendaryCommand(
       settled = true;
       clearTimeout(timer);
       options.signal?.removeEventListener("abort", abort);
+      reportLegendaryRun({
+        args,
+        durationMs: Date.now() - startedAt,
+        exitCode,
+        outcome: !error
+          ? "ok"
+          : spawnFailed
+            ? "spawn-failed"
+            : error.code === "timeout" || error.code === "operation-cancelled"
+              ? error.code
+              : "failed",
+        errorCode: error?.code,
+        stderrTail: logTail,
+        stdoutBytes,
+      });
       if (error) {
         output = "";
         reject(error);
@@ -160,12 +216,16 @@ export function executeLegendaryCommand(
     });
     child.stdout?.on("data", (chunk: Buffer) => {
       bytes += chunk.length;
+      stdoutBytes += chunk.length;
       if (bytes > (options.maxBuffer ?? EPIC_LEGENDARY_MAX_OUTPUT_BYTES))
         stop("auth-failed");
       else if (!interruption) output += decoder.write(chunk);
     });
     child.stderr?.on("data", (chunk: Buffer) => {
       bytes += chunk.length;
+      logTail = (logTail + chunk.toString("utf8")).slice(
+        -LEGENDARY_RUN_TAIL_LENGTH
+      );
       if (bytes > (options.maxBuffer ?? EPIC_LEGENDARY_MAX_OUTPUT_BYTES))
         stop("auth-failed");
       else if (options.sessionRequired && !interruption) {
@@ -181,6 +241,7 @@ export function executeLegendaryCommand(
     });
     child.on("close", (code) => {
       closed = true;
+      exitCode = code;
       output += decoder.end();
       completeClose();
       if (!interruption)

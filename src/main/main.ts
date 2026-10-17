@@ -47,6 +47,7 @@ import { migrateEmulatorCloudSaveDefaults } from "./services/cloud-save/automati
 import { watchSteamLibraries } from "./services/steam-integration/steam-install-watcher";
 import { migrateGameVisibilityFields } from "./services/library-sync/game-visibility-migration";
 import { UmuUpdater } from "./services/umu-updater";
+import { installLegendaryRunLog } from "./services/epic/legendary-run-log";
 
 const hasMissingSeedFiles = async (download: Download): Promise<boolean> => {
   if (!download.folderName) return false;
@@ -71,6 +72,8 @@ const hasMissingSeedFiles = async (download: Download): Promise<boolean> => {
 };
 
 export const loadState = async () => {
+  // Fork: log every Legendary run (exit code, redacted stderr tail) — before any Epic work starts.
+  installLegendaryRunLog();
   await Lock.acquireLock();
   await clearLegacyAchievementPersistence();
   await migrateCloudSaveAutomaticSyncDefaults();
