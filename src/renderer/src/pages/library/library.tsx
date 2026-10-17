@@ -27,7 +27,7 @@ import {
   CheckCircleFillIcon,
 } from "@primer/octicons-react";
 import { useTranslation } from "react-i18next";
-import { AuthPage, removeDiacritics } from "@shared";
+import { AuthPage, groupLibraryGames, removeDiacritics } from "@shared";
 import { GameCollection, LibraryGame } from "@types";
 import {
   Button,
@@ -319,6 +319,9 @@ export default function Library() {
 
   const searchQuery = useAppSelector((state) => state.library.searchQuery);
   const isLibraryLoading = useAppSelector(selectIsLibraryLoading);
+  const runningGameId = useAppSelector(
+    (state) => state.gameRunning.gameRunning?.id
+  );
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const dispatch = useAppDispatch();
   const { t } = useTranslation(["library", "sidebar", "library_fork"]);
@@ -495,12 +498,20 @@ export default function Library() {
     userDetails,
   ]);
 
+  const groupedLibrary = useMemo(
+    () => groupLibraryGames(library, runningGameId ? [runningGameId] : []),
+    [library, runningGameId]
+  );
+  const groupedHiddenGames = useMemo(
+    () => groupLibraryGames(hiddenGames, runningGameId ? [runningGameId] : []),
+    [hiddenGames, runningGameId]
+  );
   const sortedLibrary = useMemo(
-    () => sortLibraryGames(library, sortBy),
-    [library, sortBy]
+    () => sortLibraryGames(groupedLibrary, sortBy),
+    [groupedLibrary, sortBy]
   );
 
-  const { platforms: uniquePlatforms, hasSteamGames } = useMemo(
+  const { platforms: uniquePlatforms, hasImportedGames } = useMemo(
     () =>
       getLibraryFilterOptions(
         selectedCollectionId === HIDDEN_COLLECTION_ID ? hiddenGames : library
@@ -509,7 +520,7 @@ export default function Library() {
   );
   const hasPlatforms = uniquePlatforms.length > 0;
   const showSourceFilter =
-    categoryShowsSources(effectiveCategory) && hasSteamGames;
+    categoryShowsSources(effectiveCategory) && hasImportedGames;
   const showPlatformFilter =
     categoryShowsPlatforms(effectiveCategory) && hasPlatforms;
 
@@ -517,7 +528,7 @@ export default function Library() {
     let filtered =
       selectedCollectionId === HIDDEN_COLLECTION_ID
         ? userDetails
-          ? sortLibraryGames(hiddenGames, sortBy)
+          ? sortLibraryGames(groupedHiddenGames, sortBy)
           : []
         : sortedLibrary;
 
@@ -535,7 +546,7 @@ export default function Library() {
 
     filtered = filterLibraryGames(filtered, {
       category: effectiveCategory,
-      sources: hasSteamGames ? selectedSources : [],
+      sources: hasImportedGames ? selectedSources : [],
       platforms: hasPlatforms ? selectedPlatforms : [],
     });
 
@@ -565,13 +576,13 @@ export default function Library() {
     });
   }, [
     sortedLibrary,
-    hiddenGames,
+    groupedHiddenGames,
     userDetails,
     sortBy,
     deferredSearchQuery,
     selectedCollectionId,
     effectiveCategory,
-    hasSteamGames,
+    hasImportedGames,
     selectedSources,
     hasPlatforms,
     selectedPlatforms,
@@ -621,22 +632,8 @@ export default function Library() {
   }, [uniquePlatforms, selectedPlatforms, handlePlatformsChange]);
 
   const favoritesCount = useMemo(() => {
-    return library.filter((game) => game.favorite).length;
-  }, [library]);
-
-  const customGamesCountByCollectionId = useMemo(() => {
-    const counts = new Map<string, number>();
-
-    for (const game of library) {
-      if (game.shop !== "custom") continue;
-
-      for (const collectionId of getGameCollectionIds(game)) {
-        counts.set(collectionId, (counts.get(collectionId) ?? 0) + 1);
-      }
-    }
-
-    return counts;
-  }, [library]);
+    return groupedLibrary.filter((game) => game.favorite).length;
+  }, [groupedLibrary]);
 
   const libraryCollections = useMemo<GameCollection[]>(() => {
     return [
@@ -650,22 +647,22 @@ export default function Library() {
             {
               id: HIDDEN_COLLECTION_ID,
               name: t("hidden_games"),
-              gamesCount: hiddenGames.length,
+              gamesCount: groupedHiddenGames.length,
             },
           ]
         : []),
       ...collections.map((collection) => ({
         ...collection,
-        gamesCount:
-          collection.gamesCount +
-          (customGamesCountByCollectionId.get(collection.id) ?? 0),
+        gamesCount: groupedLibrary.filter((game) =>
+          getGameCollectionIds(game).includes(collection.id)
+        ).length,
       })),
     ];
   }, [
     collections,
-    customGamesCountByCollectionId,
+    groupedLibrary,
     favoritesCount,
-    hiddenGames.length,
+    groupedHiddenGames,
     t,
     userDetails,
   ]);

@@ -56,6 +56,7 @@ const addGameToLibrary = async (
     game.isDeleted = false;
     game.addedToLibraryAt ??= new Date();
     game.source = "hydra";
+    if (shop === "epic") game.remoteId = null;
     if (resolvedPlatform && !game.platform) game.platform = resolvedPlatform;
     // Fork: mark "available to install" (carried from the wishlist) until the
     // game is actually installed; the executable path clears it below.

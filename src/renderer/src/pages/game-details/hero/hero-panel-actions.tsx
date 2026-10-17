@@ -12,9 +12,14 @@ import {
   StarFillIcon,
   XIcon,
 } from "@primer/octicons-react";
-import { Button, ConfirmationModal } from "@renderer/components";
+import { Button, ConfirmationModal, Modal } from "@renderer/components";
+import type { LibraryGame, NexusMatch } from "@types";
+import {
+  canRetryEpicLaunchWithLocalSaves,
+  getEpicLaunchError,
+  getEpicManagedError,
+} from "@renderer/helpers/epic-managed-error";
 import { XCircle, Puzzle } from "lucide-react";
-import type { NexusMatch } from "@types";
 import { ModsModal } from "../modals/mods-modal";
 import {
   useAppSelector,
@@ -23,7 +28,7 @@ import {
   useToast,
   useUserDetails,
 } from "@renderer/hooks";
-import { useContext, useState } from "react";
+import { useCallback, useContext, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { gameDetailsContext } from "@renderer/context";
@@ -33,9 +38,15 @@ import {
 } from "@renderer/helpers";
 import { SteamIcon } from "@renderer/components/steam-library-badge/steam-library-badge";
 import { DiscSelectionModal } from "../modals/disc-selection-modal";
+import { EpicCloudSaveConflictModal } from "../modals/epic-cloud-save-conflict-modal";
 
 import "./hero-panel-actions.scss";
 import { useEffect } from "react";
+import {
+  applyLibraryGroupAction,
+  isLibraryGameDownloading,
+  getOfficialStoreMembers,
+} from "@shared";
 import "../modals/localization-i18n";
 import "@renderer/pages/wishlist/wishlist-page-i18n";
 import "@renderer/pages/settings/mods-i18n";
@@ -54,6 +65,8 @@ export function HeroPanelActions() {
 
   const {
     game,
+    downloadGame,
+    presentation,
     repacks,
     isGameRunning,
     shop,
@@ -70,15 +83,12 @@ export function HeroPanelActions() {
     transferProgress,
   } = useContext(gameDetailsContext);
 
-  const { lastPacket } = useDownload();
-
   const userPreferences = useAppSelector(
     (state) => state.userPreferences.value
   );
   const localizationsEnabled = userPreferences?.localizationsEnabled ?? true;
 
-  const isGameDownloading =
-    game?.download?.status === "active" && lastPacket?.gameId === game?.id;
+  const isGameDownloading = isLibraryGameDownloading(downloadGame);
 
   const { updateLibrary } = useLibrary();
 
@@ -87,11 +97,39 @@ export function HeroPanelActions() {
   const navigate = useNavigate();
 
   const [showDiscSelectionModal, setShowDiscSelectionModal] = useState(false);
+  const [localSaveRetry, setLocalSaveRetry] = useState<LibraryGame | null>(
+    null
+  );
+  const [epicSaveConflict, setEpicSaveConflict] = useState<LibraryGame | null>(
+    null
+  );
+  const [canRetryOffline, setCanRetryOffline] = useState(false);
+  const [canRetryLocalSaves, setCanRetryLocalSaves] = useState(false);
+  const officialMembers = getOfficialStoreMembers(
+    presentation?.members ?? (game ? [game] : [])
+  );
   const [pendingClassicsLaunch, setPendingClassicsLaunch] = useState<{
     discPath: string | undefined;
   } | null>(null);
 
   const { t } = useTranslation("game_details");
+  const launchGeneration = useRef(0);
+  const invalidateLaunch = useCallback(() => {
+    launchGeneration.current++;
+  }, []);
+  useEffect(() => {
+    const invalidate = () => {
+      invalidateLaunch();
+      setLocalSaveRetry(null);
+      setEpicSaveConflict(null);
+    };
+    invalidate();
+    const stop = window.electron?.onEpicConnectionChanged?.(invalidate);
+    return () => {
+      invalidateLaunch();
+      stop?.();
+    };
+  }, [shop, objectId, invalidateLaunch]);
 
   useEffect(() => {
     const onOpenDiscSelection = (event: Event) => {
@@ -181,23 +219,25 @@ export function HeroPanelActions() {
     setToggleLibraryGameDisabled(true);
 
     try {
-      if (game?.favorite && objectId) {
-        await window.electron
-          .removeGameFromFavorites(shop, objectId)
-          .then(() => {
-            showSuccessToast(t("game_removed_from_favorites"));
-          });
-      } else {
-        if (!objectId) return;
-
-        await window.electron.addGameToFavorites(shop, objectId).then(() => {
-          showSuccessToast(t("game_added_to_favorites"));
-        });
-      }
-
-      updateLibrary();
-      updateGame();
+      if (!game) return;
+      const favorite = presentation?.favorite ?? game.favorite;
+      await applyLibraryGroupAction(
+        presentation?.members ?? [game],
+        (member) =>
+          favorite
+            ? window.electron.removeGameFromFavorites(
+                member.shop,
+                member.objectId
+              )
+            : window.electron.addGameToFavorites(member.shop, member.objectId)
+      );
+      showSuccessToast(
+        t(favorite ? "game_removed_from_favorites" : "game_added_to_favorites")
+      );
+    } catch {
+      showErrorToast(t("failed_update_favorites"));
     } finally {
+      await Promise.all([updateLibrary(), updateGame()]);
       setToggleLibraryGameDisabled(false);
     }
   };
@@ -206,21 +246,18 @@ export function HeroPanelActions() {
     setToggleLibraryGameDisabled(true);
 
     try {
-      if (game?.isPinned && objectId) {
-        await window.electron.toggleGamePin(shop, objectId, false).then(() => {
-          showSuccessToast(t("game_removed_from_pinned"));
-        });
-      } else {
-        if (!objectId) return;
-
-        await window.electron.toggleGamePin(shop, objectId, true).then(() => {
-          showSuccessToast(t("game_added_to_pinned"));
-        });
-      }
-
-      updateLibrary();
-      updateGame();
+      if (!game) return;
+      const pinned = presentation?.isPinned ?? game.isPinned;
+      await applyLibraryGroupAction(presentation?.members ?? [game], (member) =>
+        window.electron.toggleGamePin(member.shop, member.objectId, !pinned)
+      );
+      showSuccessToast(
+        t(pinned ? "game_removed_from_pinned" : "game_added_to_pinned")
+      );
+    } catch {
+      showErrorToast(t("failed_update_pinned"));
     } finally {
+      await Promise.all([updateLibrary(), updateGame()]);
       setToggleLibraryGameDisabled(false);
     }
   };
@@ -296,12 +333,7 @@ export function HeroPanelActions() {
     }
 
     if (game.executablePath) {
-      window.electron.openGame(
-        game.shop,
-        game.objectId,
-        game.executablePath,
-        game.launchOptions
-      );
+      await launchMember(game);
       return;
     }
 
@@ -313,6 +345,66 @@ export function HeroPanelActions() {
         gameExecutablePath,
         game.launchOptions
       );
+  };
+  const launchMember = async (
+    member: LibraryGame,
+    localOnce = false,
+    offline = false
+  ) => {
+    if (!member.executablePath) return;
+    setLocalSaveRetry(null);
+    setEpicSaveConflict(null);
+    setCanRetryOffline(false);
+    setCanRetryLocalSaves(false);
+    const generation = launchGeneration.current;
+    try {
+      await window.electron.openGame(
+        member.shop,
+        member.objectId,
+        member.executablePath,
+        member.launchOptions,
+        offline
+          ? { epicOffline: true }
+          : localOnce
+            ? { epicSavePolicy: "local-once" }
+            : undefined
+      );
+    } catch (error) {
+      if (generation !== launchGeneration.current) return;
+      const code =
+        member.shop === "epic" ? getEpicLaunchError(error) : undefined;
+      if (code === "save-conflict") {
+        setEpicSaveConflict(member);
+        return;
+      }
+      const translation = code ? getEpicManagedError(code) : null;
+      showErrorToast(
+        translation
+          ? t(translation.key, { ns: translation.ns })
+          : t("epic_launch_failed")
+      );
+      if (
+        member.shop === "epic" &&
+        typeof window.electron.getEpicCloudSaveState === "function"
+      ) {
+        const state = await window.electron
+          .getEpicCloudSaveState(member.objectId)
+          .catch(() => null);
+        if (generation !== launchGeneration.current) return;
+        if (state?.status === "conflict") {
+          setEpicSaveConflict(member);
+          return;
+        }
+        if (
+          canRetryEpicLaunchWithLocalSaves(state) ||
+          state?.canRunOffline === true
+        ) {
+          setLocalSaveRetry(member);
+          setCanRetryOffline(state?.canRunOffline === true);
+          setCanRetryLocalSaves(canRetryEpicLaunchWithLocalSaves(state));
+        }
+      }
+    }
   };
 
   const closeGame = () => {
@@ -534,7 +626,7 @@ export function HeroPanelActions() {
         onClick={() => setShowRepacksModal(true)}
         theme="outline"
         disabled={isGameDownloading}
-        className={`hero-panel-actions__action ${repacks.length === 0 && !canDownloadOnSteam(game) ? "hero-panel-actions__action--disabled" : ""}`}
+        className={`hero-panel-actions__action ${repacks.length === 0 && !canDownloadOnSteam(officialMembers.steam) && !officialMembers.epic ? "hero-panel-actions__action--disabled" : ""}`}
       >
         <DownloadIcon />
         {t("download")}
@@ -558,6 +650,40 @@ export function HeroPanelActions() {
       <div className="hero-panel-actions__container">
         {modsButton}
         {localizationButton}
+        <EpicCloudSaveConflictModal
+          game={epicSaveConflict}
+          isGameRunning={isGameRunning}
+          onClose={() => setEpicSaveConflict(null)}
+        />
+        <Modal
+          visible={!!localSaveRetry}
+          title={t("epic_play_local_saves")}
+          description={t("epic_play_local_saves_description")}
+          onClose={() => setLocalSaveRetry(null)}
+        >
+          <div className="hero-panel-actions__epic-actions">
+            {canRetryLocalSaves && (
+              <Button
+                onClick={() => {
+                  if (localSaveRetry) void launchMember(localSaveRetry, true);
+                }}
+              >
+                {t("epic_play_local_saves")}
+              </Button>
+            )}
+            {canRetryOffline && (
+              <Button
+                theme="outline"
+                onClick={() => {
+                  if (localSaveRetry)
+                    void launchMember(localSaveRetry, false, true);
+                }}
+              >
+                {t("epic_play_offline")}
+              </Button>
+            )}
+          </div>
+        </Modal>
         {gameActionButton()}
         <div className="hero-panel-actions__separator" />
         {removeFromLibraryButton}
@@ -567,7 +693,11 @@ export function HeroPanelActions() {
           disabled={deleting}
           className="hero-panel-actions__action"
         >
-          {game.favorite ? <HeartFillIcon /> : <HeartIcon />}
+          {(presentation?.favorite ?? game.favorite) ? (
+            <HeartFillIcon />
+          ) : (
+            <HeartIcon />
+          )}
         </Button>
 
         {userDetails && game.shop !== "custom" && (
@@ -577,7 +707,11 @@ export function HeroPanelActions() {
             disabled={deleting}
             className="hero-panel-actions__action"
           >
-            {game.isPinned ? <PinSlashIcon /> : <PinIcon />}
+            {(presentation?.isPinned ?? game.isPinned) ? (
+              <PinSlashIcon />
+            ) : (
+              <PinIcon />
+            )}
           </Button>
         )}
 

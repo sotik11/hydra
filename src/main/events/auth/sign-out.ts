@@ -10,11 +10,9 @@ import {
 import { clearGamesPlaytimeState } from "@main/services/game-running-state";
 import { rememberLocalGameSetup } from "@main/services/library-sync/local-game-setup";
 import {
-  db,
   downloadLayoutStateSublevel,
   downloadsSublevel,
   gamesSublevel,
-  levelKeys,
 } from "@main/level";
 
 /**
@@ -40,42 +38,29 @@ const clearAccountGames = async () => {
 const signOut = async (_event: Electron.IpcMainInvokeEvent) => {
   SSEClient.close();
 
-  const databaseOperations = db
-    .batch([
-      {
-        type: "del",
-        key: levelKeys.auth,
-      },
-      {
-        type: "del",
-        key: levelKeys.user,
-      },
-    ])
-    .then(() => {
-      /* Removes all games being played */
-      clearGamesPlaytimeState();
-
-      return Promise.all([
-        clearAccountGames(),
-        downloadsSublevel.clear(),
-        downloadLayoutStateSublevel.clear(),
-        emulators.resetEmulatorScanData(),
-        retroarch.resetRetroArchScanData(),
-      ]);
-    });
-
   /* Cancels any ongoing downloads */
   DownloadManager.cancelDownload();
 
-  await HydraApi.handleSignOut();
+  await HydraApi.handleSignOut(async () => {
+    /* Removes all games being played */
+    clearGamesPlaytimeState();
 
-  /* The friends window is only meaningful while signed in */
-  WindowManager.closeFriendsWindow();
+    const results = await Promise.allSettled([
+      clearAccountGames(),
+      downloadsSublevel.clear(),
+      downloadLayoutStateSublevel.clear(),
+      emulators.resetEmulatorScanData(),
+      retroarch.resetRetroArchScanData(),
+    ]);
+    const failed = results.find((result) => result.status === "rejected");
+    if (failed?.status === "rejected") throw failed.reason;
+  });
 
-  await Promise.all([
-    databaseOperations,
-    HydraApi.post("/auth/logout").catch(() => {}),
-  ]);
+  /* The friends and chat windows are only meaningful while signed in */
+  if (!HydraApi.isLoggedIn()) {
+    WindowManager.closeFriendsWindow();
+    WindowManager.closeChatWindow();
+  }
 };
 
 registerEvent("signOut", signOut);

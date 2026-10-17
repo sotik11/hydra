@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button, Modal } from "@renderer/components";
-import { useDate, useToast, useUserDetails } from "@renderer/hooks";
+import { useToast, useUserDetails } from "@renderer/hooks";
 import { LinkExternalIcon, PersonIcon, SyncIcon } from "@primer/octicons-react";
 import {
   AuthPage,
@@ -15,8 +15,11 @@ import type {
   SteamSyncFinishedPayload,
   SteamSyncState,
 } from "@types";
-import SteamLogo from "@renderer/assets/steam-logo.svg?react";
-import { SettingsIntegrationCard } from "./settings-integration-card";
+import SteamLogo from "@renderer/assets/steam-integration-logo.svg?react";
+import {
+  SettingsIntegrationCard,
+  SettingsIntegrationLastSynced,
+} from "./settings-integration-card";
 import { getSteamProgressPresentation } from "./settings-integration-progress";
 import { getSteamIntegrationPresentation } from "./settings-steam-state";
 import {
@@ -61,7 +64,6 @@ const isSteamAlreadyLinkedError = (message?: string) =>
 export function SettingsSteam() {
   const { userDetails } = useUserDetails();
   const { showSuccessToast, showErrorToast } = useToast();
-  const { formatDateTime } = useDate();
   const { t, i18n } = useTranslation("settings");
 
   const [isLoading, setIsLoading] = useState(
@@ -459,13 +461,9 @@ export function SettingsSteam() {
                 {steamAccount.username}
               </span>
               {integration.connected ? (
-                <span className="settings-integration-card__meta">
-                  {steamAccount.lastSyncedAt
-                    ? t("steam_last_synced", {
-                        date: formatDateTime(steamAccount.lastSyncedAt),
-                      })
-                    : t("steam_never_synced")}
-                </span>
+                <SettingsIntegrationLastSynced
+                  lastSyncedAt={steamAccount.lastSyncedAt}
+                />
               ) : null}
               <SteamCardExtras steamId64={steamAccount.steamId64} />
             </div>
