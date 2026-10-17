@@ -16,6 +16,9 @@ interface CriticScoresSectionProps {
   // Metacritic *critic* score comes from Steam appdetails (Metacritic doesn't
   // license it elsewhere); may be absent for many games.
   steamMetacritic: { score: number; url: string } | null;
+  // No Steam shop details on this page (an Epic copy of a Steam game): fetch
+  // the Metacritic critic score from Steam appdetails by the linked appid.
+  fetchMetacritic?: boolean;
   showMetacritic: boolean;
   showMetacriticUser: boolean;
   showOpenCritic: boolean;
@@ -66,6 +69,7 @@ export function CriticScoresSection({
   shop,
   objectId,
   steamMetacritic,
+  fetchMetacritic = false,
   showMetacritic,
   showMetacriticUser,
   showOpenCritic,
@@ -75,7 +79,10 @@ export function CriticScoresSection({
 
   // Augmented Steam feeds the Metacritic user score + OpenCritic, by Steam appid.
   const needsExternal =
-    shop === "steam" && (showMetacriticUser || showOpenCritic);
+    shop === "steam" &&
+    (showMetacriticUser ||
+      showOpenCritic ||
+      (fetchMetacritic && showMetacritic));
 
   useEffect(() => {
     if (!needsExternal || !objectId) {
@@ -85,7 +92,7 @@ export function CriticScoresSection({
 
     let active = true;
     window.electron
-      .getCriticScores(shop, objectId)
+      .getCriticScores(shop, objectId, fetchMetacritic)
       .then((data) => {
         if (active) setExternal(data);
       })
@@ -96,16 +103,17 @@ export function CriticScoresSection({
     return () => {
       active = false;
     };
-  }, [shop, objectId, needsExternal]);
+  }, [shop, objectId, needsExternal, fetchMetacritic]);
 
   const rows: React.ReactNode[] = [];
+  const metacritic = steamMetacritic ?? external?.metacritic ?? null;
 
-  if (showMetacritic && steamMetacritic) {
+  if (showMetacritic && metacritic) {
     rows.push(
       <CriticRow
         key="mc"
-        score={steamMetacritic.score}
-        url={steamMetacritic.url}
+        score={metacritic.score}
+        url={metacritic.url}
         logo={
           <MetacriticLogo
             className="critic-scores__brand-logo"

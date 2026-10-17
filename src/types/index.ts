@@ -690,6 +690,9 @@ export interface GameStats {
 export interface ExternalCriticScores {
   metacriticUser: { score: number; url: string } | null;
   openCritic: { score: number; verdict: string; url: string } | null;
+  // Metacritic critic score from Steam appdetails — filled only on request, for
+  // pages that have no Steam shop details of their own (Epic copies of Steam games).
+  metacritic?: { score: number; url: string } | null;
 }
 
 export interface GameReviewAnswer {
