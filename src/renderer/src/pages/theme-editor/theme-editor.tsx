@@ -17,6 +17,7 @@ import { AchievementNotificationItem } from "@renderer/components/achievements/n
 import { generateAchievementCustomNotificationTest } from "@shared";
 import { CollapsedMenu } from "@renderer/components/collapsed-menu/collapsed-menu";
 import { levelDBService } from "@renderer/services/leveldb.service";
+import { useCustomTheme } from "@renderer/hooks/use-custom-theme";
 import app from "../../app.scss?inline";
 import styles from "../../components/achievements/notification/achievement-notification.scss?inline";
 import root from "react-shadow";
@@ -29,6 +30,9 @@ const notificationVariations = {
 };
 
 export default function ThemeEditor() {
+  // The editor window itself wears the active theme; the notification preview
+  // below keeps rendering the code being edited inside its shadow root.
+  useCustomTheme();
   const [searchParams] = useSearchParams();
   const [theme, setTheme] = useState<Theme | null>(null);
   const [code, setCode] = useState("");

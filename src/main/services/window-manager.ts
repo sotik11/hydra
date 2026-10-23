@@ -233,6 +233,8 @@ export class WindowManager {
       this.bigPicture,
       this.friendsWindow,
       this.chatWindow,
+      // Fork: theme editor windows follow theme changes too.
+      ...this.editorWindows.values(),
     ];
 
     for (const window of windows) {
