@@ -93,13 +93,13 @@
 }
 
 .library-list {
+  position: relative;
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-unit);
 
   &__item {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
   }
 }

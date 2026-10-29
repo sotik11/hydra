@@ -23,6 +23,11 @@ import {
 } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  defaultRangeExtractor,
+  type Range,
+  useVirtualizer,
+} from "@tanstack/react-virtual";
+import {
   Divider,
   FocusItem,
   Input,
@@ -52,7 +57,11 @@ import {
 } from "../../stores/downloads.store";
 import type { DownloadProgress, LibraryGame } from "@types";
 import type { FocusNode, FocusOverrides, FocusRegion } from "../../services";
-import { useNavigationSnapshot, useVirtualKeyboardStore } from "../../stores";
+import {
+  useNavigationSnapshot,
+  useNavigationStore,
+  useVirtualKeyboardStore,
+} from "../../stores";
 import {
   BIG_PICTURE_SIDEBAR_POWER_ID,
   BIG_PICTURE_SIDEBAR_ITEM_IDS,
@@ -128,6 +137,9 @@ const SIDEBAR_LIBRARY_FILTER_FOCUS_IDS: Record<SidebarLibraryFilter, string> = {
 
 const SIDEBAR_LIBRARY_FILTER_STORAGE_KEY =
   "hydra:big-picture:sidebar-library-filter";
+const SIDEBAR_GAME_ESTIMATED_HEIGHT = 56;
+const SIDEBAR_GAME_GAP = 4;
+const SIDEBAR_GAME_OVERSCAN = 10;
 
 function getInitialSidebarLibraryFilter(): SidebarLibraryFilter {
   try {
@@ -588,6 +600,60 @@ function SidebarLibrary({
     };
   };
 
+  const gameFocusIds = useMemo(
+    () =>
+      filteredItems.map((game) =>
+        getBigPictureSidebarLibraryGameFocusId({
+          shop: game.shop,
+          objectId: game.objectId,
+        })
+      ),
+    [filteredItems]
+  );
+  const indexByGameFocusId = useMemo(
+    () => new Map(gameFocusIds.map((focusId, index) => [focusId, index])),
+    [gameFocusIds]
+  );
+  const focusedGameFocusId = useNavigationStore((state) =>
+    state.currentFocusId && indexByGameFocusId.has(state.currentFocusId)
+      ? state.currentFocusId
+      : null
+  );
+  const activeGameFocusId = activeGameRoute
+    ? getBigPictureSidebarLibraryGameFocusId(activeGameRoute)
+    : null;
+  const pinnedGameIndexes = useMemo(
+    () =>
+      [focusedGameFocusId, activeGameFocusId]
+        .map((focusId) =>
+          focusId ? indexByGameFocusId.get(focusId) : undefined
+        )
+        .filter((index): index is number => index !== undefined),
+    [activeGameFocusId, focusedGameFocusId, indexByGameFocusId]
+  );
+  const gameListRangeExtractor = useCallback(
+    (range: Range) => {
+      const indexes = defaultRangeExtractor(range);
+      for (const index of pinnedGameIndexes) {
+        if (index < range.count && !indexes.includes(index)) {
+          indexes.push(index);
+        }
+      }
+      return indexes.sort((left, right) => left - right);
+    },
+    [pinnedGameIndexes]
+  );
+  const gameListScrollRef = useRef<HTMLDivElement | null>(null);
+  const gameListVirtualizer = useVirtualizer({
+    count: filteredItems.length,
+    getScrollElement: () => gameListScrollRef.current,
+    estimateSize: () => SIDEBAR_GAME_ESTIMATED_HEIGHT,
+    gap: SIDEBAR_GAME_GAP,
+    overscan: SIDEBAR_GAME_OVERSCAN,
+    rangeExtractor: gameListRangeExtractor,
+    useFlushSync: false,
+  });
+
   const getGameNavigationOverrides = (index: number): FocusOverrides => ({
     right: contentEntryTarget,
     ...(index === 0 && {
@@ -654,19 +720,21 @@ function SidebarLibrary({
         <VerticalFocusGroup
           regionId={BIG_PICTURE_SIDEBAR_LIBRARY_LIST_REGION_ID}
         >
-          <ScrollArea>
+          <ScrollArea viewportRef={gameListScrollRef}>
             {filteredItems.length === 0 ? (
               <div className="library-container__empty">
                 {emptyLibraryMessage}
               </div>
             ) : (
-              <ul className="library-list">
-                {filteredItems.map((game, index) => {
+              <ul
+                className="library-list"
+                style={{ height: gameListVirtualizer.getTotalSize() }}
+              >
+                {gameListVirtualizer.getVirtualItems().map((virtualItem) => {
+                  const index = virtualItem.index;
+                  const game = filteredItems[index];
                   const desktopPath = `/big-picture/game/${game.shop}/${game.objectId}`;
-                  const focusId = getBigPictureSidebarLibraryGameFocusId({
-                    shop: game.shop,
-                    objectId: game.objectId,
-                  });
+                  const focusId = gameFocusIds[index];
                   const active =
                     normalizedPathname === desktopPath ||
                     (activeGameRoute?.shop === game.shop &&
@@ -693,7 +761,15 @@ function SidebarLibrary({
                   };
 
                   return (
-                    <li key={game.id} className="library-list__item">
+                    <li
+                      key={game.id}
+                      ref={gameListVirtualizer.measureElement}
+                      data-index={index}
+                      className="library-list__item"
+                      style={{
+                        transform: `translateY(${virtualItem.start}px)`,
+                      }}
+                    >
                       <RouteAnchor
                         key={game.id}
                         label={game.title}
