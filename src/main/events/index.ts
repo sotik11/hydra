@@ -30,6 +30,7 @@ import "./nexus-mods";
 import "./shutdown-on-complete";
 import "./critic-scores";
 import "./epic-store-page";
+import "./screenshots";
 import "./themes";
 import "./torrenting";
 import "./user";
@@ -38,6 +39,7 @@ import "./library/transfer-game-files";
 import "./emulators";
 import "./retroarch";
 import "./epic";
+import "./screenshot-input";
 
 ipcMain.handle("ping", () => "pong");
 ipcMain.handle("getVersion", () => appVersion);

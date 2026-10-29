@@ -17,6 +17,7 @@ import {
 } from "./retro-achievements-client";
 import { buildCatalogueFromRa } from "../retroarch/retroarch-retroachievements";
 import { AchievementMemoryStore } from "../achievements/achievement-memory-store";
+import { UnlockedAchievementsCache } from "../achievements/unlocked-achievements-cache";
 import { AchievementSouvenirStore } from "../achievements/achievement-souvenir-store";
 import { getAchievementSouvenirs } from "../achievements/get-achievement-souvenirs";
 
@@ -293,6 +294,7 @@ export const syncRetroAchievements = async ({
     language: cachedAchievements?.language,
     catalogueValidator: cachedAchievements?.catalogueValidator,
   });
+  UnlockedAchievementsCache.invalidate(shop, objectId);
 
   logger.info("RetroAchievements progress fetched", {
     objectId,
