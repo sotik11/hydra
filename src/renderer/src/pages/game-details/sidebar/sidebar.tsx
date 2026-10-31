@@ -15,6 +15,7 @@ import {
   useAppSelector,
   useDate,
   useFormat,
+  useGlobalLeaderboardsFeature,
   useUserDetails,
 } from "@renderer/hooks";
 import {
@@ -152,6 +153,8 @@ export function Sidebar() {
   const { t } = useTranslation("game_details");
   const { formatDateTime } = useDate();
   const { numberFormatter } = useFormat();
+  const { isEnabled: isGlobalLeaderboardsEnabled } =
+    useGlobalLeaderboardsFeature();
   const achievementsCount = achievements?.length ?? 0;
 
   // Fork "Game rating & scores": Metacritic *critic* score ships inside Steam's
@@ -370,7 +373,7 @@ export function Sidebar() {
         </SidebarSection>
       )}
 
-      <LeaderboardSection />
+      {isGlobalLeaderboardsEnabled && <LeaderboardSection />}
 
       {stats && (
         <SidebarSection title={t("stats")}>
