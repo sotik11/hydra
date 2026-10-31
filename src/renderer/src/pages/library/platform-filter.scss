@@ -8,8 +8,13 @@
     max-width: 240px;
     min-width: 0;
 
-    .library-select__trigger {
+    .library-multi-select__trigger {
       max-width: 100%;
+      min-width: 0;
+    }
+
+    .library-multi-select__trigger-label {
+      min-width: 0;
     }
   }
 }
