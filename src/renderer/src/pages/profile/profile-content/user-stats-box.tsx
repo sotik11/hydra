@@ -1,5 +1,6 @@
-import { useCallback, useContext } from "react";
+import { useCallback, useContext, useEffect, useState } from "react";
 import { userProfileContext } from "@renderer/context";
+import { logger } from "@renderer/logger";
 import { useTranslation } from "react-i18next";
 import { useFormat, useUserDetails } from "@renderer/hooks";
 import { MAX_MINUTES_TO_SHOW_IN_PLAYTIME } from "@renderer/constants";
@@ -15,6 +16,41 @@ export function UserStatsBox() {
   const { userDetails } = useUserDetails();
   const { t } = useTranslation("user_profile");
   const { numberFormatter } = useFormat();
+  const [localUnlockedAchievementSum, setLocalUnlockedAchievementSum] =
+    useState<number | null>(null);
+  const serverUnlockedAchievementSum = userStats?.unlockedAchievementSum;
+
+  // Fork: the API omits this sum without a subscription, so own profile falls
+  // back to the counts already stored in the local library.
+  useEffect(() => {
+    if (!isMe || !userStats || serverUnlockedAchievementSum !== undefined) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    window.electron
+      .getLibrary()
+      .then((games) => {
+        if (isCancelled) return;
+        setLocalUnlockedAchievementSum(
+          games.reduce(
+            (sum, game) => sum + (game.unlockedAchievementCount ?? 0),
+            0
+          )
+        );
+      })
+      .catch((error) => {
+        logger.error("Failed to sum unlocked achievements locally", error);
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [isMe, userStats, serverUnlockedAchievementSum]);
+
+  const unlockedAchievementSum =
+    serverUnlockedAchievementSum ?? (isMe ? localUnlockedAchievementSum : null);
 
   const formatPlayTime = useCallback(
     (playTimeInSeconds: number) => {
@@ -41,29 +77,16 @@ export function UserStatsBox() {
   return (
     <div className="user-stats__box">
       <ul className="user-stats__list">
-        {(isMe || userStats.unlockedAchievementSum !== undefined) && (
+        {unlockedAchievementSum !== null && (
           <li className="user-stats__list-item">
             <h3 className="user-stats__list-title">
               {t("achievements_unlocked")}
             </h3>
-            {userStats.unlockedAchievementSum !== undefined ? (
-              <div className="user-stats__stats-row">
-                <p className="user-stats__list-description">
-                  <TrophyIcon /> {userStats.unlockedAchievementSum}{" "}
-                  {t("achievements")}
-                </p>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => showHydraCloudModal("achievements")}
-                className="user-stats__link"
-              >
-                <small className="user-stats__link--warning">
-                  {t("show_achievements_on_profile")}
-                </small>
-              </button>
-            )}
+            <div className="user-stats__stats-row">
+              <p className="user-stats__list-description">
+                <TrophyIcon /> {unlockedAchievementSum} {t("achievements")}
+              </p>
+            </div>
           </li>
         )}
 
