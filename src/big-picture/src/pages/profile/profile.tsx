@@ -35,6 +35,7 @@ import type {
   UserDetails,
   UserFriend,
   UserGame,
+  UserPreferences,
   UserProfile,
   UserStats,
 } from "@types";
@@ -260,10 +261,24 @@ function getBasePath() {
   return IS_DESKTOP ? "/big-picture" : "";
 }
 
+// Fork: a non-subscriber's banner and avatar are local files, not Hydra Cloud
+// images. A subscriber always sees the Cloud ones.
+function getOwnProfileImageUrl(
+  localPath: string | null | undefined,
+  serverUrl: string | null,
+  hasActiveSubscription: boolean
+) {
+  return !hasActiveSubscription && localPath
+    ? resolveImageSource(`local:${localPath}`)
+    : serverUrl;
+}
+
 function getProfileHeroUser(
   userDetails: UserDetails | null,
   externalProfile: UserProfile | null,
-  routeUserId: string | undefined
+  routeUserId: string | undefined,
+  userPreferences: UserPreferences | null,
+  hasActiveSubscription: boolean
 ): ProfileHeroUser | null {
   if (!routeUserId || routeUserId === userDetails?.id) {
     if (!userDetails) return null;
@@ -272,8 +287,16 @@ function getProfileHeroUser(
       id: userDetails.id,
       username: userDetails.username,
       displayName: userDetails.displayName,
-      profileImageUrl: userDetails.profileImageUrl,
-      backgroundImageUrl: userDetails.backgroundImageUrl,
+      profileImageUrl: getOwnProfileImageUrl(
+        userPreferences?.localProfileAvatarPath,
+        userDetails.profileImageUrl,
+        hasActiveSubscription
+      ),
+      backgroundImageUrl: getOwnProfileImageUrl(
+        userPreferences?.localProfileBannerPath,
+        userDetails.backgroundImageUrl,
+        hasActiveSubscription
+      ),
       badges:
         externalProfile?.id === userDetails.id
           ? (externalProfile.badges ?? [])
@@ -2719,9 +2742,42 @@ function ProfileContent({ userId }: Readonly<ProfileContentProps>) {
     targetHasActiveSubscription
   );
 
+  // Fork: the API omits this sum without a subscription, so own profile falls
+  // back to the counts already stored in the local library.
+  const displayedUserStats = useMemo(() => {
+    if (
+      !userStats ||
+      !isOwnProfileTarget ||
+      userStats.unlockedAchievementSum !== undefined
+    ) {
+      return userStats;
+    }
+
+    return {
+      ...userStats,
+      unlockedAchievementSum: library.reduce(
+        (sum, game) => sum + (game.unlockedAchievementCount ?? 0),
+        0
+      ),
+    };
+  }, [isOwnProfileTarget, library, userStats]);
+
   const profileUser = useMemo(
-    () => getProfileHeroUser(userDetails, externalProfile, userId),
-    [externalProfile, userDetails, userId]
+    () =>
+      getProfileHeroUser(
+        userDetails,
+        externalProfile,
+        userId,
+        userPreferences,
+        hasActiveSubscription
+      ),
+    [
+      externalProfile,
+      hasActiveSubscription,
+      userDetails,
+      userId,
+      userPreferences,
+    ]
   );
 
   const [showSignOutModal, setShowSignOutModal] = useState(false);
@@ -3305,7 +3361,10 @@ function ProfileContent({ userId }: Readonly<ProfileContentProps>) {
 
         {profileUser ? (
           <div className="profile-page__sections">
-            <ProfileStats userStats={userStats} favoriteGame={favoriteGame} />
+            <ProfileStats
+              userStats={displayedUserStats}
+              favoriteGame={favoriteGame}
+            />
 
             <ProfileSouvenirs
               souvenirs={souvenirs}
@@ -3378,7 +3437,9 @@ function ProfileContent({ userId }: Readonly<ProfileContentProps>) {
               <section className="profile-page__social-section">
                 <ProfileAchievements
                   groups={recentAchievementGroups}
-                  unlockedAchievementCount={userStats?.unlockedAchievementSum}
+                  unlockedAchievementCount={
+                    displayedUserStats?.unlockedAchievementSum
+                  }
                   canView={canViewRecentAchievements}
                   isOwnProfile={profileUser.isOwnProfile}
                   firstFocusId={firstAchievementFocusId}
