@@ -40,6 +40,7 @@ export const levelKeys = {
   wishlistGames: "wishlistGames", // Working wishlist store (steam + manual)
   localGameSetup: "localGameSetup", // machine-local game setup kept across sign-out (fork)
   wishlistDenylist: "wishlistDenylist", // Steam auto-import block (removed by hand)
+  releaseCalendar: "releaseCalendar", // Release calendar cache (fork feature)
   nexusMods: "nexusMods", // Nexus games catalogue cache + match map (fork feature)
   screenshots: "screenshots",
   screenshotsFeatureEnabled: "screenshotsFeatureEnabled",

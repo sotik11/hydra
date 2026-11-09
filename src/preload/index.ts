@@ -1100,6 +1100,10 @@ contextBridge.exposeInMainWorld("electron", {
   },
   clearWishlist: () => ipcRenderer.invoke("clearWishlist"),
 
+  /* Release calendar */
+  getReleaseCalendar: (forceRefresh: boolean, language: string) =>
+    ipcRenderer.invoke("getReleaseCalendar", forceRefresh, language),
+
   /* Nexus mods */
   connectNexusMods: (apiKey: string) =>
     ipcRenderer.invoke("connectNexusMods", apiKey),

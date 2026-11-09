@@ -17,6 +17,7 @@ import type {
   NexusHighlights,
   WishlistGame,
   WishlistGameMetaCache,
+  ReleaseCalendarData,
   ScreenshotInputStatus,
   StartGameDownloadPayload,
   RealDebridUser,
@@ -1157,6 +1158,12 @@ declare global {
       cb: (payload: { appId: string; title: string }) => void
     ) => () => void;
     clearWishlist: () => Promise<void>;
+
+    /* Release calendar */
+    getReleaseCalendar: (
+      forceRefresh: boolean,
+      language: string
+    ) => Promise<ReleaseCalendarData>;
 
     /* Nexus mods */
     connectNexusMods: (apiKey: string) => Promise<NexusModsState>;

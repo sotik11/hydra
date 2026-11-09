@@ -21,6 +21,7 @@ export type FriendRequestAction = "ACCEPTED" | "REFUSED" | "CANCEL";
 export * from "./download-contract";
 export * from "./steam-wishlist.types";
 export * from "./nexus-mods.types";
+export * from "./release-calendar.types";
 
 export type HydraCloudFeature =
   | "achievements"
