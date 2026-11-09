@@ -35,6 +35,7 @@ import { ReportProfile } from "../report-profile/report-profile";
 import { BadgesBox } from "./badges-box";
 import { FriendsBox, FriendsBoxAddButton } from "./friends-box";
 import { RecentGamesBox } from "./recent-games-box";
+import { ReleaseCalendarSection } from "./release-calendar-box";
 import { UserStatsBox } from "./user-stats-box";
 import { ProfileSection } from "../profile-section/profile-section";
 import { DeleteReviewModal } from "@renderer/pages/game-details/modals/delete-review-modal";
@@ -736,6 +737,7 @@ export function ProfileContent() {
                 <FriendsBox />
               </ProfileSection>
             )}
+            {isMe && <ReleaseCalendarSection />}
             <ReportProfile />
           </div>
         )}
