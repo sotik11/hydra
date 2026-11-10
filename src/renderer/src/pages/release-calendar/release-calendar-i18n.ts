@@ -13,6 +13,7 @@ const releaseCalendar: Record<string, Record<string, string>> = {
     title: "Release calendar",
     settings_description:
       "Shows a Releases block in your profile and a full calendar page: your wishlist, popular upcoming games and, with Steam connected, your Steam personal calendar.",
+    settings_requires_steam: "Connect Steam above to turn the calendar on.",
     settings_expand: "Expand Release calendar section",
     settings_collapse: "Collapse Release calendar section",
     box_title: "Releases",
@@ -48,6 +49,7 @@ const releaseCalendar: Record<string, Record<string, string>> = {
     title: "Календарь релизов",
     settings_description:
       "Показывает блок «Релизы» в профиле и страницу календаря: твой вишлист, популярные скоро выходящие игры и, если подключён Steam, твой персональный календарь Steam.",
+    settings_requires_steam: "Чтобы включить календарь, подключи Steam выше.",
     settings_expand: "Развернуть раздел «Календарь релизов»",
     settings_collapse: "Свернуть раздел «Календарь релизов»",
     box_title: "Релизы",
@@ -83,6 +85,7 @@ const releaseCalendar: Record<string, Record<string, string>> = {
     title: "Календар релізів",
     settings_description:
       "Показує блок «Релізи» у профілі та сторінку календаря: твій вішлист, популярні ігри, що скоро вийдуть, і, якщо підключено Steam, твій персональний календар Steam.",
+    settings_requires_steam: "Щоб увімкнути календар, підключи Steam вище.",
     settings_expand: "Розгорнути розділ «Календар релізів»",
     settings_collapse: "Згорнути розділ «Календар релізів»",
     box_title: "Релізи",

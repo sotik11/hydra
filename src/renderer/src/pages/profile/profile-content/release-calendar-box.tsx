@@ -19,6 +19,7 @@ import {
 import { ReleaseMarkers } from "@renderer/pages/release-calendar/release-markers";
 import { useReleaseCalendar } from "@renderer/pages/release-calendar/use-release-calendar";
 import "@renderer/pages/release-calendar/release-calendar-i18n";
+import { useSteamConnected } from "@renderer/pages/release-calendar/use-steam-connected";
 import "./release-calendar-box.scss";
 
 type BoxView = "grid" | "list";
@@ -42,7 +43,8 @@ export function ReleaseCalendarSection() {
   const enabled = useAppSelector(
     (state) => state.userPreferences.value?.releaseCalendarEnabled ?? true
   );
-  if (!enabled) return null;
+  const steamConnected = useSteamConnected();
+  if (!enabled || steamConnected !== true) return null;
   return <ReleaseCalendarSectionContent />;
 }
 

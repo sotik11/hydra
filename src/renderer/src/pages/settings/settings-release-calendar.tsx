@@ -13,6 +13,7 @@ import {
 import "./settings-debrid.scss";
 import "./settings-fork-card.scss";
 import "@renderer/pages/release-calendar/release-calendar-i18n";
+import { useSteamConnected } from "@renderer/pages/release-calendar/use-steam-connected";
 
 const CHEVRON_ICON_SIZE = 16;
 
@@ -20,9 +21,12 @@ const CHEVRON_ICON_SIZE = 16;
 export function SettingsReleaseCalendar() {
   const { t } = useTranslation("release_calendar");
   const { updateUserPreferences } = useContext(settingsContext);
-  const enabled = useAppSelector(
+  const preferenceEnabled = useAppSelector(
     (state) => state.userPreferences.value?.releaseCalendarEnabled ?? true
   );
+  // Needs the Steam integration: without it the switch is inactive and off.
+  const steamConnected = useSteamConnected();
+  const enabled = preferenceEnabled && steamConnected === true;
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -62,8 +66,11 @@ export function SettingsReleaseCalendar() {
             label=""
             aria-label={t("title")}
             checked={enabled}
+            disabled={steamConnected !== true}
             onChange={() =>
-              updateUserPreferences({ releaseCalendarEnabled: !enabled })
+              updateUserPreferences({
+                releaseCalendarEnabled: !preferenceEnabled,
+              })
             }
           />
         </div>
@@ -72,6 +79,7 @@ export function SettingsReleaseCalendar() {
       {!isCollapsed && (
         <div className="settings-context-panel__group">
           <p>{t("settings_description")}</p>
+          {steamConnected === false && <p>{t("settings_requires_steam")}</p>}
         </div>
       )}
     </div>
