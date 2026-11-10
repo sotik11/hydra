@@ -5,6 +5,7 @@ import { SettingsSteam } from "./settings-steam";
 import { SettingsEpic } from "./settings-epic";
 import { SettingsMods } from "./settings-mods";
 import { SettingsCriticScores } from "./settings-critic-scores";
+import { SettingsReleaseCalendar } from "./settings-release-calendar";
 import { SettingsLocalizationSources } from "./settings-localization-sources";
 
 export function SettingsContextIntegrations() {
@@ -25,6 +26,10 @@ export function SettingsContextIntegrations() {
       <hr className="settings-context-panel__divider" />
 
       <SettingsCriticScores />
+
+      <hr className="settings-context-panel__divider" />
+
+      <SettingsReleaseCalendar />
 
       <hr className="settings-context-panel__divider" />
 

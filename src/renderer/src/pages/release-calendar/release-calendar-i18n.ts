@@ -11,6 +11,10 @@ const header: Record<string, Record<string, string>> = {
 const releaseCalendar: Record<string, Record<string, string>> = {
   en: {
     title: "Release calendar",
+    settings_description:
+      "Shows a Releases block in your profile and a full calendar page: your wishlist, popular upcoming games and, with Steam connected, your Steam personal calendar.",
+    settings_expand: "Expand Release calendar section",
+    settings_collapse: "Collapse Release calendar section",
     box_title: "Releases",
     box_popular_hint: "No upcoming releases in your wishlist — popular ones",
     open_calendar: "Open calendar",
@@ -42,6 +46,10 @@ const releaseCalendar: Record<string, Record<string, string>> = {
   },
   ru: {
     title: "Календарь релизов",
+    settings_description:
+      "Показывает блок «Релизы» в профиле и страницу календаря: твой вишлист, популярные скоро выходящие игры и, если подключён Steam, твой персональный календарь Steam.",
+    settings_expand: "Развернуть раздел «Календарь релизов»",
+    settings_collapse: "Свернуть раздел «Календарь релизов»",
     box_title: "Релизы",
     box_popular_hint: "В вишлисте нет ближайших релизов — популярные",
     open_calendar: "Открыть календарь",
@@ -73,6 +81,10 @@ const releaseCalendar: Record<string, Record<string, string>> = {
   },
   uk: {
     title: "Календар релізів",
+    settings_description:
+      "Показує блок «Релізи» у профілі та сторінку календаря: твій вішлист, популярні ігри, що скоро вийдуть, і, якщо підключено Steam, твій персональний календар Steam.",
+    settings_expand: "Розгорнути розділ «Календар релізів»",
+    settings_collapse: "Згорнути розділ «Календар релізів»",
     box_title: "Релізи",
     box_popular_hint: "У вішлисті немає найближчих релізів — популярні",
     open_calendar: "Відкрити календар",

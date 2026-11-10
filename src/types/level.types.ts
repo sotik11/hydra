@@ -283,6 +283,8 @@ export interface UserPreferences {
   criticScoresOpenCriticEnabled?: boolean;
   criticScoresSteamReviewsEnabled?: boolean;
   criticScoresEpicRatingEnabled?: boolean;
+  // Fork: release calendar (profile "Releases" block + /release-calendar).
+  releaseCalendarEnabled?: boolean;
   // Fork: local profile banner (stored on this machine, not Hydra Cloud).
   localProfileBannerPath?: string | null;
   // Fork: local free-text tagline shown under the profile name (local only).

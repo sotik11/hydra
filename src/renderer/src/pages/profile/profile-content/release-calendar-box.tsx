@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import cn from "classnames";
 import { CalendarIcon, ListUnorderedIcon } from "@primer/octicons-react";
 import { buildGameDetailsPath } from "@renderer/helpers";
+import { useAppSelector } from "@renderer/hooks";
 import type { ReleaseCalendarGame } from "@types";
 import { ProfileSection } from "../profile-section/profile-section";
 import {
@@ -36,7 +37,16 @@ const readStoredView = (): BoxView => {
 
 // Profile mini-block: wishlist releases only; popular ones when the wishlist
 // has nothing upcoming. Own profile only.
+// Hidden (and no Steam requests made) when turned off in Settings → Integrations.
 export function ReleaseCalendarSection() {
+  const enabled = useAppSelector(
+    (state) => state.userPreferences.value?.releaseCalendarEnabled ?? true
+  );
+  if (!enabled) return null;
+  return <ReleaseCalendarSectionContent />;
+}
+
+function ReleaseCalendarSectionContent() {
   const { t, i18n } = useTranslation("release_calendar");
   const language = i18n.language;
   const navigate = useNavigate();
