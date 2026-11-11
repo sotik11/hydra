@@ -2,11 +2,10 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 // @ts-ignore The Node ESM test runner requires the source extension.
-import {
-  clampCoverSize,
-  columnsForCoverSize,
-  coverSizeForColumns,
-} from "./library-cover-size.ts";
+import * as librarySizes from "./library-cover-size.ts";
+
+const { clampCoverSize, columnsForCoverSize, coverSizeForColumns } =
+  librarySizes;
 
 describe("library cover size", () => {
   it("clamps and snaps to the slider step", () => {
