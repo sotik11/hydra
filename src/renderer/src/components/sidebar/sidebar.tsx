@@ -18,6 +18,7 @@ import {
   selectIsLibraryLoading,
 } from "@renderer/features";
 import { routes } from "./routes";
+import { useReleaseCalendarAvailable } from "@renderer/pages/release-calendar/use-release-calendar-available";
 
 import "./sidebar.scss";
 
@@ -86,6 +87,7 @@ export function Sidebar() {
   const { t } = useTranslation(["sidebar", "library"]);
   const { isEnabled: isGlobalLeaderboardsEnabled } =
     useGlobalLeaderboardsFeature();
+  const isReleaseCalendarEnabled = useReleaseCalendarAvailable();
   const { library, updateLibrary } = useLibrary();
   const isLibraryLoading = useAppSelector(selectIsLibraryLoading);
   const groupedLibrary = useAppSelector(selectGroupedLibrary);
@@ -513,7 +515,9 @@ export function Sidebar() {
               {routes
                 .filter(
                   (route) =>
-                    !route.isGlobalLeaderboards || isGlobalLeaderboardsEnabled
+                    (!route.isGlobalLeaderboards ||
+                      isGlobalLeaderboardsEnabled) &&
+                    (!route.isReleaseCalendar || isReleaseCalendarEnabled)
                 )
                 .map(({ nameKey, path, render }) => (
                   <li

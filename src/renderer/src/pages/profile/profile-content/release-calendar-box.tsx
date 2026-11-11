@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import cn from "classnames";
 import { CalendarIcon, ListUnorderedIcon } from "@primer/octicons-react";
 import { buildGameDetailsPath } from "@renderer/helpers";
-import { useAppSelector } from "@renderer/hooks";
 import type { ReleaseCalendarGame } from "@types";
 import { ProfileSection } from "../profile-section/profile-section";
 import {
@@ -19,7 +18,7 @@ import {
 import { ReleaseMarkers } from "@renderer/pages/release-calendar/release-markers";
 import { useReleaseCalendar } from "@renderer/pages/release-calendar/use-release-calendar";
 import "@renderer/pages/release-calendar/release-calendar-i18n";
-import { useSteamConnected } from "@renderer/pages/release-calendar/use-steam-connected";
+import { useReleaseCalendarAvailable } from "@renderer/pages/release-calendar/use-release-calendar-available";
 import "./release-calendar-box.scss";
 
 type BoxView = "grid" | "list";
@@ -40,11 +39,8 @@ const readStoredView = (): BoxView => {
 // has nothing upcoming. Own profile only.
 // Hidden (and no Steam requests made) when turned off in Settings → Integrations.
 export function ReleaseCalendarSection() {
-  const enabled = useAppSelector(
-    (state) => state.userPreferences.value?.releaseCalendarEnabled ?? true
-  );
-  const steamConnected = useSteamConnected();
-  if (!enabled || steamConnected !== true) return null;
+  const available = useReleaseCalendarAvailable();
+  if (!available) return null;
   return <ReleaseCalendarSectionContent />;
 }
 

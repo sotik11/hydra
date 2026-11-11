@@ -2,6 +2,7 @@ import i18n from "i18next";
 
 // Fork feature strings: release calendar page + profile mini-block, registered
 // inline so we don't touch upstream translation.json.
+// Same title for the header (pathTitle) and the sidebar entry.
 const header: Record<string, Record<string, string>> = {
   en: { release_calendar: "Release calendar" },
   ru: { release_calendar: "Календарь релизов" },
@@ -123,6 +124,7 @@ function registerBundles() {
   for (const [lng, res] of Object.entries(header)) {
     // Header shows the page title by route (pathTitle map) from the header ns.
     i18n.addResourceBundle(lng, "header", res, true, true);
+    i18n.addResourceBundle(lng, "sidebar", res, true, true);
   }
   for (const [lng, res] of Object.entries(releaseCalendar)) {
     i18n.addResourceBundle(lng, "release_calendar", res, true, true);
