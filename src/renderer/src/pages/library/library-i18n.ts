@@ -8,18 +8,21 @@ const en = {
   installed_label: "Installed",
   available_label: "Available",
   library_total_label: "In library",
+  cover_size: "Cover size",
 };
 
 const ru: typeof en = {
   installed_label: "Установлено",
   available_label: "Доступно",
   library_total_label: "В библиотеке",
+  cover_size: "Размер обложек",
 };
 
 const uk: typeof en = {
   installed_label: "Встановлено",
   available_label: "Доступно",
   library_total_label: "У бібліотеці",
+  cover_size: "Розмір обкладинок",
 };
 
 const bundles: Record<string, typeof en> = { en, ru, uk };
