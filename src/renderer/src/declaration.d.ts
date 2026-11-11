@@ -17,6 +17,7 @@ import type {
   NexusHighlights,
   WishlistGame,
   WishlistGameMetaCache,
+  ReleaseCalendarData,
   ScreenshotInputStatus,
   StartGameDownloadPayload,
   RealDebridUser,
@@ -1158,6 +1159,12 @@ declare global {
     ) => () => void;
     clearWishlist: () => Promise<void>;
 
+    /* Release calendar */
+    getReleaseCalendar: (
+      forceRefresh: boolean,
+      language: string
+    ) => Promise<ReleaseCalendarData>;
+
     /* Nexus mods */
     connectNexusMods: (apiKey: string) => Promise<NexusModsState>;
     getNexusMods: () => Promise<NexusModsState>;
@@ -1415,6 +1422,7 @@ declare global {
     onSignIn: (cb: () => void) => () => Electron.IpcRenderer;
     onAccountUpdated: (cb: () => void) => () => Electron.IpcRenderer;
     onSteamConnected: (cb: () => void) => () => Electron.IpcRenderer;
+    onSteamDisconnected: (cb: () => void) => () => Electron.IpcRenderer;
     onSteamConnectError: (
       cb: (code: SteamConnectErrorCode) => void
     ) => () => Electron.IpcRenderer;

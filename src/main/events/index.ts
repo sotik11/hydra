@@ -26,6 +26,7 @@ import "./misc";
 import "./notifications";
 import "./profile";
 import "./steam-wishlist";
+import "./release-calendar";
 import "./nexus-mods";
 import "./shutdown-on-complete";
 import "./critic-scores";

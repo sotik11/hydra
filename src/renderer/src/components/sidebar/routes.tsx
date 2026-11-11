@@ -4,9 +4,11 @@ import {
   GearIcon,
   HomeIcon,
   BookIcon,
+  CalendarIcon,
   StarIcon,
 } from "@primer/octicons-react";
 import "@renderer/pages/wishlist/wishlist-page-i18n";
+import "@renderer/pages/release-calendar/release-calendar-i18n";
 
 function LeaderboardsIcon() {
   return (
@@ -51,6 +53,13 @@ export const routes = [
     path: "/wishlist",
     nameKey: "wishlist",
     render: () => <StarIcon />,
+  },
+  {
+    // Fork: hidden when the calendar is off or Steam is not connected.
+    path: "/release-calendar",
+    nameKey: "release_calendar",
+    isReleaseCalendar: true,
+    render: () => <CalendarIcon />,
   },
   {
     path: "/downloads",

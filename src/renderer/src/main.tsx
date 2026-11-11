@@ -38,6 +38,7 @@ import Achievements from "./pages/achievements/achievements";
 import ThemeEditor from "./pages/theme-editor/theme-editor";
 import Library from "./pages/library/library";
 import Wishlist from "./pages/wishlist/wishlist";
+import ReleaseCalendar from "./pages/release-calendar/release-calendar";
 import Notifications from "./pages/notifications/notifications";
 import Leaderboards from "./pages/leaderboards/leaderboards";
 import { AchievementNotification } from "./pages/achievements/notification/achievement-notification";
@@ -146,6 +147,10 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
                   <Route path="/catalogue" element={<Catalogue />} />
                   <Route path="/library" element={<Library />} />
                   <Route path="/wishlist" element={<Wishlist />} />
+                  <Route
+                    path="/release-calendar"
+                    element={<ReleaseCalendar />}
+                  />
                   <Route path="/downloads" element={<Downloads />} />
                   <Route
                     path="/game/:shop/:objectId"

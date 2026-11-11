@@ -97,6 +97,8 @@ const disconnectSteam = async (
 
   // Fork: the Steam wishlist rides on this session — forget it too.
   void clearSteamWishlist();
+  // Fork: lets Steam-gated UI (release calendar) hide without a restart.
+  WindowManager.sendToAppWindows("on-steam-disconnected");
 
   const localUpdates: [string, Game][] = [];
 

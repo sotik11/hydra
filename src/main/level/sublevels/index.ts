@@ -19,6 +19,7 @@ export * from "./grouped-achievement-souvenirs";
 export * from "./steam-wishlist";
 export * from "./nexus-mods";
 export * from "./wishlist-games";
+export * from "./release-calendar";
 export * from "./local-game-setup";
 export * from "./screenshots";
 export * from "./ps2-memory-card-saves";
