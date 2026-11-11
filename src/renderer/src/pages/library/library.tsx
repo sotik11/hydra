@@ -49,6 +49,14 @@ import { useSearchParams } from "react-router-dom";
 import { LibraryGameCard } from "./library-game-card";
 import { LibraryGameCardLarge } from "./library-game-card-large";
 import { ViewOptions, ViewMode } from "./view-options";
+import { LibraryCoverSizeSlider } from "./library-cover-size-slider";
+import {
+  clampCoverSize,
+  columnsForCoverSize,
+  coverSizeForColumns,
+  readStoredCoverSize,
+  storeCoverSize,
+} from "./library-cover-size";
 import { FilterOptions, SortOption } from "./filter-options";
 import { CategoryFilter, LibraryCategory } from "./category-filter";
 import { InstalledFilter } from "./installed-filter";
@@ -186,6 +194,10 @@ export default function Library() {
     const savedViewMode = localStorage.getItem("library-view-mode");
     return (savedViewMode as ViewMode) || "compact";
   });
+  // Fork: cover size slider; null = the Compact/Grid preset columns.
+  const [coverSize, setCoverSize] = useState<number | null>(
+    readStoredCoverSize
+  );
   const [sortBy, setSortBy] = useState<SortOption>(() => {
     const savedSortBy = localStorage.getItem("library-sort-by");
     if (savedSortBy && SORT_OPTIONS.includes(savedSortBy as SortOption)) {
@@ -368,6 +380,17 @@ export default function Library() {
   const handleViewModeChange = useCallback((mode: ViewMode) => {
     setViewMode(mode);
     localStorage.setItem("library-view-mode", mode);
+    // Compact / Grid act as presets: they drop the slider's custom size.
+    if (mode !== "large") {
+      setCoverSize(null);
+      storeCoverSize(null);
+    }
+  }, []);
+
+  const handleCoverSizeChange = useCallback((value: number) => {
+    const next = clampCoverSize(value);
+    setCoverSize(next);
+    storeCoverSize(next);
   }, []);
 
   const handleSortChange = useCallback((nextSortBy: SortOption) => {
@@ -681,10 +704,21 @@ export default function Library() {
     userDetails,
   ]);
 
-  const columnsCount = useMemo(
-    () => getColumnsCount(containerWidth, viewMode),
-    [containerWidth, viewMode]
-  );
+  const columnsCount = useMemo(() => {
+    if (viewMode !== "large" && coverSize !== null && containerWidth > 0) {
+      // Rows are inset by GAP on the right (see the virtual row style).
+      return columnsForCoverSize(containerWidth - GAP, coverSize, GAP);
+    }
+    return getColumnsCount(containerWidth, viewMode);
+  }, [containerWidth, viewMode, coverSize]);
+
+  const sliderCoverSize =
+    coverSize ??
+    coverSizeForColumns(
+      containerWidth - GAP,
+      getColumnsCount(containerWidth, viewMode),
+      GAP
+    );
 
   const rows = useMemo(() => {
     const result: LibraryGame[][] = [];
@@ -837,6 +871,12 @@ export default function Library() {
                 {t("clear_library")}
               </Button>
               <FilterOptions sortBy={sortBy} onSortChange={handleSortChange} />
+              {viewMode !== "large" && containerWidth > 0 && (
+                <LibraryCoverSizeSlider
+                  value={sliderCoverSize}
+                  onChange={handleCoverSizeChange}
+                />
+              )}
               <ViewOptions
                 viewMode={viewMode}
                 onViewModeChange={handleViewModeChange}
