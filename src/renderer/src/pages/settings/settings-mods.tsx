@@ -266,11 +266,11 @@ export function SettingsMods() {
             <ChevronRightIcon size={CHEVRON_ICON_SIZE} />
           </span>
         </button>
-        <h3 className="settings-debrid__section-title">{t("mods_title")}</h3>
         <NexusLogo
           className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
+        <h3 className="settings-debrid__section-title">{t("mods_title")}</h3>
         {state.connected && (
           <CheckCircleFillIcon
             size={CHEVRON_ICON_SIZE}

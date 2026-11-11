@@ -88,13 +88,13 @@ export function SettingsCriticScores() {
             <ChevronRightIcon size={CHEVRON_ICON_SIZE} />
           </span>
         </button>
-        <h3 className="settings-debrid__section-title">
-          {t("critic_scores_title")}
-        </h3>
         <CriticScoresLogo
           className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
+        <h3 className="settings-debrid__section-title">
+          {t("critic_scores_title")}
+        </h3>
         {enabled && (
           <CheckCircleFillIcon
             size={CHEVRON_ICON_SIZE}
