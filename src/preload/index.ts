@@ -2247,6 +2247,12 @@ contextBridge.exposeInMainWorld("electron", {
     ipcRenderer.on("on-steam-connected", listener);
     return () => ipcRenderer.removeListener("on-steam-connected", listener);
   },
+  // Fork: fired after a successful Steam disconnect.
+  onSteamDisconnected: (cb: () => void) => {
+    const listener = (_event: Electron.IpcRendererEvent) => cb();
+    ipcRenderer.on("on-steam-disconnected", listener);
+    return () => ipcRenderer.removeListener("on-steam-disconnected", listener);
+  },
   onSteamConnectError: (cb: (code: SteamConnectErrorCode) => void) => {
     const listener = (
       _event: Electron.IpcRendererEvent,

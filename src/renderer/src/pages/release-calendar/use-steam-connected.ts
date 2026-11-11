@@ -7,8 +7,8 @@ const STEAM_INTEGRATION_ENDPOINT = "/profile/integrations/steam";
 
 /**
  * Whether the Steam integration (Settings → Integrations → Steam) is connected.
- * null while unknown. Re-checked when Steam gets connected and when the window
- * regains focus (disconnect has no event of its own).
+ * null while unknown. Re-checked when Steam gets connected or disconnected and
+ * when the window regains focus.
  */
 export function useSteamConnected(): boolean | null {
   const { userDetails } = useUserDetails();
@@ -33,13 +33,20 @@ export function useSteamConnected(): boolean | null {
 
   useEffect(() => {
     void check();
-    const unsubscribe = globalThis.window.electron.onSteamConnected(() => {
-      void check();
-    });
+    const unsubscribeConnected = globalThis.window.electron.onSteamConnected(
+      () => {
+        void check();
+      }
+    );
+    const unsubscribeDisconnected =
+      globalThis.window.electron.onSteamDisconnected(() => {
+        setConnected(false);
+      });
     const onFocus = () => void check();
     globalThis.window.addEventListener("focus", onFocus);
     return () => {
-      unsubscribe();
+      unsubscribeConnected();
+      unsubscribeDisconnected();
       globalThis.window.removeEventListener("focus", onFocus);
     };
   }, [check]);
