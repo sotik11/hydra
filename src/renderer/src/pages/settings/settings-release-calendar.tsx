@@ -4,11 +4,9 @@ import { useTranslation } from "react-i18next";
 import { CheckboxField } from "@renderer/components";
 import { useAppSelector } from "@renderer/hooks";
 import { settingsContext } from "@renderer/context";
-import {
-  CalendarIcon,
-  CheckCircleFillIcon,
-  ChevronRightIcon,
-} from "@primer/octicons-react";
+import { CheckCircleFillIcon, ChevronRightIcon } from "@primer/octicons-react";
+
+import ReleaseCalendarLogo from "@renderer/assets/icons/release-calendar.svg?react";
 
 import "./settings-debrid.scss";
 import "./settings-fork-card.scss";
@@ -50,11 +48,11 @@ export function SettingsReleaseCalendar() {
             <ChevronRightIcon size={CHEVRON_ICON_SIZE} />
           </span>
         </button>
-        <h3 className="settings-debrid__section-title">{t("title")}</h3>
-        <CalendarIcon
+        <ReleaseCalendarLogo
           className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
+        <h3 className="settings-debrid__section-title">{t("title")}</h3>
         {enabled && (
           <CheckCircleFillIcon
             size={CHEVRON_ICON_SIZE}
