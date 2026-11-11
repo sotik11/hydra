@@ -285,13 +285,13 @@ export function SettingsLocalizationSources() {
             <ChevronRightIcon size={16} />
           </span>
         </button>
-        <h3 className="settings-debrid__section-title">
-          {t("localization:localization_sources")}
-        </h3>
         <LocalizationLogo
           className="settings-fork-card__title-logo"
           aria-hidden="true"
         />
+        <h3 className="settings-debrid__section-title">
+          {t("localization:localization_sources")}
+        </h3>
         {localizationsEnabled && (
           <CheckCircleFillIcon
             size={16}

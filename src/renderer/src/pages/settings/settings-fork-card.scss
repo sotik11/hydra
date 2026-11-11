@@ -34,12 +34,16 @@
     justify-content: space-between;
     flex-wrap: wrap;
     gap: calc(globals.$spacing-unit * 2);
+    // Line the avatar up with the upstream integration cards above (their
+    // 1px border + 16px padding); the fork section itself has no frame.
+    padding-left: calc(globals.$spacing-unit * 2 + 1px);
   }
 
   &__profile {
     display: flex;
     align-items: center;
-    gap: calc(globals.$spacing-unit * 2);
+    // Same avatar-to-text gap as .settings-integration-card__profile.
+    gap: calc(globals.$spacing-unit * 1.5);
   }
 
   &__account {
