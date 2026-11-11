@@ -1,4 +1,4 @@
-import { ImageIcon } from "@primer/octicons-react";
+import { Grid2x2, Grid3x3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
   COVER_SIZE_MAX,
@@ -24,7 +24,7 @@ export function LibraryCoverSizeSlider({
 
   return (
     <label className="library-cover-size" title={t("cover_size")}>
-      <ImageIcon size={12} className="library-cover-size__icon" />
+      <Grid3x3 size={14} className="library-cover-size__icon" />
       <input
         type="range"
         className="library-cover-size__input"
@@ -35,7 +35,7 @@ export function LibraryCoverSizeSlider({
         aria-label={t("cover_size")}
         onChange={(event) => onChange(Number(event.target.value))}
       />
-      <ImageIcon size={18} className="library-cover-size__icon" />
+      <Grid2x2 size={18} className="library-cover-size__icon" />
     </label>
   );
 }
